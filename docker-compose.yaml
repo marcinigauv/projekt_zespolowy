@@ -4,8 +4,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: backend
-    # env_file:
-    #   - .env
+    environment:
+      DB_SQL_SETTINGS__HOST: ${POSTGRES_HOST:-postgres}
+      DB_SQL_SETTINGS__PORT: ${POSTGRES_PORT:-5432}
+      DB_SQL_SETTINGS__USERNAME: ${POSTGRES_USER:-postgres}
+      DB_SQL_SETTINGS__PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_SQL_SETTINGS__DATABASE: ${POSTGRES_DB:-postgres}
     ports:
       - "8000:8000"
     depends_on:
@@ -18,9 +22,9 @@ services:
     hostname: postgres
     container_name: postgres
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
