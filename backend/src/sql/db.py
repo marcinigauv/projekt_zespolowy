@@ -95,7 +95,7 @@ class SqlDatabase:
     @asynccontextmanager
     async def lifespan(self):
         self.initialize()
-        # await self.create_all_tables()
+        await self.create_all_tables()
         yield
         await self.shutdown()
 

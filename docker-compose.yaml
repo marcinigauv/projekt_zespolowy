@@ -1,21 +1,21 @@
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    environment:
-      DB_SQL_SETTINGS__HOST: ${POSTGRES_HOST:-postgres}
-      DB_SQL_SETTINGS__PORT: ${POSTGRES_PORT:-5432}
-      DB_SQL_SETTINGS__USERNAME: ${POSTGRES_USER:-postgres}
-      DB_SQL_SETTINGS__PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      DB_SQL_SETTINGS__DATABASE: ${POSTGRES_DB:-postgres}
-    ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: always
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: backend
+  #   environment:
+  #     DB_SQL_SETTINGS__HOST: ${POSTGRES_HOST:-postgres}
+  #     DB_SQL_SETTINGS__PORT: ${POSTGRES_PORT:-5432}
+  #     DB_SQL_SETTINGS__USERNAME: ${POSTGRES_USER:-postgres}
+  #     DB_SQL_SETTINGS__PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  #     DB_SQL_SETTINGS__DATABASE: ${POSTGRES_DB:-postgres}
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: always
 
   postgres:
     image: postgres:18-alpine
