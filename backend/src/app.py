@@ -3,7 +3,9 @@ from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
+from src.products.router import products_router
 from src.users.router import users_router
+from src.products.exceptions import CustomProductException, handle_custom_product_exception
 from src.users.exceptions import CustomUserException, handle_custom_user_exception
 
 
@@ -15,8 +17,12 @@ async def app_lifespan(app: FastAPI):
 app = FastAPI(lifespan=app_lifespan)
 
 
+app.include_router(products_router)
 app.include_router(users_router)
 
+
+app.add_exception_handler(CustomProductException,
+                          handle_custom_product_exception)
 app.add_exception_handler(CustomUserException,
                           handle_custom_user_exception)
 
