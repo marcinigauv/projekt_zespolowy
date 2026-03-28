@@ -1,10 +1,8 @@
-from sqlmodel import SQLModel, Field as field
+from src.sql.models import Product
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
 from src.products.enums import ProductCategory, ProductSortingDirection, ProductSortingKey
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy import String, Column
-from typing import List, Optional
+from typing import Optional
 
 
 class BaseRequestModel(BaseModel):
@@ -21,8 +19,7 @@ class ProductSearchRequest(BaseRequestModel):
         default=None, description="The field by which to sort the products")
     sorting_order: ProductSortingDirection | None = Field(
         default=None, description="The direction in which to sort the products")
-    category: str | None = Field(
-        default=None, description="The category to filter products by")
+    category: str = Field(description="The category to filter products by")
     substring: str = Field(
         description="A substring to search for in product names", default="")
 
@@ -30,17 +27,6 @@ class ProductSearchRequest(BaseRequestModel):
 class BaseResponseModel(BaseModel):
     model_config = ConfigDict(from_attributes=True,
                               alias_generator=to_camel, populate_by_name=True)
-
-
-class Product(SQLModel, table=True):
-    id: int | None = field(primary_key=True,
-                           unique=True, index=True, default=None)
-    name: str = field(description="The name of the product", min_length=1)
-    description: str = field(
-        description="The description of the product", min_length=1)
-    categories: List[str] = field(sa_column=Column(ARRAY(String)))
-    price: float = field(description="The price of the product", gt=0)
-    amount: int = field(description="The amount of the product in stock", ge=0)
 
 
 class ProductResponse(BaseResponseModel):

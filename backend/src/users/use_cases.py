@@ -1,4 +1,5 @@
-from src.users.models import UserCreate, User
+from src.sql.models import User
+from src.users.models import UserCreate
 from src.sql.db import DBSession
 from src.users.utils import create_new_user_in_db, verify_user_credentials_in_db
 from src.users.helpers import hash_password, verify_password

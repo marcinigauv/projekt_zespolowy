@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Query
 from src.sql.db import DBSession
 from src.products.use_cases import get_products, get_product_by_id
-from typing import Annotated
 from src.products.models import ProductResponse, ProductSearchRequest
 
 

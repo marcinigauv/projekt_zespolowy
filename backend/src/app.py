@@ -3,8 +3,10 @@ from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
+from src.orders.router import orders_router
 from src.products.router import products_router
 from src.users.router import users_router
+from src.orders.exceptions import CustomOrderException, handle_custom_order_exception
 from src.products.exceptions import CustomProductException, handle_custom_product_exception
 from src.users.exceptions import CustomUserException, handle_custom_user_exception
 
@@ -19,12 +21,14 @@ app = FastAPI(lifespan=app_lifespan)
 
 app.include_router(products_router)
 app.include_router(users_router)
-
+app.include_router(orders_router)
 
 app.add_exception_handler(CustomProductException,
                           handle_custom_product_exception)
 app.add_exception_handler(CustomUserException,
                           handle_custom_user_exception)
+app.add_exception_handler(CustomOrderException,
+                          handle_custom_order_exception)
 
 app.add_middleware(SessionMiddleware, secret_key="your_secret_key_here")
 

@@ -1,4 +1,3 @@
-from sqlmodel import SQLModel, Field as field
 from pydantic import BaseModel, Field, EmailStr, SecretStr, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -27,14 +26,3 @@ class UserResponse(BaseResponseModel):
     name: str = Field(description="The name of the user")
     surname: str = Field(description="The surname of the user")
     email: EmailStr = Field(description="The email of the user")
-
-
-class User(SQLModel, table=True):
-    id: int | None = field(primary_key=True,
-                           unique=True, index=True, default=None)
-    name: str = field(description="The name of the user", min_length=1)
-    surname: str = field(description="The surname of the user", min_length=1)
-    email: str = field(
-        description="The email of the user", min_length=1, unique=True, index=True)
-    password: str = field(
-        description="The hash of password of the user", min_length=1, exclude=True)

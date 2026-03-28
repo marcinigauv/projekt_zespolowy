@@ -1,3 +1,4 @@
+from src.sql.models import *
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Self, Annotated
 from fastapi import Depends
@@ -32,8 +33,6 @@ class SqlDatabase:
         return self.engine
 
     def _get_database_url(self) -> str:
-        if config.db_sql_settings is None:
-            raise ValueError("Bad configuration: db_sql_settings is not set")
 
         db = config.db_sql_settings
 

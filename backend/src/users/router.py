@@ -1,9 +1,10 @@
+from src.sql.models import User
 from fastapi import APIRouter, Request, Depends
 from src.sql.db import DBSession
-from src.users.models import User, UserCreate, UserLogin, UserResponse
+from src.users.models import UserCreate, UserLogin, UserResponse
 from src.users.use_cases import create_new_user, verify_user_credentials
 from src.users.exceptions import InvalidCredentialsException
-from src.users.dependecies import set_session_user, get_session_user
+from src.users.dependecies import set_session_user, require_authentication
 
 
 users_router = APIRouter(prefix="/users", tags=["users"])
@@ -27,9 +28,10 @@ async def post_login_user(user_login: UserLogin, session: DBSession, request: Re
 
 
 @users_router.get("/me", response_model=UserResponse)
-async def get_me_user(request: Request, user: User = Depends(get_session_user)) -> UserResponse:
+async def get_me_user(request: Request, user: User = Depends(require_authentication)) -> UserResponse:
     """Endpoint to retrieve the current authenticated user's information."""
     return UserResponse.model_validate(user)
+
 
 @users_router.post("/logout", response_model=bool)
 async def post_logout_user(request: Request) -> bool:

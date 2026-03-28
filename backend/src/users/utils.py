@@ -1,4 +1,4 @@
-from src.users.models import User
+from src.sql.models import User
 from src.sql.db import DBSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
@@ -30,3 +30,13 @@ async def verify_user_credentials_in_db(email: str, password: str, db: DBSession
     except Exception as e:
         raise e
     return None
+
+
+async def get_user_details_from_db_by_id(user_id: int, db: DBSession) -> Optional[User]:
+    """Fetches user details by user ID."""
+    try:
+        stmt = select(User).where(User.id == user_id)  # type: ignore
+        user = await db.execute(stmt)  # type: ignore
+        return user.scalar_one_or_none()
+    except Exception as _exc:
+        return None
