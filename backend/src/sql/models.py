@@ -6,7 +6,18 @@ from datetime import datetime
 from decimal import Decimal
 
 
-class User(SQLModel, table=True):
+class BaseTableModel(SQLModel):
+    """Base model for all tables to inherit from, providing common configurations."""
+    __abstract__ = True
+
+    def get_id(self) -> int:
+        """Utility method to get the ID of the record."""
+        if not hasattr(self, 'id') or getattr(self, 'id') is None:
+            raise ValueError("ID is not set")
+        return getattr(self, 'id')
+
+
+class User(BaseTableModel, table=True):
     id: Optional[int] = Field(primary_key=True,
                               unique=True, index=True, default=None)
     name: str = Field(description="The name of the user", min_length=1)
@@ -18,12 +29,10 @@ class User(SQLModel, table=True):
 
     def get_user_id(self) -> int:
         """Utility method to get the user's ID."""
-        if not self.id:
-            raise ValueError("User ID is not set")
-        return self.id
+        return self.get_id()
 
 
-class Product(SQLModel, table=True):
+class Product(BaseTableModel, table=True):
     id: Optional[int] = Field(primary_key=True,
                               unique=True, index=True, default=None)
     name: str = Field(description="The name of the product", min_length=1)
@@ -34,7 +43,7 @@ class Product(SQLModel, table=True):
     amount: int = Field(description="The amount of the product in stock", ge=0)
 
 
-class Order(SQLModel, table=True):
+class Order(BaseTableModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     customer_id: int = Field(foreign_key="user.id")
     order_date: datetime = Field(default_factory=datetime.now)
@@ -57,7 +66,7 @@ class Order(SQLModel, table=True):
         return self.id
 
 
-class OrderDetail(SQLModel, table=True):
+class OrderDetail(BaseTableModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     quantity: int = Field(
         description="The quantity of the product in the order", ge=1)

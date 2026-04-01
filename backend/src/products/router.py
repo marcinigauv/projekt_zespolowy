@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from src.sql.db import DBSession
-from src.products.use_cases import get_products, get_product_by_id
+from src.products.use_cases import get_products, get_product_by_id, get_similar_products_by_product_id
 from src.products.models import ProductResponse, ProductSearchRequest
 
 
@@ -21,3 +21,13 @@ async def get_product_get(
 ) -> ProductResponse:
     """Endpoint to get a product by its ID."""
     return await get_product_by_id(session, product_id)
+
+
+@products_router.get("/similar", response_model=list[ProductResponse])
+async def get_similar_products_get(
+    session: DBSession,
+    product_id: int = Query(
+        description="The unique identifier of the product to find similar products for", default=1)
+) -> list[ProductResponse]:
+    """Endpoint to get similar products to a given product ID."""
+    return await get_similar_products_by_product_id(session, product_id)

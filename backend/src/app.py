@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
@@ -9,12 +9,25 @@ from src.users.router import users_router
 from src.orders.exceptions import CustomOrderException, handle_custom_order_exception
 from src.products.exceptions import CustomProductException, handle_custom_product_exception
 from src.users.exceptions import CustomUserException, handle_custom_user_exception
+from src.vector_store.sync import sync_missing_products_to_vector_store
+import asyncio
 
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     async with db.lifespan():
-        yield
+        task = asyncio.create_task(
+            sync_missing_products_to_vector_store())
+
+        try:
+            yield
+        finally:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
 
 app = FastAPI(lifespan=app_lifespan)
 

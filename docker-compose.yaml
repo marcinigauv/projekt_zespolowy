@@ -22,9 +22,9 @@ services:
     hostname: postgres
     container_name: postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_SQL_SETTINGS__DATABASE:-postgres}
+      POSTGRES_USER: ${DB_SQL_SETTINGS__USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_SQL_SETTINGS__PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -36,6 +36,31 @@ services:
       timeout: 10s
       retries: 3
 
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    hostname: chroma
+    environment:
+      IS_PERSISTENT: "TRUE"
+      PERSIST_DIRECTORY: "/chroma/chroma"
+      ANONYMIZED_TELEMETRY: "FALSE"
+      # CHROMA_SERVER_AUTHN_CREDENTIALS: "secret-token"   # opcjonalny token, dodamy później
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/v2/heartbeat"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
+    driver: local
+  chroma_data:
     driver: local

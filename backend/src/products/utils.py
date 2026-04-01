@@ -1,6 +1,6 @@
 from sqlalchemy import select, or_, update
 from src.products.enums import ProductSortingDirection
-from src.products.models import Product, ProductSearchRequest
+from src.products.models import Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
 from src.sql.db import DBSession
 from typing import Optional
 from decimal import Decimal
@@ -45,6 +45,22 @@ async def get_products_from_db(
     return list(products)
 
 
+async def get_all_products_in_chunks_from_db(
+        session: DBSession,
+        page_size: int = 100,
+        page: int = 0) -> PaginatedProductsResponse:
+    stmt = select(Product).offset(page * page_size).limit(page_size)
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    return PaginatedProductsResponse(
+        products=[ProductResponse.from_product(
+            product) for product in products],
+        total=len(products),
+        page=page,
+        page_size=page_size
+    )
+
+
 async def get_product_by_id_from_db(
     session: DBSession,
     product_id: int,
@@ -55,6 +71,17 @@ async def get_product_by_id_from_db(
     product = result.scalar_one_or_none()
 
     return product
+
+async def get_products_by_ids_from_db(
+    session: DBSession,
+    product_ids: list[int],
+) -> list[Product]:
+    stmt = select(Product).where(Product.id.in_(product_ids))
+
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+
+    return products
 
 
 async def get_product_quantity_and_price_from_db(

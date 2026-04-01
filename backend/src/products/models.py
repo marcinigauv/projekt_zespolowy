@@ -52,3 +52,12 @@ class ProductResponse(BaseResponseModel):
     @classmethod
     def from_product(cls, product: Product) -> "ProductResponse":
         return cls.model_validate(product)
+
+
+class PaginatedProductsResponse(BaseResponseModel):
+    total: int = Field(
+        description="The total number of products matching the search criteria")
+    products: list[ProductResponse] = Field(
+        description="The list of products in the current page")
+    page: int = Field(description="The current page number")
+    page_size: int = Field(description="The number of products per page")
