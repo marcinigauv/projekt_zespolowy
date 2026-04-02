@@ -3,6 +3,7 @@ from src.products.models import ProductResponse as ProductModel
 from src.vector_store.utils import get_embedding
 from src.vector_store.db import get_chroma_client
 from typing import Any
+from numpy import ndarray
 
 
 class ProductVectorRepository:
@@ -45,8 +46,11 @@ class ProductVectorRepository:
             ids=[str(base_product_id)],
             include=["embeddings"]
         )
-        
+
         if not base_product or 'embeddings' not in base_product:
+            return []
+
+        if not isinstance(base_product["embeddings"], ndarray) or len(base_product["embeddings"]) == 0:
             return []
 
         query_embedding = base_product["embeddings"][0]
@@ -61,7 +65,7 @@ class ProductVectorRepository:
         if not ids or not ids[0]:
             return []
 
-        return [int(pid) for pid in ids[0]]
+        return [int(pid) for pid in ids[0] if int(pid) != base_product_id]
 
     def check_if_product_exists(self, product_id: int) -> bool:
         """Checks if a product exists in Chroma Vector Store."""

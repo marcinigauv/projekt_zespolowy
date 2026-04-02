@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
