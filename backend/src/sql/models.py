@@ -81,6 +81,10 @@ class OrderDetail(BaseTableModel, table=True):
 
 class Payment(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    external_id: str = Field(
+        description="The external ID from the payment provider", min_length=1)
+    url: Optional[str] = Field(
+        description="The URL to the payment page at the provider")
     status: str = Field(description="The status of the payment", min_length=1)
     order_id: int = Field(foreign_key="order.id")
     order: "Order" = Relationship(back_populates="payment")

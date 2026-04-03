@@ -20,6 +20,12 @@ class VectorStoreSettings(BaseModel):
     chroma_anonymized_telemetry: bool
 
 
+class PaymentsSettings(BaseModel):
+    provider_url: str
+    api_key: str
+    sign_phrase: str
+
+
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter='__', case_sensitive=False, env_file='.env', extra='allow')
@@ -27,6 +33,7 @@ class Config(BaseSettings):
     db_sql_settings: DbSQLSettings
     auth_settings: AuthSettings
     vector_store_settings: VectorStoreSettings
+    payments_settings: PaymentsSettings
 
 
 config = Config()  # type: ignore
