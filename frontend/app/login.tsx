@@ -7,6 +7,7 @@ import {
   PageWrapper,
   AuthCenter,
   AuthForm,
+  InlineCenter,
   Eyebrow,
   FormCard,
   FormField,
@@ -47,10 +48,10 @@ export default function Login() {
             <PrimaryButton onPress={() => { login(email, password); router.replace('/') }}>
               Zaloguj się
             </PrimaryButton>
-            <XStack gap="$2" style={{ justifyContent: 'center' }}>
+            <InlineCenter>
               <Text color="$gray10">Nie masz konta?</Text>
               <Text color="$blue10" onPress={() => router.replace('/register')}>Zarejestruj się</Text>
-            </XStack>
+            </InlineCenter>
           </AuthForm>
         </FormCard>
       </AuthCenter>

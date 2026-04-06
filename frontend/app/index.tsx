@@ -1,14 +1,13 @@
 import React from 'react'
-import { XStack, YStack, Text, ScrollView, useMedia } from 'tamagui'
+import { Text, ScrollView, XStack } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useCartStore } from '../src/store/cartStore'
 import {
   PageWrapper,
   ProductGrid,
   CategoryBadge,
-  HeroContainer,
-  HeroTitle,
-  HeroSubtitle,
+  ProductList,
+  ProductListItem,
   ProductCard,
   ProductInfo,
   ProductPrice,
@@ -17,13 +16,10 @@ import {
   AddToCartButton,
   Eyebrow,
   Section,
-  SectionDescription,
   SectionHeading,
   SectionTitle,
-  MetricCard,
-  MetricLabel,
-  MetricValue,
-  PrimaryButton,
+  ProductMetaRow,
+  ProductMetaText,
 } from '../src/components/styled'
 
 const PRODUCTS = [
@@ -36,26 +32,22 @@ const PRODUCTS = [
 ]
 
 export default function Index() {
-  const media = useMedia()
   const addItem = useCartStore(s => s.addItem)
-  const totalValue = PRODUCTS.reduce((sum, product) => sum + product.price, 0)
-  const isCompact = media.sm
 
   return (
     <PageWrapper>
       <Header />
       <ScrollView>
         <ProductGrid>
-
           <Section>
             <SectionHeading>
               <Eyebrow>Katalog</Eyebrow>
               <SectionTitle>Odkryj nasze produkty</SectionTitle>
             </SectionHeading>
 
-            <XStack flexWrap="wrap" gap="$4" style={{ justifyContent: 'space-between' }}>
-            {PRODUCTS.map(product => (
-              <YStack key={product.id} width="47%" $sm={{ width: '100%' }} style={{ minWidth: isCompact ? 0 : 280, flexGrow: 1 }}>
+            <ProductList>
+              {PRODUCTS.map(product => (
+              <ProductListItem key={product.id}>
                 <ProductCard>
                   <ProductVisual background={product.bg}>
                     <Text fontSize={70}>{product.emoji}</Text>
@@ -69,20 +61,20 @@ export default function Index() {
                       </CategoryBadge>
                     </XStack>
                     <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
-                    <Text color="$placeholderColor" fontSize="$3">
+                    <ProductMetaText>
                       Starannie dobrany produkt z naszej nowej, uporządkowanej kolekcji.
-                    </Text>
-                    <XStack mt="$1" gap="$3" style={{ justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexDirection: isCompact ? 'column' : 'row' }}>
+                    </ProductMetaText>
+                    <ProductMetaRow>
                       <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
                       <AddToCartButton size="$3" onPress={() => addItem(product)}>
                         Dodaj
                       </AddToCartButton>
-                    </XStack>
+                    </ProductMetaRow>
                   </ProductInfo>
                 </ProductCard>
-              </YStack>
+              </ProductListItem>
             ))}
-            </XStack>
+            </ProductList>
           </Section>
         </ProductGrid>
       </ScrollView>

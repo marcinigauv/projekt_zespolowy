@@ -1,10 +1,11 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
-import { YStack, XStack, Text, Separator, ScrollView, useMedia } from 'tamagui'
+import { YStack, Text, Separator, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useAuthStore } from '../src/store/authStore'
 import { useCartStore } from '../src/store/cartStore'
 import {
+  DataRow,
   PageWrapper,
   PageContent,
   Eyebrow,
@@ -17,10 +18,8 @@ import {
 
 export default function Profile() {
   const router = useRouter()
-  const media = useMedia()
   const { user, isAuthenticated, logout } = useAuthStore()
   const clearCart = useCartStore(s => s.clearCart)
-  const isCompact = media.sm
 
   if (!isAuthenticated) {
     router.replace('/login')
@@ -42,15 +41,15 @@ export default function Profile() {
 
           <SurfaceCard>
             <YStack gap="$3">
-              <XStack gap="$3" style={{ justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap' }}>
+              <DataRow>
                 <Text color="$gray10">Imię</Text>
                 <Text fontWeight="700">{user?.name}</Text>
-              </XStack>
+              </DataRow>
               <Separator />
-              <XStack gap="$3" style={{ justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap' }}>
+              <DataRow>
                 <Text color="$gray10">Email</Text>
                 <Text fontWeight="700">{user?.email}</Text>
-              </XStack>
+              </DataRow>
             </YStack>
           </SurfaceCard>
 

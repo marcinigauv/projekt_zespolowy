@@ -1,6 +1,21 @@
 import { defaultConfig } from '@tamagui/config/v5'
 import { createFont, createTamagui, isWeb } from 'tamagui'
 
+const media = {
+  ...defaultConfig.media,
+  xl: { maxWidth: 1440 },
+  lg: { maxWidth: 1280 },
+  md: { maxWidth: 1024 },
+  sm: { maxWidth: 768 },
+  xs: { maxWidth: 520 },
+  xxs: { maxWidth: 390 },
+  gtXs: { minWidth: 521 },
+  gtSm: { minWidth: 769 },
+  gtMd: { minWidth: 1025 },
+  gtLg: { minWidth: 1281 },
+  gtXl: { minWidth: 1441 },
+}
+
 const interFont = createFont({
   family: isWeb ? 'Inter, Arial, sans-serif' : 'Inter',
   size: {
@@ -56,6 +71,7 @@ const interFont = createFont({
 const config = createTamagui({
   ...defaultConfig,
   defaultFont: 'body',
+  media,
   fonts: {
     ...defaultConfig.fonts,
     body: interFont,
@@ -174,6 +190,7 @@ const config = createTamagui({
     ...defaultConfig.settings,
     defaultFont: 'body',
     allowedStyleValues: 'somewhat-strict-web',
+    disableSSR: true,
   },
 })
 
