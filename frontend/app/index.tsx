@@ -1,8 +1,30 @@
 import React from 'react'
-import { XStack, YStack, Text, Button, Card, ScrollView, H3 } from 'tamagui'
+import { XStack, YStack, Text, ScrollView, useMedia } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useCartStore } from '../src/store/cartStore'
-import { PageWrapper, ProductGrid, CategoryBadge } from '../src/components/styled'
+import {
+  PageWrapper,
+  ProductGrid,
+  CategoryBadge,
+  HeroContainer,
+  HeroTitle,
+  HeroSubtitle,
+  ProductCard,
+  ProductInfo,
+  ProductPrice,
+  ProductTitle,
+  ProductVisual,
+  AddToCartButton,
+  Eyebrow,
+  Section,
+  SectionDescription,
+  SectionHeading,
+  SectionTitle,
+  MetricCard,
+  MetricLabel,
+  MetricValue,
+  PrimaryButton,
+} from '../src/components/styled'
 
 const PRODUCTS = [
   { id: '1', name: 'Buty sportowe Nike Air Max', price: 299.99, emoji: '👟', bg: '#EFF6FF', category: 'Obuwie' },
@@ -14,25 +36,31 @@ const PRODUCTS = [
 ]
 
 export default function Index() {
+  const media = useMedia()
   const addItem = useCartStore(s => s.addItem)
+  const totalValue = PRODUCTS.reduce((sum, product) => sum + product.price, 0)
+  const isCompact = media.sm
 
   return (
     <PageWrapper>
       <Header />
       <ScrollView>
         <ProductGrid>
-          <YStack gap="$1" paddingTop="$2">
-            <Text fontSize="$8" fontWeight="bold">Odkryj nasze produkty</Text>
-            <Text color="$gray10" fontSize="$4">Wybierz spośród {PRODUCTS.length} produktów</Text>
-          </YStack>
-          <XStack flexWrap="wrap" gap="$3">
+
+          <Section>
+            <SectionHeading>
+              <Eyebrow>Katalog</Eyebrow>
+              <SectionTitle>Odkryj nasze produkty</SectionTitle>
+            </SectionHeading>
+
+            <XStack flexWrap="wrap" gap="$4" style={{ justifyContent: 'space-between' }}>
             {PRODUCTS.map(product => (
-              <YStack key={product.id} width="47%" $sm={{ width: '100%' }} minWidth={280} flexGrow={1}>
-                <Card bordered overflow="hidden" pressStyle={{ scale: 0.98, opacity: 0.95 }}>
-                  <YStack height={155} ai="center" jc="center" backgroundColor={product.bg}>
+              <YStack key={product.id} width="47%" $sm={{ width: '100%' }} style={{ minWidth: isCompact ? 0 : 280, flexGrow: 1 }}>
+                <ProductCard>
+                  <ProductVisual background={product.bg}>
                     <Text fontSize={70}>{product.emoji}</Text>
-                  </YStack>
-                  <YStack p="$3" gap="$2">
+                  </ProductVisual>
+                  <ProductInfo>
                     <XStack>
                       <CategoryBadge>
                         <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
@@ -40,20 +68,22 @@ export default function Index() {
                         </Text>
                       </CategoryBadge>
                     </XStack>
-                    <H3 numberOfLines={2} size="$5">{product.name}</H3>
-                    <XStack jc="space-between" ai="center" mt="$1">
-                      <Text fontSize="$6" fontWeight="bold" color="$blue10">
-                        {product.price.toFixed(2)} zł
-                      </Text>
-                      <Button size="$3" theme="blue" onPress={() => addItem(product)}>
-                        + Koszyk
-                      </Button>
+                    <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
+                    <Text color="$placeholderColor" fontSize="$3">
+                      Starannie dobrany produkt z naszej nowej, uporządkowanej kolekcji.
+                    </Text>
+                    <XStack mt="$1" gap="$3" style={{ justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexDirection: isCompact ? 'column' : 'row' }}>
+                      <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
+                      <AddToCartButton size="$3" onPress={() => addItem(product)}>
+                        Dodaj
+                      </AddToCartButton>
                     </XStack>
-                  </YStack>
-                </Card>
+                  </ProductInfo>
+                </ProductCard>
               </YStack>
             ))}
-          </XStack>
+            </XStack>
+          </Section>
         </ProductGrid>
       </ScrollView>
     </PageWrapper>

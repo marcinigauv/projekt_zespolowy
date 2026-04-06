@@ -1,9 +1,20 @@
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { YStack, XStack, Text, Button, Input, Label, H2 } from 'tamagui'
+import { YStack, XStack, Text, Label } from 'tamagui'
 import { useAuthStore } from '../src/store/authStore'
-import { HeaderMinimal } from '../src/components/Header'
-import { PageWrapper, AuthCenter, AuthForm } from '../src/components/styled'
+import { Header } from '../src/components/Header'
+import {
+  PageWrapper,
+  AuthCenter,
+  AuthForm,
+  Eyebrow,
+  FormCard,
+  FormField,
+  FormInput,
+  PrimaryButton,
+  SectionDescription,
+  SectionTitle,
+} from '../src/components/styled'
 
 export default function Register() {
   const router = useRouter()
@@ -14,30 +25,39 @@ export default function Register() {
 
   return (
     <PageWrapper>
-      <HeaderMinimal />
+      <Header />
       <AuthCenter>
-        <AuthForm>
-          <H2>Rejestracja</H2>
-          <YStack gap="$2">
-            <Label htmlFor="name">Imię</Label>
-            <Input id="name" size="$4" placeholder="Jan Kowalski" value={name} onChangeText={setName} />
-          </YStack>
-          <YStack gap="$2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" size="$4" placeholder="twoj@email.com" value={email} onChangeText={setEmail} autoCapitalize="none" />
-          </YStack>
-          <YStack gap="$2">
-            <Label htmlFor="password">Hasło</Label>
-            <Input id="password" size="$4" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
-          </YStack>
-          <Button size="$5" theme="green" onPress={() => { register(email, password, name); router.replace('/') }}>
-            Zarejestruj się
-          </Button>
-          <XStack jc="center" gap="$2">
-            <Text color="$gray10">Masz już konto?</Text>
-            <Text color="$blue10" onPress={() => router.replace('/login')}>Zaloguj się</Text>
-          </XStack>
-        </AuthForm>
+        <FormCard>
+          <AuthForm>
+            <YStack gap="$2">
+              <Eyebrow>Konto</Eyebrow>
+              <SectionTitle>Utwórz konto</SectionTitle>
+              <SectionDescription>
+                Nie masz jeszcze konta? Podaj swoje dane, aby się zarejestrować i zacząć korzystać z naszej aplikacji - całkowicie za darmo!
+              </SectionDescription>
+            </YStack>
+
+            <FormField>
+              <Label htmlFor="name">Imię</Label>
+              <FormInput id="name" placeholder="Jan Kowalski" value={name} onChangeText={setName} />
+            </FormField>
+            <FormField>
+              <Label htmlFor="email">Email</Label>
+              <FormInput id="email" placeholder="twoj@email.com" value={email} onChangeText={setEmail} autoCapitalize="none" />
+            </FormField>
+            <FormField>
+              <Label htmlFor="password">Hasło</Label>
+              <FormInput id="password" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
+            </FormField>
+            <PrimaryButton onPress={() => { register(email, password, name); router.replace('/') }}>
+              Zarejestruj się
+            </PrimaryButton>
+            <XStack gap="$2" style={{ justifyContent: 'center' }}>
+              <Text color="$gray10">Masz już konto?</Text>
+              <Text color="$blue10" onPress={() => router.replace('/login')}>Zaloguj się</Text>
+            </XStack>
+          </AuthForm>
+        </FormCard>
       </AuthCenter>
     </PageWrapper>
   )
