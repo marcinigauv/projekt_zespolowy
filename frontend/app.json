@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "Aplikacja Sklepu Internetowego",
     "slug": "frontend",
     "version": "1.0.0",
+    "scheme": "myapp",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -27,7 +28,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-router"
     ]
   }
 }
