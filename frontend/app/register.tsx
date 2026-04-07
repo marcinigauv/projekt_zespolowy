@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { YStack, XStack, Text, Label } from 'tamagui'
-import { useAuthStore } from '../src/store/authStore'
+import { YStack, Text, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { registerUserUseCase } from '../src/auth/useCases'
 import {
   PageWrapper,
   AuthCenter,
@@ -19,10 +19,24 @@ import {
 
 export default function Register() {
   const router = useRouter()
-  const register = useAuthStore(s => s.register)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleRegister = async () => {
+    try {
+      setError('')
+      setIsSubmitting(true)
+      await registerUserUseCase({ name, email, password })
+      router.replace('/')
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się zarejestrować')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <PageWrapper>
@@ -50,7 +64,8 @@ export default function Register() {
               <Label htmlFor="password">Hasło</Label>
               <FormInput id="password" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
             </FormField>
-            <PrimaryButton onPress={() => { register(email, password, name); router.replace('/') }}>
+            {error ? <Text color="$red10">{error}</Text> : null}
+            <PrimaryButton disabled={isSubmitting} onPress={() => { void handleRegister() }}>
               Zarejestruj się
             </PrimaryButton>
             <InlineCenter>

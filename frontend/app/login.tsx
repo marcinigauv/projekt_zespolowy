@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { YStack, XStack, Text, Label } from 'tamagui'
-import { useAuthStore } from '../src/store/authStore'
+import { YStack, Text, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { loginUserUseCase } from '../src/auth/useCases'
 import {
   PageWrapper,
   AuthCenter,
@@ -19,9 +19,23 @@ import {
 
 export default function Login() {
   const router = useRouter()
-  const login = useAuthStore(s => s.login)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleLogin = async () => {
+    try {
+      setError('')
+      setIsSubmitting(true)
+      await loginUserUseCase({ email, password })
+      router.replace('/')
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się zalogować')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <PageWrapper>
@@ -45,7 +59,8 @@ export default function Login() {
               <Label htmlFor="password">Hasło</Label>
               <FormInput id="password" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
             </FormField>
-            <PrimaryButton onPress={() => { login(email, password); router.replace('/') }}>
+            {error ? <Text color="$red10">{error}</Text> : null}
+            <PrimaryButton disabled={isSubmitting} onPress={() => { void handleLogin() }}>
               Zaloguj się
             </PrimaryButton>
             <InlineCenter>

@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
@@ -13,6 +14,12 @@ from src.users.exceptions import CustomUserException, handle_custom_user_excepti
 from src.payments.exceptions import CustomPaymentException, handle_custom_payment_exception
 from src.vector_store.sync import sync_missing_products_to_vector_store
 import asyncio
+
+origins = [
+    "*",
+    "http://localhost",
+    "http://localhost:8080",
+]  # Developerska konfuguracja CORS
 
 
 @asynccontextmanager
@@ -32,6 +39,14 @@ async def app_lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=app_lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(orders_router)
 app.include_router(payments_router)

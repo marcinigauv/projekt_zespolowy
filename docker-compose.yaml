@@ -1,21 +1,30 @@
 services:
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   container_name: backend
-  #   environment:
-  #     DB_SQL_SETTINGS__HOST: ${POSTGRES_HOST:-postgres}
-  #     DB_SQL_SETTINGS__PORT: ${POSTGRES_PORT:-5432}
-  #     DB_SQL_SETTINGS__USERNAME: ${POSTGRES_USER:-postgres}
-  #     DB_SQL_SETTINGS__PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-  #     DB_SQL_SETTINGS__DATABASE: ${POSTGRES_DB:-postgres}
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   restart: always
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      AUTH_SETTINGS__PASSWORD_PEPPER: ${AUTH_SETTINGS__PASSWORD_PEPPER}
+      DB_SQL_SETTINGS__HOST: postgres
+      DB_SQL_SETTINGS__PORT: 5432
+      DB_SQL_SETTINGS__USERNAME: ${DB_SQL_SETTINGS__USERNAME}
+      DB_SQL_SETTINGS__PASSWORD: ${DB_SQL_SETTINGS__PASSWORD}
+      DB_SQL_SETTINGS__DATABASE: ${DB_SQL_SETTINGS__DATABASE}
+      VECTOR_STORE_SETTINGS__CHROMA_HOST: chroma
+      VECTOR_STORE_SETTINGS__CHROMA_PORT: 8000
+      VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY: ${VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY}
+      PAYMENTS_SETTINGS__PROVIDER_URL: ${PAYMENTS_SETTINGS__PROVIDER_URL}
+      PAYMENTS_SETTINGS__API_KEY: ${PAYMENTS_SETTINGS__API_KEY}
+      PAYMENTS_SETTINGS__SIGN_PHRASE: ${PAYMENTS_SETTINGS__SIGN_PHRASE}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # chroma:
+      #   condition: service_healthy
+    restart: always
 
   postgres:
     image: postgres:18-alpine
@@ -50,11 +59,11 @@ services:
     volumes:
       - chroma_data:/chroma/chroma
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/api/v2/heartbeat"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8001/api/v2/heartbeat"]
+    #   interval: 15s
+    #   timeout: 5s
+    #   retries: 3
     depends_on:
       postgres:
         condition: service_healthy
