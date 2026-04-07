@@ -159,6 +159,10 @@ export const FormInput = styled(Input, styles({
   },
 }))
 
+export const SearchInput = styled(FormInput, styles({
+  width: '100%',
+}))
+
 export const NavBar = styled(XStack, styles({
   bg: '#ffffff',
   minHeight: 72,
@@ -427,6 +431,12 @@ export const ProductMetaRow = styled(XStack, styles({
 export const DataRow = styled(XStack, styles({
   gap: '$3',
   justifyContent: 'space-between',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+}))
+
+export const SearchRow = styled(XStack, styles({
+  gap: '$3',
   alignItems: 'center',
   flexWrap: 'wrap',
 }))

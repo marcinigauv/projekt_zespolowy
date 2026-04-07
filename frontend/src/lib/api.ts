@@ -12,6 +12,13 @@ export class ApiError extends Error {
   }
 }
 
+export class NetworkError extends Error {
+  constructor(message = 'Błąd połączenia z serwerem') {
+    super(message)
+    this.name = 'NetworkError'
+  }
+}
+
 type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown
 }
@@ -26,12 +33,18 @@ export async function apiRequest<Response>(
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  })
+  let response: ResponseInit & globalThis.Response
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    })
+  } catch (error) {
+    throw new NetworkError(error instanceof Error ? error.message : undefined)
+  }
 
   const contentType = response.headers.get('content-type') ?? ''
   let data: unknown = null
