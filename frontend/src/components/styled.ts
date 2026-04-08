@@ -370,8 +370,14 @@ export const ProductCard = styled(YStack, styles({
   shadowOpacity: 0.06,
   shadowRadius: 18,
   elevation: 2,
-  pressStyle: { scale: 0.98, opacity: 0.9 },
   width: '100%',
+}))
+
+export const ProductCardLinkButton = styled(Button, styles({
+  unstyled: true,
+  width: '100%',
+  alignItems: 'stretch',
+  pressStyle: { opacity: 0.92 },
 }))
 
 export const ProductVisual = styled(YStack, styles({
@@ -389,10 +395,16 @@ export const ProductVisual = styled(YStack, styles({
 export const ProductInfo = styled(YStack, styles({
   p: '$4',
   gap: '$3',
+  flex: 1,
   $sm: {
     p: '$3',
     gap: '$2',
   },
+}))
+
+export const ProductCardFooter = styled(YStack, styles({
+  p: '$4',
+  pt: '$0',
 }))
 
 export const ProductTitle = styled(Text, styles({
@@ -441,6 +453,75 @@ export const SearchRow = styled(XStack, styles({
   flexWrap: 'wrap',
 }))
 
+export const ActionButtonRow = styled(XStack, styles({
+  gap: '$2',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+}))
+
+export const BadgeRow = styled(XStack, styles({
+  gap: '$2',
+  flexWrap: 'wrap',
+}))
+
+export const BackLinkButton = styled(Button, styles({
+  chromeless: true,
+  px: '$0',
+  alignSelf: 'flex-start',
+}))
+
+export const ProductDetailLayout = styled(XStack, styles({
+  gap: '$5',
+  flexWrap: 'wrap',
+}))
+
+export const ProductMediaColumn = styled(YStack, styles({
+  flex: 1,
+  minWidth: 280,
+  borderRadius: '$8',
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+  bg: '#ffffff',
+}))
+
+export const ProductInfoColumn = styled(YStack, styles({
+  flex: 1,
+  minWidth: 280,
+  gap: '$4',
+}))
+
+export const ProductHeroMedia = styled(YStack, styles({
+  width: '100%',
+  height: 420,
+}))
+
+export const ProductCarouselMedia = styled(YStack, styles({
+  width: '100%',
+  height: 240,
+}))
+
+export const ProductImagePlaceholder = styled(YStack, styles({
+  flex: 1,
+  ai: 'center',
+  jc: 'center',
+  bg: '#eef3f8',
+}))
+
+export const ProductCarouselFrame = styled(YStack, styles({
+  borderRadius: '$8',
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+  bg: '#ffffff',
+}))
+
+export const CarouselControls = styled(XStack, styles({
+  gap: '$2',
+  alignItems: 'center',
+}))
+
 export const InlineCenter = styled(XStack, styles({
   gap: '$2',
   justifyContent: 'center',
@@ -482,6 +563,10 @@ export const AddToCartButton = styled(Button, styles({
   $xs: {
     width: '100%',
   },
+}))
+
+export const ProductCardAddButton = styled(AddToCartButton, styles({
+  width: '100%',
 }))
 
 export const SecondaryButton = styled(Button, styles({

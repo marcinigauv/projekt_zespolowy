@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import { Text, ScrollView, XStack } from 'tamagui'
+import { useRouter } from 'expo-router'
+import { Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { getProductsUseCase, type Product } from '../src/products/useCases'
 import { useCartStore } from '../src/store/cartStore'
 import {
   PageWrapper,
   ProductGrid,
+  BadgeRow,
   CategoryBadge,
   ProductList,
   ProductListItem,
   ProductCard,
+  ProductCardAddButton,
+  ProductCardFooter,
+  ProductCardLinkButton,
   ProductInfo,
   ProductPrice,
   ProductTitle,
   ProductVisual,
-  AddToCartButton,
   Eyebrow,
   Section,
   SectionHeading,
@@ -29,6 +33,7 @@ import {
 } from '../src/components/styled'
 
 export default function Index() {
+  const router = useRouter()
   const addItem = useCartStore(s => s.addItem)
   const [products, setProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -139,39 +144,46 @@ export default function Index() {
                 {products.map(product => (
                   <ProductListItem key={product.id}>
                     <ProductCard>
-                      <ProductVisual background="#F3F6FA">
-                        <Text fontSize="$10" fontWeight="800" color="$blue10">
-                          {product.name.slice(0, 1).toUpperCase()}
-                        </Text>
-                      </ProductVisual>
-                      <ProductInfo>
-                        <XStack>
-                          <CategoryBadge>
-                            <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
-                              DOSTĘPNE: {product.amount}
+                      <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
+                        <ProductVisual background="#F3F6FA">
+                          <Text fontSize="$10" fontWeight="800" color="$blue10">
+                            {product.name.slice(0, 1).toUpperCase()}
+                          </Text>
+                        </ProductVisual>
+                        <ProductInfo>
+                          <BadgeRow>
+                            <CategoryBadge>
+                              <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                                DOSTĘPNE: {product.amount}
+                              </Text>
+                            </CategoryBadge>
+                          </BadgeRow>
+                          <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
+                          <ProductMetaText numberOfLines={3}>
+                            {product.description}
+                          </ProductMetaText>
+                          <ProductMetaRow>
+                            <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
+                            <Text color="$blue10" fontSize="$3" fontWeight="700">
+                              Zobacz szczegóły
                             </Text>
-                          </CategoryBadge>
-                        </XStack>
-                        <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
-                        <ProductMetaText numberOfLines={3}>
-                          {product.description}
-                        </ProductMetaText>
-                        <ProductMetaRow>
-                          <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
-                          <AddToCartButton
-                            size="$3"
-                            onPress={() =>
-                              addItem({
-                                id: product.id,
-                                name: product.name,
-                                price: product.price,
-                              })
-                            }
-                          >
-                            Dodaj
-                          </AddToCartButton>
-                        </ProductMetaRow>
-                      </ProductInfo>
+                          </ProductMetaRow>
+                        </ProductInfo>
+                      </ProductCardLinkButton>
+                      <ProductCardFooter>
+                        <ProductCardAddButton
+                          size="$3"
+                          onPress={() =>
+                            addItem({
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                            })
+                          }
+                        >
+                          Dodaj
+                        </ProductCardAddButton>
+                      </ProductCardFooter>
                     </ProductCard>
                   </ProductListItem>
                 ))}

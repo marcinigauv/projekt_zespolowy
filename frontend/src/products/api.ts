@@ -7,6 +7,7 @@ export interface ProductDto {
     price: number
     amount: number
     categories: string[]
+    imageUrl?: string | null
 }
 
 export interface ProductDetailsRequestDto {
