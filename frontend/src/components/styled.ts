@@ -376,6 +376,8 @@ export const ProductCard = styled(YStack, styles({
 export const ProductCardLinkButton = styled(Button, styles({
   unstyled: true,
   width: '100%',
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
   alignItems: 'stretch',
   pressStyle: { opacity: 0.92 },
 }))
@@ -387,24 +389,28 @@ export const ProductVisual = styled(YStack, styles({
   jc: 'center',
   borderBottomWidth: 1,
   borderBottomColor: '$borderColor',
-  $xs: {
-    height: 152,
+  $sm: {
+    height: 148,
   },
 }))
 
 export const ProductInfo = styled(YStack, styles({
-  p: '$4',
-  gap: '$3',
-  flex: 1,
+  width: '100%',
+}))
+
+export const ProductCardSection = styled(YStack, styles({
+  p: '$3',
+  gap: '$1.5',
+  borderBottomWidth: 1,
+  borderBottomColor: '$borderColor',
   $sm: {
-    p: '$3',
-    gap: '$2',
+    p: '$2.5',
   },
 }))
 
 export const ProductCardFooter = styled(YStack, styles({
-  p: '$4',
-  pt: '$0',
+  p: '$3',
+  bg: '#ffffff',
 }))
 
 export const ProductTitle = styled(Text, styles({
@@ -412,32 +418,35 @@ export const ProductTitle = styled(Text, styles({
   fontSize: '$5',
   fontWeight: '700',
   lineHeight: '$5',
+  $sm: {
+    fontSize: '$4',
+    lineHeight: '$4',
+  },
 }))
 
 export const ProductMetaText = styled(Text, styles({
   color: '$placeholderColor',
   fontSize: '$3',
   lineHeight: '$3',
+  $sm: {
+    fontSize: '$2',
+    lineHeight: '$2',
+  },
 }))
 
 export const ProductPrice = styled(Text, styles({
-  fontSize: '$7',
+  fontSize: '$6',
   fontWeight: '800',
   color: '$blue10',
   $sm: {
-    fontSize: '$6',
+    fontSize: '$5',
   },
 }))
 
 export const ProductMetaRow = styled(XStack, styles({
-  mt: '$1',
-  gap: '$3',
-  justifyContent: 'space-between',
+  gap: '$2',
+  justifyContent: 'flex-start',
   alignItems: 'center',
-  $sm: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
 }))
 
 export const DataRow = styled(XStack, styles({

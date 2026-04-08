@@ -15,6 +15,7 @@ import {
   ProductCardAddButton,
   ProductCardFooter,
   ProductCardLinkButton,
+  ProductCardSection,
   ProductInfo,
   ProductPrice,
   ProductTitle,
@@ -25,7 +26,6 @@ import {
   SectionDescription,
   SectionTitle,
   ProductMetaRow,
-  ProductMetaText,
   EmptyStateCard,
   SearchInput,
   SearchRow,
@@ -151,23 +151,23 @@ export default function Index() {
                           </Text>
                         </ProductVisual>
                         <ProductInfo>
-                          <BadgeRow>
-                            <CategoryBadge>
-                              <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
-                                DOSTĘPNE: {product.amount}
-                              </Text>
-                            </CategoryBadge>
-                          </BadgeRow>
-                          <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
-                          <ProductMetaText numberOfLines={3}>
-                            {product.description}
-                          </ProductMetaText>
-                          <ProductMetaRow>
-                            <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
-                            <Text color="$blue10" fontSize="$3" fontWeight="700">
-                              Zobacz szczegóły
-                            </Text>
-                          </ProductMetaRow>
+                          <ProductCardSection>
+                            <BadgeRow>
+                              <CategoryBadge>
+                                <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                                  DOSTĘPNE: {product.amount}
+                                </Text>
+                              </CategoryBadge>
+                            </BadgeRow>
+                          </ProductCardSection>
+                          <ProductCardSection>
+                            <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
+                          </ProductCardSection>
+                          <ProductCardSection>
+                            <ProductMetaRow>
+                              <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
+                            </ProductMetaRow>
+                          </ProductCardSection>
                         </ProductInfo>
                       </ProductCardLinkButton>
                       <ProductCardFooter>

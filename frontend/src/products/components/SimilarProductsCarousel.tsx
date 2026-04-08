@@ -12,10 +12,10 @@ import {
   ProductCardAddButton,
   ProductCardFooter,
   ProductCardLinkButton,
+  ProductCardSection,
   ProductCarouselFrame,
   ProductCarouselMedia,
   ProductImagePlaceholder,
-  ProductMetaText,
   ProductPrice,
   ProductTitle,
   SecondaryButton,
@@ -119,31 +119,33 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
             <ProductImage product={product} />
           </ProductCarouselMedia>
 
-          <YStack p="$4" gap="$3">
-            <BadgeRow>
-              <CategoryBadge>
-                <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
-                  DOSTĘPNE: {product.amount}
-                </Text>
-              </CategoryBadge>
-              {product.categories.map((category) => (
-                <CategoryBadge key={`${product.id}-${category}`}>
+          <YStack>
+            <ProductCardSection>
+              <BadgeRow>
+                <CategoryBadge>
                   <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
-                    {category}
+                    DOSTĘPNE: {product.amount}
                   </Text>
                 </CategoryBadge>
-              ))}
-            </BadgeRow>
+                {product.categories.map((category) => (
+                  <CategoryBadge key={`${product.id}-${category}`}>
+                    <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                      {category}
+                    </Text>
+                  </CategoryBadge>
+                ))}
+              </BadgeRow>
+            </ProductCardSection>
 
-            <ProductTitle>{product.name}</ProductTitle>
-            <ProductMetaText numberOfLines={4}>{product.description}</ProductMetaText>
+            <ProductCardSection>
+              <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
+            </ProductCardSection>
 
-            <DataRow>
-              <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
-              <Text color="$blue10" fontSize="$3" fontWeight="700">
-                Zobacz szczegóły
-              </Text>
-            </DataRow>
+            <ProductCardSection>
+              <DataRow>
+                <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
+              </DataRow>
+            </ProductCardSection>
           </YStack>
         </ProductCardLinkButton>
         <ProductCardFooter>
