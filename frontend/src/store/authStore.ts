@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useCartStore } from './cartStore'
 
 export interface User {
   id: string
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearSession: () => {
+    useCartStore.getState().clearCart()
     set({
       user: null,
       isAuthenticated: false,
@@ -34,6 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    useCartStore.getState().clearCart()
     set({
       user: null,
       isAuthenticated: false,

@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router'
 import { YStack, Text, Separator, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useAuthStore } from '../src/store/authStore'
-import { useCartStore } from '../src/store/cartStore'
 import {
   DataRow,
   PageWrapper,
@@ -19,7 +18,6 @@ import {
 export default function Profile() {
   const router = useRouter()
   const { user, isAuthenticated, logout } = useAuthStore()
-  const clearCart = useCartStore(s => s.clearCart)
 
   if (!isAuthenticated) {
     router.replace('/login')
@@ -53,7 +51,7 @@ export default function Profile() {
             </YStack>
           </SurfaceCard>
 
-          <PrimaryButton theme="danger" onPress={() => { logout(); clearCart(); router.replace('/') }}>
+          <PrimaryButton theme="danger" onPress={() => { logout(); router.replace('/') }}>
             Wyloguj się
           </PrimaryButton>
         </PageContent>

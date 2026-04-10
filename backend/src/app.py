@@ -16,9 +16,9 @@ from src.vector_store.sync import sync_missing_products_to_vector_store
 import asyncio
 
 origins = [
-    "*",
-    "http://localhost",
+    "http://localhost:3000",
     "http://localhost:8080",
+    "http://localhost:8081",
 ]  # Developerska konfuguracja CORS
 
 

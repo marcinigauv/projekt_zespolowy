@@ -1,3 +1,4 @@
+import 'expo-sqlite/localStorage/install'
 import { Stack } from 'expo-router'
 import { TamaguiProvider } from 'tamagui'
 import { useFonts } from 'expo-font'
