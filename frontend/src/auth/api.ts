@@ -26,9 +26,21 @@ export async function loginUserApi(payload: LoginPayload): Promise<AuthUserDto> 
   })
 }
 
+export async function fetchCurrentUserApi(): Promise<AuthUserDto> {
+  return apiRequest<AuthUserDto>('/users/me', {
+    method: 'GET',
+  })
+}
+
 export async function registerUserApi(payload: RegisterPayload): Promise<AuthUserDto> {
   return apiRequest<AuthUserDto>('/users/register', {
     method: 'POST',
     body: payload,
+  })
+}
+
+export async function logoutUserApi(): Promise<boolean> {
+  return apiRequest<boolean>('/users/logout', {
+    method: 'POST',
   })
 }

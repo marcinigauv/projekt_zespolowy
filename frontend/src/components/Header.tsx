@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 import { XStack, YStack, Text, Button, Popover, Separator, useMedia } from 'tamagui'
+import { logoutUserUseCase } from '../auth/useCases'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import {
@@ -37,8 +38,10 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
   const handleLogout = () => {
     onClose()
-    logout()
-    router.replace('/')
+    void (async () => {
+      await logoutUserUseCase()
+      router.replace('/')
+    })()
   }
 
   if (isAuthenticated && user) {
@@ -62,6 +65,9 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
         <HeaderMenuButton onPress={() => go('/profile')}>
           Moje konto
+        </HeaderMenuButton>
+        <HeaderMenuButton onPress={() => go('/orders')}>
+          Historia zamówień
         </HeaderMenuButton>
         <HeaderMenuButton onPress={handleLogout}>
           <Text color="$red10">Wyloguj się</Text>

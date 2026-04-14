@@ -1,6 +1,9 @@
 import React from 'react'
+import { useRouter } from 'expo-router'
 import { YStack, Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { createOrderCommandFromCart, createOrderUseCase } from '../src/orders/useCases'
+import { useAuthStore } from '../src/store/authStore'
 import { useCartStore } from '../src/store/cartStore'
 import {
   PageWrapper,
@@ -20,7 +23,20 @@ import {
 } from '../src/components/styled'
 
 export default function Cart() {
+  const router = useRouter()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCartStore()
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+
+    const order = await createOrderUseCase(createOrderCommandFromCart(items))
+    clearCart()
+    router.replace(`/orders/${order.id}`)
+  }
 
   return (
     <PageWrapper>
@@ -69,7 +85,7 @@ export default function Cart() {
                   <ProductPrice>{getTotalPrice().toFixed(2)} zł</ProductPrice>
                 </DataRow>
               </SurfaceCard>
-              <PrimaryButton>Przejdź do płatności</PrimaryButton>
+              <PrimaryButton onPress={() => { void handleCheckout() }}>Złóż zamówienie</PrimaryButton>
               <GhostDangerButton size="$4" onPress={clearCart}>Wyczyść koszyk</GhostDangerButton>
             </YStack>
           )}

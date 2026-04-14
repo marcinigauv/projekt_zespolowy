@@ -1,6 +1,12 @@
-import { ApiError } from '../lib/api'
+import { ApiError, NetworkError } from '../lib/api'
 import { useAuthStore, type User } from '../store/authStore'
-import { loginUserApi, registerUserApi, type AuthUserDto } from './api'
+import {
+  fetchCurrentUserApi,
+  loginUserApi,
+  logoutUserApi,
+  registerUserApi,
+  type AuthUserDto,
+} from './api'
 
 export class InvalidAuthInputError extends Error {
   constructor(message: string) {
@@ -27,6 +33,13 @@ export class AuthServiceUnavailableError extends Error {
   constructor() {
     super('Usługa autoryzacji jest chwilowo niedostępna')
     this.name = 'AuthServiceUnavailableError'
+  }
+}
+
+export class AuthOfflineError extends Error {
+  constructor() {
+    super('Brak połączenia z serwerem. Spróbuj ponownie później.')
+    this.name = 'AuthOfflineError'
   }
 }
 
@@ -66,6 +79,10 @@ function parseName(value: string): { name: string; surname: string } {
 }
 
 function mapAuthError(error: unknown, mode: 'login' | 'register'): Error {
+  if (error instanceof NetworkError) {
+    return new AuthOfflineError()
+  }
+
   if (error instanceof ApiError) {
     if (mode === 'login' && error.status === 401) {
       return new InvalidCredentialsError()
@@ -119,5 +136,32 @@ export async function registerUserUseCase(command: RegisterCommand): Promise<Use
     return setAuthenticatedUser(user)
   } catch (error) {
     throw mapAuthError(error, 'register')
+  }
+}
+
+function resolveAuthenticatedUser(user: AuthUserDto | null): User | null {
+  const mappedUser = user ? toAuthUser(user) : null
+  useAuthStore.getState().hydrateSession(mappedUser)
+  return mappedUser
+}
+
+export async function hydrateAuthSessionUseCase(): Promise<User | null> {
+  try {
+    const user = await fetchCurrentUserApi()
+    return resolveAuthenticatedUser(user)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return resolveAuthenticatedUser(null)
+    }
+
+    return resolveAuthenticatedUser(null)
+  }
+}
+
+export async function logoutUserUseCase(): Promise<void> {
+  try {
+    await logoutUserApi()
+  } finally {
+    useAuthStore.getState().logout()
   }
 }

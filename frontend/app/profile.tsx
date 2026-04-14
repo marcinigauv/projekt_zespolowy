@@ -2,13 +2,16 @@ import React from 'react'
 import { useRouter } from 'expo-router'
 import { YStack, Text, Separator, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { logoutUserUseCase } from '../src/auth/useCases'
 import { useAuthStore } from '../src/store/authStore'
 import {
+  ActionButtonRow,
   DataRow,
   PageWrapper,
   PageContent,
   Eyebrow,
   PrimaryButton,
+  SecondaryButton,
   SectionDescription,
   SectionHeading,
   SectionTitle,
@@ -17,7 +20,7 @@ import {
 
 export default function Profile() {
   const router = useRouter()
-  const { user, isAuthenticated, logout } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
 
   if (!isAuthenticated) {
     router.replace('/login')
@@ -33,7 +36,7 @@ export default function Profile() {
             <Eyebrow>Profil</Eyebrow>
             <SectionTitle>Moje konto</SectionTitle>
             <SectionDescription>
-              Dane konta i akcje krytyczne korzystają z tego samego systemu powierzchni oraz CTA co reszta aplikacji.
+              Tu znajdziesz informacje o swoim koncie oraz podejrzysz historię swoich zamówień.
             </SectionDescription>
           </SectionHeading>
 
@@ -45,15 +48,25 @@ export default function Profile() {
               </DataRow>
               <Separator />
               <DataRow>
+                <Text color="$gray10">Nazwisko</Text>
+                <Text fontWeight="700">{user?.surname}</Text>
+              </DataRow>
+              <Separator />
+              <DataRow>
                 <Text color="$gray10">Email</Text>
                 <Text fontWeight="700">{user?.email}</Text>
               </DataRow>
             </YStack>
           </SurfaceCard>
 
-          <PrimaryButton theme="danger" onPress={() => { logout(); router.replace('/') }}>
-            Wyloguj się
-          </PrimaryButton>
+          <ActionButtonRow>
+            <SecondaryButton onPress={() => router.push('/orders')}>
+              Historia zamówień
+            </SecondaryButton>
+            <PrimaryButton theme="danger" onPress={() => { void (async () => { await logoutUserUseCase(); router.replace('/') })() }}>
+              Wyloguj się
+            </PrimaryButton>
+          </ActionButtonRow>
         </PageContent>
       </ScrollView>
     </PageWrapper>
