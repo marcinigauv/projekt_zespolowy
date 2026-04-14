@@ -474,6 +474,57 @@ export const BadgeRow = styled(XStack, styles({
   flexWrap: 'wrap',
 }))
 
+export const StatusBadge = styled(XStack, styles({
+  px: '$2.5',
+  py: '$1',
+  borderRadius: '$10',
+  borderWidth: 1,
+  alignItems: 'center',
+  alignSelf: 'flex-start',
+  variants: {
+    tone: {
+      neutral: {
+        bg: '#eef3f8',
+        borderColor: '#d7e0ea',
+      },
+      warning: {
+        bg: '#fff6e5',
+        borderColor: '#ffd591',
+      },
+      success: {
+        bg: '#eaf9ef',
+        borderColor: '#9dd8a8',
+      },
+      danger: {
+        bg: '#fdeeee',
+        borderColor: '#f0b6b6',
+      },
+    },
+  } as const,
+}))
+
+export const StatusBadgeText = styled(Text, styles({
+  fontSize: '$2',
+  fontWeight: '700',
+  letterSpacing: 0.4,
+  variants: {
+    tone: {
+      neutral: {
+        color: '#425466',
+      },
+      warning: {
+        color: '#9a5b00',
+      },
+      success: {
+        color: '#186a3b',
+      },
+      danger: {
+        color: '#a43c3c',
+      },
+    },
+  } as const,
+}))
+
 export const BackLinkButton = styled(Button, styles({
   chromeless: true,
   px: '$0',

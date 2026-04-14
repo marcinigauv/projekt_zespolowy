@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../src/components/Header'
 import { listOrdersUseCase, type Order } from '../../src/orders/useCases'
+import { getPaymentStatusLabel, getPaymentTone } from '../../src/payments/useCases'
 import { useAuthStore } from '../../src/store/authStore'
 import { useOrdersStore } from '../../src/store/ordersStore'
 import {
@@ -16,6 +17,8 @@ import {
   SectionDescription,
   SectionHeading,
   SectionTitle,
+  StatusBadge,
+  StatusBadgeText,
   SurfaceCard,
 } from '../../src/components/styled'
 
@@ -31,10 +34,6 @@ function formatDate(value: string): string {
   }
 
   return date.toLocaleString('pl-PL')
-}
-
-function getPaymentLabel(order: Order): string {
-  return order.payment?.status ?? 'Brak płatności'
 }
 
 export default function OrdersScreen() {
@@ -136,7 +135,9 @@ export default function OrdersScreen() {
                     </DataRow>
                     <DataRow>
                       <Text color="$gray10">Płatność</Text>
-                      <Text fontWeight="600">{getPaymentLabel(order)}</Text>
+                      <StatusBadge tone={getPaymentTone(order.payment?.status)}>
+                        <StatusBadgeText tone={getPaymentTone(order.payment?.status)}>{getPaymentStatusLabel(order.payment?.status)}</StatusBadgeText>
+                      </StatusBadge>
                     </DataRow>
                     <SecondaryButton size="$4" onPress={() => router.push(`/orders/${order.id}`)}>
                       Zobacz szczegóły

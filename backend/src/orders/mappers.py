@@ -1,7 +1,7 @@
 from src.sql.models import Order
 from src.sql.db import DBSession
 from src.products.models import ProductResponse
-from src.orders.models import OrderDetailResponse, OrderResponse
+from src.orders.models import OrderDetailResponse, OrderResponse, PaymentResponse
 from src.products.utils import get_product_by_id_from_db
 import asyncio
 
@@ -29,5 +29,7 @@ async def map_order_to_order_response(order: Order, session: DBSession) -> Order
         total_amount=order.total_amount,
         items=order_details_response,
         order_date=order.order_date,
+        payment=PaymentResponse(
+            id=order.payment.id, status=order.payment.status) if order.payment else None,
     )
     return order_response

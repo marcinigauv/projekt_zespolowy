@@ -35,7 +35,7 @@ export default function Cart() {
 
     const order = await createOrderUseCase(createOrderCommandFromCart(items))
     clearCart()
-    router.replace(`/orders/${order.id}`)
+    router.replace(`/orders/${order.id}?startPayment=1`)
   }
 
   return (

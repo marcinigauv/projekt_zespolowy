@@ -1,4 +1,37 @@
-export const API_BASE_URL = 'http://localhost:8000'
+import Constants from 'expo-constants'
+import { Platform } from 'react-native'
+
+function normalizeApiBaseUrl(value: string | undefined): string | null {
+  if (!value) {
+    return null
+  }
+
+  const normalizedValue = value.trim().replace(/\/$/, '')
+  return normalizedValue.length > 0 ? normalizedValue : null
+}
+
+function resolveApiBaseUrl(): string {
+  const configuredApiBaseUrl = normalizeApiBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL)
+
+  if (configuredApiBaseUrl) {
+    return configuredApiBaseUrl
+  }
+
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`
+  }
+
+  const expoConfig = Constants.expoConfig as { hostUri?: string } | null
+  const hostUri = expoConfig?.hostUri
+
+  if (hostUri) {
+    return `http://${hostUri.split(':')[0]}:8000`
+  }
+
+  return 'http://localhost:8000'
+}
+
+export const API_BASE_URL = resolveApiBaseUrl()
 
 export class ApiError extends Error {
   status: number

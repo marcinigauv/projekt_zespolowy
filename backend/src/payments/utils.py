@@ -75,7 +75,7 @@ async def create_payment_for_order_in_db(session: DBSession, order_id: int, exte
     return payment
 
 
-async def create_payment_at_provider(order: Order, email: str) -> Any:
+async def create_payment_at_provider(order: Order, email: str, continue_url: str) -> Any:
     """Makes API call to initiate payment at the provider and returns external payment ID."""
     uniqe_id: str = generate_payment_id()
     data: dict[str, Any] = {
@@ -85,8 +85,7 @@ async def create_payment_at_provider(order: Order, email: str) -> Any:
         "buyer": {
             "email": f"{email}"
         },
-        # Placeholder URL for redirection after payment.
-        "continueUrl": "http://localhost:8001/static/payment_return.html"
+        "continueUrl": continue_url
     }
     payment_object = dumps(data, indent=4)
     signature = calculate_hmac(

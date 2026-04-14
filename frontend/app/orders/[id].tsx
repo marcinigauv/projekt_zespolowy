@@ -1,21 +1,38 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { AppState, Platform } from 'react-native'
 import { ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../src/components/Header'
 import { getOrderUseCase, type Order } from '../../src/orders/useCases'
+import {
+  createPaymentUseCase,
+  getPaymentActionLabel,
+  getPaymentStatusLabel,
+  getPaymentTone,
+  getPaymentStatusUseCase,
+  isPaymentConfirmed,
+  openPaymentUrlUseCase,
+  shouldShowPaymentRefresh,
+  type Payment,
+} from '../../src/payments/useCases'
 import { useAuthStore } from '../../src/store/authStore'
 import { useOrdersStore } from '../../src/store/ordersStore'
 import {
+  ActionButtonRow,
   BackLinkButton,
   DataRow,
   EmptyStateCard,
   Eyebrow,
   PageContent,
   PageWrapper,
+  PrimaryButton,
+  SecondaryButton,
   ProductPrice,
   SectionDescription,
   SectionHeading,
   SectionTitle,
+  StatusBadge,
+  StatusBadgeText,
   SurfaceCard,
 } from '../../src/components/styled'
 
@@ -32,6 +49,14 @@ function parseOrderId(value: string | string[] | undefined): number | null {
   return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : null
 }
 
+function parseFlag(value: string | string[] | undefined): boolean {
+  if (Array.isArray(value)) {
+    return parseFlag(value[0])
+  }
+
+  return value === '1' || value === 'true'
+}
+
 function formatCurrency(value: number): string {
   return `${value.toFixed(2)} zł`
 }
@@ -46,16 +71,115 @@ function formatDate(value: string): string {
   return date.toLocaleString('pl-PL')
 }
 
+function mergeOrderPayment(order: Order, payment: Payment): Order {
+  return {
+    ...order,
+    payment: {
+      id: payment.id,
+      status: payment.status,
+    },
+  }
+}
+
 export default function OrderDetailsScreen() {
   const router = useRouter()
-  const params = useLocalSearchParams<{ id?: string | string[] }>()
+  const params = useLocalSearchParams<{ id?: string | string[]; paymentReturn?: string | string[]; startPayment?: string | string[] }>()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const getOrderById = useOrdersStore((state) => state.getOrderById)
+  const upsertOrder = useOrdersStore((state) => state.upsertOrder)
   const orderId = parseOrderId(params.id)
+  const shouldAutoStartPayment = parseFlag(params.startPayment)
+  const didReturnFromPayment = parseFlag(params.paymentReturn)
   const cachedOrder = orderId !== null ? getOrderById(orderId) : null
   const [order, setOrder] = useState<Order | null>(cachedOrder)
   const [isLoading, setIsLoading] = useState(cachedOrder === null)
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [error, setError] = useState('')
+  const isMountedRef = useRef(true)
+  const hasAutoStartedPaymentRef = useRef(false)
+  const refreshOrderRef = useRef<(showLoading: boolean) => Promise<void>>(async () => undefined)
+  const startPaymentRef = useRef<() => Promise<void>>(async () => undefined)
+
+  refreshOrderRef.current = async (showLoading: boolean) => {
+    if (orderId === null) {
+      setOrder(null)
+      setError('Nieprawidłowy identyfikator zamówienia')
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      setError('')
+      if (showLoading) {
+        setIsLoading(true)
+      }
+
+      const result = await getOrderUseCase(orderId)
+      let nextOrder = result
+
+      if (result.payment) {
+        const payment = await getPaymentStatusUseCase(orderId)
+        nextOrder = mergeOrderPayment(result, payment)
+      }
+
+      if (!isMountedRef.current) {
+        return
+      }
+
+      upsertOrder(nextOrder)
+      setOrder(nextOrder)
+    } catch (caughtError) {
+      if (!isMountedRef.current) {
+        return
+      }
+
+      setOrder(null)
+      setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się pobrać szczegółów zamówienia')
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  startPaymentRef.current = async () => {
+    if (orderId === null) {
+      return
+    }
+
+    try {
+      setError('')
+      setIsPaymentLoading(true)
+
+      const payment = await createPaymentUseCase(orderId)
+
+      if (!isMountedRef.current) {
+        return
+      }
+
+      setOrder((currentOrder) => {
+        if (!currentOrder) {
+          return currentOrder
+        }
+
+        const nextOrder = mergeOrderPayment(currentOrder, payment)
+        upsertOrder(nextOrder)
+        return nextOrder
+      })
+
+      await openPaymentUrlUseCase(payment.url)
+    } catch (caughtError) {
+      if (!isMountedRef.current) {
+        return
+      }
+
+      setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się rozpocząć płatności')
+    } finally {
+      if (isMountedRef.current) {
+        setIsPaymentLoading(false)
+      }
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -63,53 +187,77 @@ export default function OrderDetailsScreen() {
       return
     }
 
-    let isMounted = true
-
-    if (orderId === null) {
-      setOrder(null)
-      setError('Nieprawidłowy identyfikator zamówienia')
-      setIsLoading(false)
-      return () => {
-        isMounted = false
-      }
-    }
-
-    const loadOrder = async () => {
-      try {
-        setError('')
-        setIsLoading(cachedOrder === null)
-
-        const result = await getOrderUseCase(orderId)
-
-        if (!isMounted) {
-          return
-        }
-
-        setOrder(result)
-      } catch (caughtError) {
-        if (!isMounted) {
-          return
-        }
-
-        setOrder(null)
-        setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się pobrać szczegółów zamówienia')
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    void loadOrder()
+    isMountedRef.current = true
+    void refreshOrderRef.current(cachedOrder === null || didReturnFromPayment)
 
     return () => {
-      isMounted = false
+      isMountedRef.current = false
     }
-  }, [cachedOrder, isAuthenticated, orderId, router])
+  }, [cachedOrder, didReturnFromPayment, isAuthenticated, router])
+
+  useEffect(() => {
+    if (!isAuthenticated || orderId === null) {
+      return
+    }
+
+    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        void refreshOrderRef.current(false)
+      }
+    })
+
+    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+      return () => {
+        appStateSubscription.remove()
+      }
+    }
+
+    const handleFocus = () => {
+      void refreshOrderRef.current(false)
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data !== 'object' || event.data === null) {
+        return
+      }
+
+      if ((event.data as { type?: string }).type === 'payment-return') {
+        void refreshOrderRef.current(false)
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('message', handleMessage)
+
+    return () => {
+      appStateSubscription.remove()
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [isAuthenticated, orderId])
+
+  useEffect(() => {
+    if (!shouldAutoStartPayment || hasAutoStartedPaymentRef.current || !order || isLoading || isPaymentLoading) {
+      return
+    }
+
+    if (isPaymentConfirmed(order.payment?.status)) {
+      hasAutoStartedPaymentRef.current = true
+      return
+    }
+
+    hasAutoStartedPaymentRef.current = true
+    void startPaymentRef.current()
+  }, [isLoading, isPaymentLoading, order, shouldAutoStartPayment])
 
   if (!isAuthenticated) {
     return null
   }
+
+  const paymentStatus = order?.payment?.status
+  const paymentActionLabel = getPaymentActionLabel(paymentStatus)
+  const showPaymentRefresh = shouldShowPaymentRefresh(paymentStatus)
+  const showPaymentSection = paymentActionLabel !== null || showPaymentRefresh
 
   return (
     <PageWrapper>
@@ -152,10 +300,34 @@ export default function OrderDetailsScreen() {
                   </DataRow>
                   <DataRow>
                     <Text color="$gray10">Płatność</Text>
-                    <Text fontWeight="700">{order.payment?.status ?? 'Brak płatności'}</Text>
+                    <StatusBadge tone={getPaymentTone(order.payment?.status)}>
+                      <StatusBadgeText tone={getPaymentTone(order.payment?.status)}>
+                        {getPaymentStatusLabel(order.payment?.status)}
+                      </StatusBadgeText>
+                    </StatusBadge>
                   </DataRow>
                 </YStack>
               </SurfaceCard>
+
+              {showPaymentSection ? (
+                <SurfaceCard>
+                  <YStack gap="$3">
+                    <Text fontSize="$5" fontWeight="800">Obsługa płatności</Text>
+                    <ActionButtonRow>
+                      {paymentActionLabel ? (
+                        <PrimaryButton disabled={isPaymentLoading} onPress={() => { void startPaymentRef.current() }}>
+                          {isPaymentLoading ? 'Przekierowanie...' : paymentActionLabel}
+                        </PrimaryButton>
+                      ) : null}
+                      {showPaymentRefresh ? (
+                        <SecondaryButton disabled={isLoading} onPress={() => { void refreshOrderRef.current(false) }}>
+                          Odśwież status
+                        </SecondaryButton>
+                      ) : null}
+                    </ActionButtonRow>
+                  </YStack>
+                </SurfaceCard>
+              ) : null}
 
               {order.items.map((item) => (
                 <SurfaceCard key={item.id}>

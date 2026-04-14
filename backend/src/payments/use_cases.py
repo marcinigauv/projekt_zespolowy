@@ -21,7 +21,7 @@ async def get_payment_for_order_and_user(session: DBSession, order_id: int, user
     return order.payment
 
 
-async def create_payment_for_order(session: DBSession, order_id: int, user: User) -> Payment:
+async def create_payment_for_order(session: DBSession, order_id: int, user: User, continue_url: str) -> Payment:
     """Create a payment for an order. It returns created payment object or raises PaymentNotFoundException if the order is not found."""
     order = await ensure_order_payment_status_loaded(session, order_id)
     user_id = user.get_user_id()
@@ -31,9 +31,9 @@ async def create_payment_for_order(session: DBSession, order_id: int, user: User
     if order.customer_id != user_id:
         raise NoAccessToOrderException(order_id=order_id)
 
-    if order.payment and order.payment.status not in [PaymentStatus.EXPIRED, PaymentStatus.ABANDONED]:
+    if order.payment and order.payment.status not in [PaymentStatus.EXPIRED, PaymentStatus.ABANDONED, PaymentStatus.ERROR, PaymentStatus.REJECTED]:
         # If payemnt already exists and is not in final state, return it
         return order.payment
 
-    result = await ensure_payment_created(session, order, user)
+    result = await ensure_payment_created(session, order, user, continue_url)
     return result
