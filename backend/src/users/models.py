@@ -26,3 +26,4 @@ class UserResponse(BaseResponseModel):
     name: str = Field(description="The name of the user")
     surname: str = Field(description="The surname of the user")
     email: EmailStr = Field(description="The email of the user")
+    is_admin: bool = Field(description="Whether the user has admin privileges")

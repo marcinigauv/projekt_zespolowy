@@ -26,6 +26,8 @@ class User(BaseTableModel, table=True):
         description="The email of the user", min_length=1, unique=True, index=True)
     password: str = Field(
         description="The hash of password of the user", min_length=1, exclude=True)
+    is_admin: bool = Field(
+        default=False, description="Whether the user has admin privileges")
 
     def get_user_id(self) -> int:
         """Utility method to get the user's ID."""
@@ -41,6 +43,8 @@ class Product(BaseTableModel, table=True):
     categories: List[str] = Field(sa_column=Column(ARRAY(String)))
     price: Decimal = Field(description="The price of the product", gt=0)
     amount: int = Field(description="The amount of the product in stock", ge=0)
+    image_url: Optional[str] = Field(
+        description="The URL of the product image")
 
 
 class Order(BaseTableModel, table=True):

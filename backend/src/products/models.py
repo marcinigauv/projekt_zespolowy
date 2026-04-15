@@ -37,6 +37,8 @@ class ProductResponse(BaseResponseModel):
     amount: int = Field(description="The amount of the product in stock")
     categories: list[str] = Field(
         description="The categories of the product")
+    image_url: Optional[str] = Field(
+        description="The URL of the product image")
 
     @field_validator("categories", mode="before")
     @classmethod
