@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from src.sql.db import DBSession
-from src.products.use_cases import get_products, get_product_by_id, get_similar_products_by_product_id
-from src.products.models import ProductResponse, ProductSearchRequest
+from src.products.use_cases import add_product, delete_product, edit_product, get_products, get_product_by_id, get_similar_products_by_product_id
+from src.products.models import ProductCreateRequest, ProductResponse, ProductSearchRequest, ProductUpdateRequest
+from src.sql.models import User
+from src.users.dependecies import require_admin
 
 
 products_router = APIRouter(prefix="/products", tags=["products"])
@@ -31,3 +33,31 @@ async def get_similar_products_get(
 ) -> list[ProductResponse]:
     """Endpoint to get similar products to a given product ID."""
     return await get_similar_products_by_product_id(session, product_id)
+
+
+@products_router.post("/add", response_model=ProductResponse)
+async def add_product_post(
+    product_request: ProductCreateRequest,
+    session: DBSession,
+    user: User = Depends(require_admin),
+) -> ProductResponse:
+    return await add_product(session, product_request)
+
+
+@products_router.put("/{product_id}", response_model=ProductResponse)
+async def edit_product_put(
+    product_id: int,
+    product_request: ProductUpdateRequest,
+    session: DBSession,
+    user: User = Depends(require_admin),
+) -> ProductResponse:
+    return await edit_product(session, product_id, product_request)
+
+
+@products_router.delete("/{product_id}", response_model=bool)
+async def delete_product_delete(
+    product_id: int,
+    session: DBSession,
+    user: User = Depends(require_admin),
+) -> bool:
+    return await delete_product(session, product_id)

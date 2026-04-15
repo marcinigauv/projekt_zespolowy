@@ -1,6 +1,6 @@
 from sqlalchemy import select, or_, update
 from src.products.enums import ProductSortingDirection
-from src.products.models import Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
+from src.products.models import ProductCreateRequest, ProductUpdateRequest, Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
 from src.sql.db import DBSession
 from typing import Optional
 from decimal import Decimal
@@ -71,6 +71,49 @@ async def get_product_by_id_from_db(
     product = result.scalar_one_or_none()
 
     return product
+
+
+async def add_product_to_db(
+    session: DBSession,
+    product_request: ProductCreateRequest,
+) -> Product:
+    product = Product.model_validate(product_request.model_dump())
+    session.add(product)
+    await session.commit()
+    await session.refresh(product)
+    return product
+
+
+async def edit_product_in_db(
+    session: DBSession,
+    product_id: int,
+    product_request: ProductUpdateRequest,
+) -> Optional[Product]:
+    product = await get_product_by_id_from_db(session, product_id)
+    if product is None:
+        return None
+
+    for field, value in product_request.model_dump().items():
+        setattr(product, field, value)
+
+    session.add(product)
+    await session.commit()
+    await session.refresh(product)
+    return product
+
+
+async def delete_product_from_db(
+    session: DBSession,
+    product_id: int,
+) -> bool:
+    product = await get_product_by_id_from_db(session, product_id)
+    if product is None:
+        return False
+
+    await session.delete(product)
+    await session.commit()
+    return True
+
 
 async def get_products_by_ids_from_db(
     session: DBSession,

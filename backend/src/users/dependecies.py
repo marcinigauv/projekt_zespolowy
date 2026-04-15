@@ -1,7 +1,7 @@
 from fastapi import Request
 from src.sql.models import User
 from src.sql.db import DBSession
-from src.users.exceptions import NotAuthenticatedException
+from src.users.exceptions import NotAuthenticatedException, NotAdminException
 from src.users.utils import get_user_details_from_db_by_id
 
 
@@ -32,4 +32,11 @@ async def require_authentication(request: Request, session: DBSession) -> User:
     if not user:
         clear_session(request)
         raise NotAuthenticatedException
+    return user
+
+
+async def require_admin(request: Request, session: DBSession) -> User:
+    user = await require_authentication(request, session)
+    if not user.is_admin:
+        raise NotAdminException
     return user

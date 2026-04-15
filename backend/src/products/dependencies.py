@@ -15,3 +15,13 @@ async def fetch_similar_products_in_vector_store(product_id: int, session: DBSes
 
     results = await get_products_by_ids_from_db(session, similar_product_ids)
     return [ProductResponse.from_product(product) for product in results]
+
+
+def save_product_in_vector_store(product: ProductResponse) -> None:
+    repo = get_vector_store_repo()
+    repo.upsert(product)
+
+
+def remove_product_from_vector_store(product_id: int) -> None:
+    repo = get_vector_store_repo()
+    repo.delete(product_id)

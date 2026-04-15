@@ -63,3 +63,27 @@ class PaginatedProductsResponse(BaseResponseModel):
         description="The list of products in the current page")
     page: int = Field(description="The current page number")
     page_size: int = Field(description="The number of products per page")
+
+
+class ProductCreateRequest(BaseRequestModel):
+    name: str = Field(description="The name of the product", min_length=1)
+    description: str = Field(
+        description="The description of the product", min_length=1)
+    price: float = Field(description="The price of the product", gt=0)
+    amount: int = Field(description="The amount of the product in stock", ge=0)
+    categories: list[str] = Field(
+        description="The categories of the product", min_length=1)
+    image_url: Optional[str] = Field(
+        description="The URL of the product image")
+
+
+class ProductUpdateRequest(BaseRequestModel):
+    name: str = Field(description="The name of the product", min_length=1)
+    description: str = Field(
+        description="The description of the product", min_length=1)
+    price: float = Field(description="The price of the product", gt=0)
+    amount: int = Field(description="The amount of the product in stock", ge=0)
+    categories: list[str] = Field(
+        description="The categories of the product", min_length=1)
+    image_url: Optional[str] = Field(
+        description="The URL of the product image")

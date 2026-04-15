@@ -55,3 +55,12 @@ class InvalidCredentialsException(CustomUserException):
         self.message = "Invalid email or password."
         self.status_code = 401
         super().__init__(self.message, self.status_code)
+
+
+class NotAdminException(CustomUserException):
+    """Exception raised when user does not have admin privileges."""
+
+    def __init__(self):
+        self.message = "User does not have admin privileges."
+        self.status_code = 403
+        super().__init__(self.message, self.status_code)
