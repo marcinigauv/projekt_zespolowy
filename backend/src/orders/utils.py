@@ -1,21 +1,29 @@
 from src.sql.models import Order, OrderDetail
 from src.sql.db import DBSession
 from src.orders.models import ProductInfoRequest
-from sqlalchemy import select
+from sqlmodel import select
+from sqlalchemy.orm import selectinload
 from typing import Optional, cast
 from decimal import Decimal
 
 
 async def get_order_from_db_by_id(order_id: int, session: DBSession) -> Optional[Order]:
-    order = await session.get(Order, order_id)
-    return order
+    stmt = select(Order).options(
+        selectinload(Order.items),
+        selectinload(Order.payment),
+    ).where(Order.id == order_id)
+    result = await session.exec(stmt)
+    return result.one_or_none()
 
 
 async def get_orders_from_db_by_customer_id(customer_id: int, page_number: int, page_size: int, session: DBSession) -> list[Order]:
-    stmt = select(Order).where(Order.customer_id == customer_id).offset(
+    stmt = select(Order).options(
+        selectinload(Order.items),
+        selectinload(Order.payment),
+    ).where(Order.customer_id == customer_id).offset(
         (page_number - 1) * page_size).limit(page_size)
-    results = await session.execute(stmt)
-    orders = results.scalars().all()
+    results = await session.exec(stmt)
+    orders = results.all()
     return orders
 
 
@@ -45,9 +53,11 @@ async def create_order_in_db(customer_id: int, products_info: list[ProductInfoRe
 
         await session.commit()
 
-        await session.refresh(new_order, ["items"])
+        reloaded_order = await get_order_from_db_by_id(new_order.id, session)
+        if reloaded_order is None:
+            raise RuntimeError("Failed to reload created order.")
 
-        return new_order
+        return reloaded_order
 
     except Exception as exc:
         await session.rollback()

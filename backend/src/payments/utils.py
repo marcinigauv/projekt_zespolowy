@@ -7,6 +7,7 @@ from typing import Optional, Any
 import httpx
 from src.payments.enums import PaymentStatus
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 import random
 import hmac
 import hashlib
@@ -112,5 +113,9 @@ async def read_payment_from_db(session: DBSession, payment_id: int) -> Optional[
 
 async def read_order_from_db(session: DBSession, order_id: int) -> Optional[Order]:
     """Reads an order record from the database by its ID."""
-    order = await session.get(Order, order_id)
-    return order
+    statement = select(Order).options(
+        selectinload(Order.items),
+        selectinload(Order.payment),
+    ).where(Order.id == order_id)
+    result = await session.exec(statement)
+    return result.one_or_none()
