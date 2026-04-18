@@ -5,6 +5,7 @@ export interface AuthUserDto {
   email: string
   name: string
   surname: string
+  isAdmin: boolean
 }
 
 interface LoginPayload {

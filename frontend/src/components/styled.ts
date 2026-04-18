@@ -143,6 +143,16 @@ export const FormCard = styled(SurfaceCard, styles({
   },
 }))
 
+export const WideFormCard = styled(SurfaceCard, styles({
+  width: '100%',
+  maxWidth: '100%',
+  p: '$5',
+  gap: '$4',
+  $sm: {
+    p: '$4',
+  },
+}))
+
 export const FormField = styled(YStack, styles({
   gap: '$2',
 }))
@@ -596,6 +606,89 @@ export const InlineControls = styled(XStack, styles({
 export const EmptyStateCard = styled(SurfaceCard, styles({
   py: '$8',
   alignItems: 'center',
+}))
+
+export const AdminSectionCard = styled(SurfaceCard, styles({
+  gap: '$4',
+}))
+
+export const AdminSectionHeader = styled(YStack, styles({
+  gap: '$1.5',
+}))
+
+export const AdminSectionTitle = styled(Text, styles({
+  color: '$color',
+  fontSize: '$6',
+  fontWeight: '800',
+  letterSpacing: -0.3,
+  $sm: {
+    fontSize: '$5',
+  },
+}))
+
+export const AdminHelperText = styled(Text, styles({
+  color: '$placeholderColor',
+  fontSize: '$3',
+  lineHeight: '$3',
+}))
+
+export const AdminFeedbackText = styled(Text, styles({
+  fontSize: '$3',
+  fontWeight: '600',
+  variants: {
+    tone: {
+      neutral: {
+        color: '$placeholderColor',
+      },
+      success: {
+        color: '#186a3b',
+      },
+      danger: {
+        color: '$red10',
+      },
+    },
+  } as const,
+}))
+
+export const AdminResultsList = styled(YStack, styles({
+  gap: '$3',
+}))
+
+export const AdminResultCard = styled(SurfaceCard, styles({
+  gap: '$3',
+  p: '$3.5',
+}))
+
+export const AdminResultSummary = styled(YStack, styles({
+  flex: 1,
+  gap: '$1.5',
+}))
+
+export const AdminResultTitle = styled(Text, styles({
+  color: '$color',
+  fontSize: '$5',
+  fontWeight: '700',
+  lineHeight: '$5',
+}))
+
+export const AdminResultMeta = styled(Text, styles({
+  color: '$placeholderColor',
+  fontSize: '$3',
+  lineHeight: '$3',
+}))
+
+export const AdminResultValue = styled(Text, styles({
+  color: '$color',
+  fontSize: '$3',
+  fontWeight: '600',
+  lineHeight: '$3',
+}))
+
+export const AdminResultValueRight = styled(Text, styles({
+  color: '$color',
+  fontSize: '$3',
+  fontWeight: '600',
+  lineHeight: '$3',
 }))
 
 export const PrimaryButton = styled(Button, styles({

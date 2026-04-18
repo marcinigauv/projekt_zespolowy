@@ -69,6 +69,19 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         <HeaderMenuButton onPress={() => go('/orders')}>
           Historia zamówień
         </HeaderMenuButton>
+        {user.isAdmin ? (
+          <>
+            <Separator />
+            <YStack px="$3" pt="$2" pb="$1">
+              <Text fontSize="$2" color="$gray10" fontWeight="700" textTransform="uppercase" letterSpacing={0.8}>
+                Panel Admina
+              </Text>
+            </YStack>
+            <HeaderMenuButton onPress={() => go('/admin/products')}>
+              Zarządzanie Przedmiotami
+            </HeaderMenuButton>
+          </>
+        ) : null}
         <HeaderMenuButton onPress={handleLogout}>
           <Text color="$red10">Wyloguj się</Text>
         </HeaderMenuButton>

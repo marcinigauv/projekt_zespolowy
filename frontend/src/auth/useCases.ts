@@ -60,6 +60,7 @@ function toAuthUser(user: AuthUserDto): User {
     email: user.email,
     name: user.name,
     surname: user.surname,
+    isAdmin: user.isAdmin,
   }
 }
 

@@ -36,3 +36,17 @@ export class ProductOfflineError extends Error {
     this.name = 'ProductOfflineError'
   }
 }
+
+export class InvalidProductInputError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidProductInputError'
+  }
+}
+
+export class ProductForbiddenError extends Error {
+  constructor() {
+    super('Nie masz uprawnień do zarządzania produktami')
+    this.name = 'ProductForbiddenError'
+  }
+}
