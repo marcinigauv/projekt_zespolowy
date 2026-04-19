@@ -62,7 +62,16 @@ export default function Register() {
             </FormField>
             <FormField>
               <Label htmlFor="password">Hasło</Label>
-              <FormInput id="password" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
+              <FormInput
+                id="password"
+                placeholder="••••••••"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                type="password"
+                autoComplete="new-password"
+                textContentType="newPassword"
+              />
             </FormField>
             {error ? <Text color="$red10">{error}</Text> : null}
             <PrimaryButton disabled={isSubmitting} onPress={() => { void handleRegister() }}>

@@ -1,4 +1,4 @@
-import { styled, YStack, XStack, Text, Button, Input } from 'tamagui'
+import { styled, YStack, XStack, Text, Button, Input, ScrollView } from 'tamagui'
 
 const styles = <Value,>(value: Value) => value
 
@@ -107,6 +107,84 @@ export const SurfaceCard = styled(YStack, styles({
   },
 }))
 
+export const ModalBackdrop = styled(YStack, styles({
+  flex: 1,
+  bg: 'rgba(15, 23, 42, 0.42)',
+  px: '$4',
+  py: '$5',
+  justifyContent: 'center',
+  alignItems: 'center',
+  $sm: {
+    px: '$3',
+    py: '$4',
+  },
+  $xs: {
+    px: '$2.5',
+    py: '$3',
+  },
+}))
+
+export const ModalCard = styled(SurfaceCard, styles({
+  width: '100%',
+  maxWidth: 720,
+  maxHeight: '100%',
+  gap: '$4',
+}))
+
+export const ModalHeaderRow = styled(XStack, styles({
+  gap: '$3',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+}))
+
+export const ModalBodyScroll = styled(ScrollView, styles({
+  width: '100%',
+  maxHeight: '100%',
+}))
+
+export const ToastViewport = styled(YStack, styles({
+  position: 'absolute',
+  top: 88,
+  right: '$4',
+  left: '$4',
+  gap: '$2.5',
+  alignItems: 'flex-end',
+  pointerEvents: 'box-none',
+}))
+
+export const ToastCardButton = styled(Button, styles({
+  width: '100%',
+  maxWidth: 360,
+  bg: '#edf4fb',
+  borderWidth: 1,
+  borderColor: '#c9d9ea',
+  borderRadius: '$8',
+  px: '$3.5',
+  py: '$3',
+  alignItems: 'stretch',
+  justifyContent: 'flex-start',
+  shadowColor: 'rgba(58, 90, 122, 0.22)',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.12,
+  shadowRadius: 20,
+  elevation: 3,
+}))
+
+export const ToastText = styled(Text, styles({
+  color: '#23425f',
+  fontSize: '$3',
+  fontWeight: '600',
+  lineHeight: '$4',
+  textAlign: 'left',
+}))
+
+export const ToastMetaText = styled(Text, styles({
+  color: '#5f7992',
+  fontSize: '$2',
+  fontWeight: '600',
+  textAlign: 'left',
+}))
+
 export const CategoryBadge = styled(XStack, styles({
   bg: '$blue2',
   px: '$2.5',
@@ -118,6 +196,8 @@ export const CategoryBadge = styled(XStack, styles({
 
 export const AuthCenter = styled(YStack, styles({
   flex: 1,
+  flexGrow: 1,
+  minHeight: 0,
   ai: 'center',
   jc: 'center',
   p: '$5',
@@ -136,6 +216,7 @@ export const AuthForm = styled(YStack, styles({
 export const FormCard = styled(SurfaceCard, styles({
   width: '100%',
   maxWidth: 440,
+  alignSelf: 'center',
   p: '$5',
   gap: '$4',
   $sm: {

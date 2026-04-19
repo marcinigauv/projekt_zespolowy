@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'expo-router'
+import { Modal } from 'react-native'
 import { Label, ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../src/components/Header'
 import {
@@ -31,6 +32,10 @@ import {
   FormField,
   FormInput,
   GhostDangerButton,
+  ModalBackdrop,
+  ModalBodyScroll,
+  ModalCard,
+  ModalHeaderRow,
   PageContent,
   PageWrapper,
   PrimaryButton,
@@ -63,6 +68,8 @@ const emptyFormState: ProductFormState = {
 }
 
 const emptySearchMessage = 'Wpisz ID produktu lub kilka fraz, aby rozpocząć wyszukiwanie.'
+
+type ProductModalMode = 'create' | 'edit'
 
 function toFormState(product: Product): ProductFormState {
   return {
@@ -99,6 +106,7 @@ export default function AdminProductsScreen() {
   const [createSuccessMessage, setCreateSuccessMessage] = useState('')
   const [editError, setEditError] = useState('')
   const [editSuccessMessage, setEditSuccessMessage] = useState('')
+  const [modalMode, setModalMode] = useState<ProductModalMode | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -135,6 +143,16 @@ export default function AdminProductsScreen() {
     setCreateSuccessMessage('')
   }
 
+  const closeModal = () => {
+    setModalMode(null)
+  }
+
+  const openCreateModal = () => {
+    setCreateError('')
+    setCreateSuccessMessage('')
+    setModalMode('create')
+  }
+
   const handleClearSelection = () => {
     setSelectedProduct(null)
     setEditForm(emptyFormState)
@@ -147,6 +165,7 @@ export default function AdminProductsScreen() {
     setEditForm(toFormState(product))
     setEditError('')
     setEditSuccessMessage('')
+    setModalMode('edit')
   }
 
   const handleSearch = async () => {
@@ -266,6 +285,7 @@ export default function AdminProductsScreen() {
       setSearchResults((current) => current.filter((product) => product.id !== selectedProduct.id))
       setSearchMessage('Produkt został usunięty z wyników wyszukiwania.')
       handleClearSelection()
+      closeModal()
     } catch (caughtError) {
       setEditError(caughtError instanceof Error ? caughtError.message : 'Nie udało się usunąć produktu')
     } finally {
@@ -274,6 +294,27 @@ export default function AdminProductsScreen() {
   }
 
   const selectedProductCategories = selectedProduct?.categories.join(', ') ?? ''
+  const isModalOpen = modalMode !== null
+  const isEditMode = modalMode === 'edit'
+  const modalTitle = isEditMode ? 'Edytuj produkt' : 'Dodaj nowy produkt'
+  const modalDescription = isEditMode
+    ? selectedProduct
+      ? `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
+      : 'Najpierw wyszukaj i wybierz produkt z listy wyników.'
+    : 'Uzupełnij dane nowego produktu i zatwierdź formularz.'
+  const activeForm = isEditMode ? editForm : createForm
+  const activeError = isEditMode ? editError : createError
+  const activeSuccessMessage = isEditMode ? editSuccessMessage : createSuccessMessage
+  const canRenderEditForm = !isEditMode || selectedProduct !== null
+  const modalPrimaryActionLabel = isEditMode ? 'Zapisz zmiany' : 'Dodaj produkt'
+  const modalSecondaryActionLabel = isEditMode ? 'Przywróć dane' : 'Wyczyść formularz'
+  const selectedProductSummary = useMemo(() => {
+    if (!selectedProduct) {
+      return 'Wybierz produkt z listy wyników, aby otworzyć formularz edycji.'
+    }
+
+    return `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
+  }, [selectedProduct])
 
   if (!isAuthenticated || !user?.isAdmin) {
     return null
@@ -290,6 +331,11 @@ export default function AdminProductsScreen() {
             <SectionDescription>
               Dodawaj nowe produkty oraz przechodź przez etapy wyszukania, wyboru i edycji konkretnej pozycji.
             </SectionDescription>
+            <ActionButtonRow>
+              <PrimaryButton onPress={openCreateModal}>
+                Dodaj nowy produkt
+              </PrimaryButton>
+            </ActionButtonRow>
           </SectionHeading>
 
           <AdminSectionCard>
@@ -359,7 +405,7 @@ export default function AdminProductsScreen() {
                     </DataRow>
 
                     <ActionButtonRow>
-                      <SecondaryButton onPress={() => handleSelectProduct(product)}>Wybierz do edycji</SecondaryButton>
+                      <SecondaryButton onPress={() => handleSelectProduct(product)}>Edytuj</SecondaryButton>
                     </ActionButtonRow>
                   </AdminResultCard>
                 ))}
@@ -369,63 +415,36 @@ export default function AdminProductsScreen() {
 
           <AdminSectionCard>
             <AdminSectionHeader>
-              <AdminSectionTitle>Edytuj wybrany produkt</AdminSectionTitle>
-              <AdminHelperText>
-                {selectedProduct
-                  ? `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
-                  : 'Najpierw wyszukaj i wybierz konkretny produkt z wyników.'}
-              </AdminHelperText>
+              <AdminSectionTitle>Wybrany produkt</AdminSectionTitle>
+              <AdminHelperText>{selectedProductSummary}</AdminHelperText>
             </AdminSectionHeader>
 
             {selectedProduct ? (
               <WideFormCard>
                 <YStack gap="$4">
-                  <FormField>
-                    <Label htmlFor="edit-product-name">Nazwa</Label>
-                    <FormInput id="edit-product-name" value={editForm.name} onChangeText={(value) => handleFormChange('edit', 'name', value)} />
-                  </FormField>
-
-                  <FormField>
-                    <Label htmlFor="edit-product-description">Opis</Label>
-                    <FormInput id="edit-product-description" value={editForm.description} onChangeText={(value) => handleFormChange('edit', 'description', value)} multiline />
-                  </FormField>
-
-                  <FormField>
-                    <Label htmlFor="edit-product-price">Cena</Label>
-                    <FormInput id="edit-product-price" value={editForm.price} onChangeText={(value) => handleFormChange('edit', 'price', value)} keyboardType="decimal-pad" />
-                  </FormField>
-
-                  <FormField>
-                    <Label htmlFor="edit-product-amount">Stan magazynowy</Label>
-                    <FormInput id="edit-product-amount" value={editForm.amount} onChangeText={(value) => handleFormChange('edit', 'amount', value)} keyboardType="number-pad" />
-                  </FormField>
-
-                  <FormField>
-                    <Label htmlFor="edit-product-categories">Kategorie</Label>
-                    <FormInput id="edit-product-categories" value={editForm.categories} onChangeText={(value) => handleFormChange('edit', 'categories', value)} />
-                  </FormField>
-
-                  <FormField>
-                    <Label htmlFor="edit-product-image-url">URL obrazu</Label>
-                    <FormInput id="edit-product-image-url" value={editForm.imageUrl} onChangeText={(value) => handleFormChange('edit', 'imageUrl', value)} autoCapitalize="none" />
-                  </FormField>
-
-                  {editError ? <AdminFeedbackText tone="danger">{editError}</AdminFeedbackText> : null}
-                  {editSuccessMessage ? <AdminFeedbackText tone="success">{editSuccessMessage}</AdminFeedbackText> : null}
-
+                  <DataRow>
+                    <AdminResultMeta>ID</AdminResultMeta>
+                    <AdminResultValue>{selectedProduct.id}</AdminResultValue>
+                  </DataRow>
+                  <DataRow>
+                    <AdminResultMeta>Nazwa</AdminResultMeta>
+                    <AdminResultValue>{selectedProduct.name}</AdminResultValue>
+                  </DataRow>
+                  <DataRow>
+                    <AdminResultMeta>Stan magazynowy</AdminResultMeta>
+                    <AdminResultValue>{selectedProduct.amount}</AdminResultValue>
+                  </DataRow>
+                  <DataRow>
+                    <AdminResultMeta>Kategorie</AdminResultMeta>
+                    <AdminResultValueRight>{selectedProductCategories}</AdminResultValueRight>
+                  </DataRow>
                   <ActionButtonRow>
-                    <PrimaryButton disabled={isSubmitting || isDeleting} onPress={() => { void handleUpdateProduct() }}>
-                      Zapisz zmiany
+                    <PrimaryButton onPress={() => setModalMode('edit')}>
+                      Otwórz edycję
                     </PrimaryButton>
-                    <SecondaryButton disabled={isSubmitting || isDeleting} onPress={() => setEditForm(toFormState(selectedProduct))}>
-                      Przywróć dane
+                    <SecondaryButton onPress={handleClearSelection}>
+                      Wyczyść wybór
                     </SecondaryButton>
-                    <SecondaryButton disabled={isSubmitting || isDeleting} onPress={handleClearSelection}>
-                      Zmień wybór
-                    </SecondaryButton>
-                    <GhostDangerButton disabled={isSubmitting || isDeleting} onPress={() => { void handleDelete() }}>
-                      Usuń produkt
-                    </GhostDangerButton>
                   </ActionButtonRow>
                 </YStack>
               </WideFormCard>
@@ -436,91 +455,139 @@ export default function AdminProductsScreen() {
               </EmptyStateCard>
             )}
           </AdminSectionCard>
-
-          <AdminSectionCard>
-            <AdminSectionHeader>
-              <AdminSectionTitle>Dodaj nowy produkt</AdminSectionTitle>
-              <AdminHelperText>
-                Tworzenie nowego produktu jest niezależne od wyszukiwania i wyboru produktu do edycji.
-              </AdminHelperText>
-            </AdminSectionHeader>
-
-            <WideFormCard>
-              <YStack gap="$4">
-                <FormField>
-                  <Label htmlFor="create-product-name">Nazwa</Label>
-                  <FormInput id="create-product-name" value={createForm.name} onChangeText={(value) => handleFormChange('create', 'name', value)} />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="create-product-description">Opis</Label>
-                  <FormInput id="create-product-description" value={createForm.description} onChangeText={(value) => handleFormChange('create', 'description', value)} multiline />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="create-product-price">Cena</Label>
-                  <FormInput id="create-product-price" value={createForm.price} onChangeText={(value) => handleFormChange('create', 'price', value)} keyboardType="decimal-pad" />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="create-product-amount">Stan magazynowy</Label>
-                  <FormInput id="create-product-amount" value={createForm.amount} onChangeText={(value) => handleFormChange('create', 'amount', value)} keyboardType="number-pad" />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="create-product-categories">Kategorie</Label>
-                  <FormInput id="create-product-categories" value={createForm.categories} onChangeText={(value) => handleFormChange('create', 'categories', value)} />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="create-product-image-url">URL obrazu</Label>
-                  <FormInput id="create-product-image-url" value={createForm.imageUrl} onChangeText={(value) => handleFormChange('create', 'imageUrl', value)} autoCapitalize="none" />
-                </FormField>
-
-                {createError ? <AdminFeedbackText tone="danger">{createError}</AdminFeedbackText> : null}
-                {createSuccessMessage ? <AdminFeedbackText tone="success">{createSuccessMessage}</AdminFeedbackText> : null}
-
-                <ActionButtonRow>
-                  <PrimaryButton disabled={isSubmitting || isDeleting} onPress={() => { void handleCreateProduct() }}>
-                    Dodaj produkt
-                  </PrimaryButton>
-                  <SecondaryButton disabled={isSubmitting || isDeleting} onPress={handleCreateReset}>
-                    Wyczyść formularz
-                  </SecondaryButton>
-                </ActionButtonRow>
-              </YStack>
-            </WideFormCard>
-          </AdminSectionCard>
-
-          {selectedProduct ? (
-            <AdminSectionCard>
-              <AdminSectionHeader>
-                <AdminSectionTitle>Aktualnie wybrany produkt</AdminSectionTitle>
-                <AdminHelperText>
-                  Ten skrót potwierdza, który rekord jest właśnie edytowany.
-                </AdminHelperText>
-              </AdminSectionHeader>
-
-              <DataRow>
-                <AdminResultMeta>ID</AdminResultMeta>
-                <AdminResultValue>{selectedProduct.id}</AdminResultValue>
-              </DataRow>
-              <DataRow>
-                <AdminResultMeta>Nazwa</AdminResultMeta>
-                <AdminResultValue>{selectedProduct.name}</AdminResultValue>
-              </DataRow>
-              <DataRow>
-                <AdminResultMeta>Stan</AdminResultMeta>
-                <AdminResultValue>{selectedProduct.amount}</AdminResultValue>
-              </DataRow>
-              <DataRow>
-                <AdminResultMeta>Kategorie</AdminResultMeta>
-                <AdminResultValueRight>{selectedProductCategories}</AdminResultValueRight>
-              </DataRow>
-            </AdminSectionCard>
-          ) : null}
         </PageContent>
       </ScrollView>
+
+      <Modal transparent visible={isModalOpen} animationType="fade" onRequestClose={closeModal}>
+        <ModalBackdrop>
+          <ModalCard>
+            <ModalHeaderRow>
+              <AdminSectionHeader flex={1}>
+                <AdminSectionTitle>{modalTitle}</AdminSectionTitle>
+                <AdminHelperText>{modalDescription}</AdminHelperText>
+              </AdminSectionHeader>
+              <SecondaryButton onPress={closeModal}>
+                Zamknij
+              </SecondaryButton>
+            </ModalHeaderRow>
+
+            <ModalBodyScroll showsVerticalScrollIndicator={false}>
+              {canRenderEditForm ? (
+                <YStack gap="$4" pb="$1">
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-name' : 'create-product-name'}>Nazwa</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-name' : 'create-product-name'}
+                      value={activeForm.name}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'name', value)}
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-description' : 'create-product-description'}>Opis</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-description' : 'create-product-description'}
+                      value={activeForm.description}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'description', value)}
+                      multiline
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-price' : 'create-product-price'}>Cena</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-price' : 'create-product-price'}
+                      value={activeForm.price}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'price', value)}
+                      keyboardType="decimal-pad"
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-amount' : 'create-product-amount'}>Stan magazynowy</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-amount' : 'create-product-amount'}
+                      value={activeForm.amount}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'amount', value)}
+                      keyboardType="number-pad"
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-categories' : 'create-product-categories'}>Kategorie</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-categories' : 'create-product-categories'}
+                      value={activeForm.categories}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'categories', value)}
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <Label htmlFor={isEditMode ? 'edit-product-image-url' : 'create-product-image-url'}>URL obrazu</Label>
+                    <FormInput
+                      id={isEditMode ? 'edit-product-image-url' : 'create-product-image-url'}
+                      value={activeForm.imageUrl}
+                      onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'imageUrl', value)}
+                      autoCapitalize="none"
+                    />
+                  </FormField>
+
+                  {activeError ? <AdminFeedbackText tone="danger">{activeError}</AdminFeedbackText> : null}
+                  {activeSuccessMessage ? <AdminFeedbackText tone="success">{activeSuccessMessage}</AdminFeedbackText> : null}
+
+                  <ActionButtonRow>
+                    <PrimaryButton
+                      disabled={isSubmitting || isDeleting}
+                      onPress={() => {
+                        if (isEditMode) {
+                          void handleUpdateProduct()
+                          return
+                        }
+
+                        void handleCreateProduct()
+                      }}
+                    >
+                      {modalPrimaryActionLabel}
+                    </PrimaryButton>
+                    <SecondaryButton
+                      disabled={isSubmitting || isDeleting}
+                      onPress={() => {
+                        if (isEditMode) {
+                          if (selectedProduct) {
+                            setEditForm(toFormState(selectedProduct))
+                          }
+                          setEditError('')
+                          setEditSuccessMessage('')
+                          return
+                        }
+
+                        handleCreateReset()
+                      }}
+                    >
+                      {modalSecondaryActionLabel}
+                    </SecondaryButton>
+                    {isEditMode ? (
+                      <SecondaryButton disabled={isSubmitting || isDeleting} onPress={handleClearSelection}>
+                        Wyczyść wybór
+                      </SecondaryButton>
+                    ) : null}
+                    {isEditMode ? (
+                      <GhostDangerButton disabled={isSubmitting || isDeleting} onPress={() => { void handleDelete() }}>
+                        Usuń produkt
+                      </GhostDangerButton>
+                    ) : null}
+                  </ActionButtonRow>
+                </YStack>
+              ) : (
+                <EmptyStateCard gap="$3">
+                  <Text fontSize="$8">⌕</Text>
+                  <AdminHelperText>Najpierw wybierz produkt do edycji.</AdminHelperText>
+                </EmptyStateCard>
+              )}
+            </ModalBodyScroll>
+          </ModalCard>
+        </ModalBackdrop>
+      </Modal>
     </PageWrapper>
   )
 }
