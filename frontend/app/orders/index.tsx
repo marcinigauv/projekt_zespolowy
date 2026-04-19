@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../src/components/Header'
-import { listOrdersUseCase, type Order } from '../../src/orders/useCases'
+import { listOrdersUseCase } from '../../src/orders/useCases'
 import { getPaymentStatusLabel, getPaymentTone } from '../../src/payments/useCases'
 import { useAuthStore } from '../../src/store/authStore'
 import { useOrdersStore } from '../../src/store/ordersStore'
@@ -40,7 +40,6 @@ export default function OrdersScreen() {
   const router = useRouter()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const cachedOrders = useOrdersStore((state) => state.orders)
-  const [orders, setOrders] = useState<Order[]>(cachedOrders)
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
 
@@ -55,15 +54,13 @@ export default function OrdersScreen() {
     const loadOrders = async () => {
       try {
         setError('')
-        setIsLoading(cachedOrders.length === 0)
+        setIsLoading(true)
 
-        const result = await listOrdersUseCase()
+        await listOrdersUseCase()
 
         if (!isMounted) {
           return
         }
-
-        setOrders(result)
       } catch (caughtError) {
         if (!isMounted) {
           return
@@ -82,7 +79,7 @@ export default function OrdersScreen() {
     return () => {
       isMounted = false
     }
-  }, [cachedOrders.length, isAuthenticated, router])
+  }, [isAuthenticated])
 
   if (!isAuthenticated) {
     return null
@@ -111,14 +108,14 @@ export default function OrdersScreen() {
               <Text fontSize="$8">!</Text>
               <Text color="$red10" fontSize="$5">{error}</Text>
             </EmptyStateCard>
-          ) : orders.length === 0 ? (
+          ) : cachedOrders.length === 0 ? (
             <EmptyStateCard gap="$3">
               <Text fontSize="$8">∅</Text>
               <Text color="$gray10" fontSize="$5">Nie masz jeszcze żadnych zamówień</Text>
             </EmptyStateCard>
           ) : (
             <YStack gap="$4">
-              {orders.map((order) => (
+              {cachedOrders.map((order) => (
                 <SurfaceCard key={order.id}>
                   <YStack gap="$3">
                     <DataRow>

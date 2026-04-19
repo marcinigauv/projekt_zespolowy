@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { AppState, Platform } from 'react-native'
 import { ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../src/components/Header'
@@ -97,6 +97,7 @@ export default function OrderDetailsScreen() {
   const [error, setError] = useState('')
   const isMountedRef = useRef(true)
   const hasAutoStartedPaymentRef = useRef(false)
+  const isRefreshingRef = useRef(false)
   const refreshOrderRef = useRef<(showLoading: boolean) => Promise<void>>(async () => undefined)
   const startPaymentRef = useRef<() => Promise<void>>(async () => undefined)
 
@@ -107,6 +108,12 @@ export default function OrderDetailsScreen() {
       setIsLoading(false)
       return
     }
+
+    if (isRefreshingRef.current) {
+      return
+    }
+
+    isRefreshingRef.current = true
 
     try {
       setError('')
@@ -136,6 +143,8 @@ export default function OrderDetailsScreen() {
       setOrder(null)
       setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się pobrać szczegółów zamówienia')
     } finally {
+      isRefreshingRef.current = false
+
       if (isMountedRef.current) {
         setIsLoading(false)
       }
@@ -187,54 +196,76 @@ export default function OrderDetailsScreen() {
       return
     }
 
-    isMountedRef.current = true
-    void refreshOrderRef.current(cachedOrder === null || didReturnFromPayment)
-
-    return () => {
-      isMountedRef.current = false
+    if (orderId === null) {
+      setOrder(null)
+      setError('Nieprawidłowy identyfikator zamówienia')
+      setIsLoading(false)
+      return
     }
-  }, [cachedOrder, didReturnFromPayment, isAuthenticated, router])
+
+    setOrder(cachedOrder)
+    setIsLoading(cachedOrder === null)
+  }, [cachedOrder, isAuthenticated, orderId, router])
+
+  useEffect(() => {
+    hasAutoStartedPaymentRef.current = false
+  }, [orderId, shouldAutoStartPayment])
 
   useEffect(() => {
     if (!isAuthenticated || orderId === null) {
       return
     }
 
-    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') {
-        void refreshOrderRef.current(false)
-      }
-    })
-
-    if (Platform.OS !== 'web' || typeof window === 'undefined') {
-      return () => {
-        appStateSubscription.remove()
-      }
-    }
-
-    const handleFocus = () => {
-      void refreshOrderRef.current(false)
-    }
-
-    const handleMessage = (event: MessageEvent) => {
-      if (typeof event.data !== 'object' || event.data === null) {
-        return
-      }
-
-      if ((event.data as { type?: string }).type === 'payment-return') {
-        void refreshOrderRef.current(false)
-      }
-    }
-
-    window.addEventListener('focus', handleFocus)
-    window.addEventListener('message', handleMessage)
+    isMountedRef.current = true
+    void refreshOrderRef.current(cachedOrder === null || didReturnFromPayment)
 
     return () => {
-      appStateSubscription.remove()
-      window.removeEventListener('focus', handleFocus)
-      window.removeEventListener('message', handleMessage)
+      isMountedRef.current = false
     }
-  }, [isAuthenticated, orderId])
+  }, [didReturnFromPayment, isAuthenticated, orderId])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthenticated || orderId === null) {
+        return undefined
+      }
+
+      const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+        if (nextState === 'active') {
+          void refreshOrderRef.current(false)
+        }
+      })
+
+      if (Platform.OS !== 'web' || typeof window === 'undefined') {
+        return () => {
+          appStateSubscription.remove()
+        }
+      }
+
+      const handleFocus = () => {
+        void refreshOrderRef.current(false)
+      }
+
+      const handleMessage = (event: MessageEvent) => {
+        if (typeof event.data !== 'object' || event.data === null) {
+          return
+        }
+
+        if ((event.data as { type?: string }).type === 'payment-return') {
+          void refreshOrderRef.current(false)
+        }
+      }
+
+      window.addEventListener('focus', handleFocus)
+      window.addEventListener('message', handleMessage)
+
+      return () => {
+        appStateSubscription.remove()
+        window.removeEventListener('focus', handleFocus)
+        window.removeEventListener('message', handleMessage)
+      }
+    }, [isAuthenticated, orderId]),
+  )
 
   useEffect(() => {
     if (!shouldAutoStartPayment || hasAutoStartedPaymentRef.current || !order || isLoading || isPaymentLoading) {
@@ -248,7 +279,7 @@ export default function OrderDetailsScreen() {
 
     hasAutoStartedPaymentRef.current = true
     void startPaymentRef.current()
-  }, [isLoading, isPaymentLoading, order, shouldAutoStartPayment])
+  }, [isLoading, isPaymentLoading, order?.id, order?.payment?.status, shouldAutoStartPayment])
 
   if (!isAuthenticated) {
     return null
