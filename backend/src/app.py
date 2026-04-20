@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy import text
 from src.sql.db import db, DBSession
+from src.notifications.router import notifications_router
 from src.orders.router import orders_router
 from src.payments.router import payments_router
 from src.products.router import products_router
@@ -48,6 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(notifications_router)
 app.include_router(orders_router)
 app.include_router(payments_router)
 app.include_router(products_router)

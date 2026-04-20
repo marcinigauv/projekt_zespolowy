@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { pollNotificationsUseCase } from '../src/notifications/useCases'
 import { getProductsUseCase, type Product } from '../src/products/useCases'
 import { useCartStore } from '../src/store/cartStore'
 import {
@@ -40,6 +41,12 @@ export default function Index() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useFocusEffect(
+    useCallback(() => {
+      void pollNotificationsUseCase()
+    }, []),
+  )
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

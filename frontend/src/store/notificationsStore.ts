@@ -1,5 +1,18 @@
 import { create } from 'zustand'
 
+function parseNotificationTimestamp(expiresAt?: string): number | null {
+  if (!expiresAt) {
+    return null
+  }
+
+  const normalizedExpiresAt = /[zZ]|[+-]\d{2}:\d{2}$/.test(expiresAt)
+    ? expiresAt
+    : `${expiresAt}Z`
+  const timestamp = Date.parse(normalizedExpiresAt)
+
+  return Number.isNaN(timestamp) ? null : timestamp
+}
+
 export interface NotificationItem {
   id: string
   message: string
@@ -31,13 +44,9 @@ function areNotificationsEqual(left: NotificationItem[], right: NotificationItem
 }
 
 function isExpired(notification: NotificationItem): boolean {
-  if (!notification.expiresAt) {
-    return false
-  }
+  const timestamp = parseNotificationTimestamp(notification.expiresAt)
 
-  const timestamp = Date.parse(notification.expiresAt)
-
-  if (Number.isNaN(timestamp)) {
+  if (timestamp === null) {
     return false
   }
 

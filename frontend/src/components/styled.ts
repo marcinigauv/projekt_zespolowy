@@ -150,6 +150,7 @@ export const ToastViewport = styled(YStack, styles({
   gap: '$2.5',
   alignItems: 'flex-end',
   pointerEvents: 'box-none',
+  zIndex: 30,
 }))
 
 export const ToastCardButton = styled(Button, styles({
@@ -170,18 +171,64 @@ export const ToastCardButton = styled(Button, styles({
   elevation: 3,
 }))
 
+export const ToastCardWrap = styled(YStack, styles({
+  width: '100%',
+  maxWidth: 360,
+  position: 'relative',
+  alignItems: 'stretch',
+  pointerEvents: 'box-none',
+}))
+
+export const ToastMarqueeViewport = styled(YStack, styles({
+  width: '100%',
+  maxWidth: '100%',
+  minHeight: 24,
+  minWidth: 0,
+  overflow: 'hidden',
+  justifyContent: 'center',
+  alignSelf: 'stretch',
+}))
+
+export const ToastTooltip = styled(YStack, styles({
+  position: 'absolute',
+  right: 0,
+  top: '100%',
+  mt: '$2',
+  maxWidth: 420,
+  bg: '#17324b',
+  borderRadius: '$6',
+  px: '$3',
+  py: '$2.5',
+  shadowColor: 'rgba(9, 19, 29, 0.28)',
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.18,
+  shadowRadius: 24,
+  elevation: 4,
+  pointerEvents: 'none',
+  zIndex: 20,
+}))
+
 export const ToastText = styled(Text, styles({
   color: '#23425f',
   fontSize: '$3',
   fontWeight: '600',
   lineHeight: '$4',
   textAlign: 'left',
+  flexShrink: 0,
 }))
 
 export const ToastMetaText = styled(Text, styles({
   color: '#5f7992',
   fontSize: '$2',
   fontWeight: '600',
+  textAlign: 'left',
+}))
+
+export const ToastTooltipText = styled(Text, styles({
+  color: '#f3f8fc',
+  fontSize: '$2',
+  fontWeight: '600',
+  lineHeight: '$3',
   textAlign: 'left',
 }))
 

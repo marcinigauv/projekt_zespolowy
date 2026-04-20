@@ -61,6 +61,58 @@ async def get_all_products_in_chunks_from_db(
     )
 
 
+async def get_top_10_products_with_lowest_stock_from_db(
+        session: DBSession) -> list[Product]:
+    stmt = (
+        select(Product)
+        .where(Product.amount > 0)
+        .order_by(Product.amount.asc())
+        .limit(10)
+    )
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    return products
+
+
+async def get_top_10_new_products_from_db(
+        session: DBSession) -> list[Product]:
+    stmt = (
+        select(Product)
+        .where(Product.amount > 0)
+        .order_by(Product.id.desc())
+        .limit(10)
+    )
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    return products
+
+
+async def get_top_10_products_with_highest_price_from_db(
+        session: DBSession) -> list[Product]:
+    stmt = (
+        select(Product)
+        .where(Product.amount > 0)
+        .order_by(Product.price.desc())
+        .limit(10)
+    )
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    return products
+
+
+async def get_top_10_products_with_lowest_price_from_db(
+        session: DBSession) -> list[Product]:
+    stmt = (
+        select(Product)
+        .where(Product.amount > 0)
+        .order_by(Product.price.asc())
+        .limit(10)
+    )
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    return products
+
+
 async def get_product_by_id_from_db(
     session: DBSession,
     product_id: int,

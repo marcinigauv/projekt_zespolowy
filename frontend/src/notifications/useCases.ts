@@ -1,14 +1,23 @@
 import { getNotificationsApi, type NotificationDto } from './api'
 import { useNotificationsStore, type NotificationItem } from '../store/notificationsStore'
 
-function isNotificationExpired(expiresAt?: string): boolean {
+function parseNotificationTimestamp(expiresAt?: string): number | null {
   if (!expiresAt) {
-    return false
+    return null
   }
 
-  const timestamp = Date.parse(expiresAt)
+  const normalizedExpiresAt = /[zZ]|[+-]\d{2}:\d{2}$/.test(expiresAt)
+    ? expiresAt
+    : `${expiresAt}Z`
+  const timestamp = Date.parse(normalizedExpiresAt)
 
-  if (Number.isNaN(timestamp)) {
+  return Number.isNaN(timestamp) ? null : timestamp
+}
+
+function isNotificationExpired(expiresAt?: string): boolean {
+  const timestamp = parseNotificationTimestamp(expiresAt)
+
+  if (timestamp === null) {
     return false
   }
 
@@ -25,11 +34,11 @@ function toNotificationItem(notification: NotificationDto): NotificationItem {
 }
 
 export async function pollNotificationsUseCase(): Promise<void> {
-  const notifications = await getNotificationsApi()
-  const nextItems = notifications
-    .filter((notification) => notification.message.trim().length > 0)
-    .filter((notification) => !isNotificationExpired(notification.expiresAt))
-    .map(toNotificationItem)
+  const notification = await getNotificationsApi()
+  const nextItems =
+    notification.message.trim().length > 0 && !isNotificationExpired(notification.expiresAt)
+      ? [toNotificationItem(notification)]
+      : []
 
   useNotificationsStore.getState().setNotifications(nextItems)
 }
