@@ -53,7 +53,7 @@ export async function fetchProductDetailsApi(payload: ProductDetailsRequestDto):
 }
 
 export async function fetchProductSimilarApi(payload: ProductSimilarRequestDto): Promise<ProductDto[]> {
-    return apiRequest<ProductDto[]>(`/products/similar/?product_id=${payload.id}`, {
+    return apiRequest<ProductDto[]>(`/products/similar?product_id=${payload.id}`, {
         method: 'GET',
     })
 }

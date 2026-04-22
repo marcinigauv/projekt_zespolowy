@@ -1,0 +1,144 @@
+name: Deploy Hosted
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_region:
+        description: AWS region for the deployment
+        required: true
+        default: eu-central-1
+      payments_provider_url:
+        description: Provider URL passed to the backend runtime
+        required: true
+        default: https://api.sandbox.paynow.pl/v1/payments
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PROJECT_SLUG: store
+      STACK_PREFIX: Store
+      AWS_REGION: ${{ inputs.aws_region }}
+      CDK_DEFAULT_REGION: ${{ inputs.aws_region }}
+      CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+      PAYMENTS_PROVIDER_URL: ${{ inputs.payments_provider_url }}
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          npm install --global aws-cdk
+
+      - name: Bootstrap CDK
+        working-directory: infra
+        run: cdk bootstrap aws://${CDK_DEFAULT_ACCOUNT}/${CDK_DEFAULT_REGION}
+
+      - name: Deploy foundation stacks
+        working-directory: infra
+        run: >-
+          cdk deploy
+          ${STACK_PREFIX}Network
+          ${STACK_PREFIX}Database
+          ${STACK_PREFIX}Containers
+          ${STACK_PREFIX}Storage
+          ${STACK_PREFIX}Secrets
+          --require-approval never
+
+      - name: Resolve foundation outputs
+        id: foundation
+        run: |
+          echo "backend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='BackendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "frontend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='FrontendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Secrets --query \"Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+
+      - name: Sync payments secret
+        env:
+          PAYMENTS_SECRET_NAME: ${{ steps.foundation.outputs.payments_secret_name }}
+          PAYMENTS_API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
+          PAYMENTS_SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
+        run: |
+          aws secretsmanager put-secret-value \
+            --secret-id "$PAYMENTS_SECRET_NAME" \
+            --secret-string "{\"api_key\":\"$PAYMENTS_API_KEY\",\"sign_phrase\":\"$PAYMENTS_SIGN_PHRASE\"}"
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build backend image
+        env:
+          BACKEND_REPO_URI: ${{ steps.foundation.outputs.backend_repo_uri }}
+        run: |
+          docker build -f backend/Dockerfile -t "$BACKEND_REPO_URI:$IMAGE_TAG" backend
+          docker tag "$BACKEND_REPO_URI:$IMAGE_TAG" "$BACKEND_REPO_URI:latest"
+
+      - name: Push backend image
+        env:
+          BACKEND_REPO_URI: ${{ steps.foundation.outputs.backend_repo_uri }}
+        run: |
+          docker push "$BACKEND_REPO_URI:$IMAGE_TAG"
+          docker push "$BACKEND_REPO_URI:latest"
+
+      - name: Build frontend image
+        env:
+          FRONTEND_REPO_URI: ${{ steps.foundation.outputs.frontend_repo_uri }}
+        run: |
+          docker build \
+            --build-arg EXPO_PUBLIC_API_BASE_URL=/api \
+            -f frontend/Dockerfile \
+            -t "$FRONTEND_REPO_URI:$IMAGE_TAG" \
+            frontend
+          docker tag "$FRONTEND_REPO_URI:$IMAGE_TAG" "$FRONTEND_REPO_URI:latest"
+
+      - name: Push frontend image
+        env:
+          FRONTEND_REPO_URI: ${{ steps.foundation.outputs.frontend_repo_uri }}
+        run: |
+          docker push "$FRONTEND_REPO_URI:$IMAGE_TAG"
+          docker push "$FRONTEND_REPO_URI:latest"
+
+      - name: Deploy compute and CDN stacks
+        working-directory: infra
+        run: >-
+          cdk deploy
+          ${STACK_PREFIX}Compute
+          ${STACK_PREFIX}Cdn
+          --require-approval never
+
+      - name: Force ECS rollout
+        run: |
+          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-backend" --force-new-deployment
+          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-frontend" --force-new-deployment
+          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-chroma" --force-new-deployment
+          aws ecs wait services-stable --cluster "${PROJECT_SLUG}-cluster" --services "${PROJECT_SLUG}-backend" "${PROJECT_SLUG}-frontend" "${PROJECT_SLUG}-chroma"
+
+      - name: Print CloudFront URL
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name ${STACK_PREFIX}Cdn \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontUrl'].OutputValue" \
+            --output text
