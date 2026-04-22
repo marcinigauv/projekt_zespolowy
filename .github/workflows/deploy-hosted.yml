@@ -65,8 +65,6 @@ jobs:
           ${STACK_PREFIX}Network
           ${STACK_PREFIX}Database
           ${STACK_PREFIX}Containers
-          ${STACK_PREFIX}Storage
-          ${STACK_PREFIX}Secrets
           --require-approval never
 
       - name: Resolve foundation outputs
@@ -74,17 +72,6 @@ jobs:
         run: |
           echo "backend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='BackendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
           echo "frontend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='FrontendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Secrets --query \"Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-
-      - name: Sync payments secret
-        env:
-          PAYMENTS_SECRET_NAME: ${{ steps.foundation.outputs.payments_secret_name }}
-          PAYMENTS_API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
-          PAYMENTS_SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
-        run: |
-          aws secretsmanager put-secret-value \
-            --secret-id "$PAYMENTS_SECRET_NAME" \
-            --secret-string "{\"api_key\":\"$PAYMENTS_API_KEY\",\"sign_phrase\":\"$PAYMENTS_SIGN_PHRASE\"}"
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -129,12 +116,36 @@ jobs:
           ${STACK_PREFIX}Cdn
           --require-approval never
 
-      - name: Force ECS rollout
+      - name: Resolve compute outputs
+        id: compute
         run: |
-          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-backend" --force-new-deployment
-          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-frontend" --force-new-deployment
-          aws ecs update-service --cluster "${PROJECT_SLUG}-cluster" --service "${PROJECT_SLUG}-chroma" --force-new-deployment
-          aws ecs wait services-stable --cluster "${PROJECT_SLUG}-cluster" --services "${PROJECT_SLUG}-backend" "${PROJECT_SLUG}-frontend" "${PROJECT_SLUG}-chroma"
+          echo "cluster_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "backend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='BackendServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "frontend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='FrontendServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          echo "payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+
+      - name: Sync payments secret
+        env:
+          PAYMENTS_SECRET_NAME: ${{ steps.compute.outputs.payments_secret_name }}
+          PAYMENTS_API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
+          PAYMENTS_SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
+        run: |
+          aws secretsmanager put-secret-value \
+            --secret-id "$PAYMENTS_SECRET_NAME" \
+            --secret-string "{\"api_key\":\"$PAYMENTS_API_KEY\",\"sign_phrase\":\"$PAYMENTS_SIGN_PHRASE\"}"
+
+      - name: Force ECS rollout
+        env:
+          CLUSTER_NAME: ${{ steps.compute.outputs.cluster_name }}
+          BACKEND_SERVICE_NAME: ${{ steps.compute.outputs.backend_service_name }}
+          FRONTEND_SERVICE_NAME: ${{ steps.compute.outputs.frontend_service_name }}
+          CHROMA_SERVICE_NAME: ${{ steps.compute.outputs.chroma_service_name }}
+        run: |
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$BACKEND_SERVICE_NAME" --force-new-deployment
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$FRONTEND_SERVICE_NAME" --force-new-deployment
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$CHROMA_SERVICE_NAME" --force-new-deployment
+          aws ecs wait services-stable --cluster "$CLUSTER_NAME" --services "$BACKEND_SERVICE_NAME" "$FRONTEND_SERVICE_NAME" "$CHROMA_SERVICE_NAME"
 
       - name: Print CloudFront URL
         run: |
