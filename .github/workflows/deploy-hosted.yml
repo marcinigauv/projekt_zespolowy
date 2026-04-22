@@ -132,11 +132,25 @@ jobs:
       - name: Resolve compute outputs
         id: compute
         run: |
-          echo "cluster_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "backend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='BackendServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "frontend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='FrontendServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query \"Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          cluster_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)
+          backend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='BackendServiceName'].OutputValue" --output text)
+          frontend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='FrontendServiceName'].OutputValue" --output text)
+          chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue" --output text)
+          payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue" --output text)
+
+          for value_name in cluster_name backend_service_name frontend_service_name chroma_service_name payments_secret_name; do
+            value="${!value_name}"
+            if [ -z "$value" ] || [ "$value" = "None" ]; then
+              echo "Could not resolve compute output: $value_name" >&2
+              exit 1
+            fi
+          done
+
+          echo "cluster_name=$cluster_name" >> "$GITHUB_OUTPUT"
+          echo "backend_service_name=$backend_service_name" >> "$GITHUB_OUTPUT"
+          echo "frontend_service_name=$frontend_service_name" >> "$GITHUB_OUTPUT"
+          echo "chroma_service_name=$chroma_service_name" >> "$GITHUB_OUTPUT"
+          echo "payments_secret_name=$payments_secret_name" >> "$GITHUB_OUTPUT"
 
       - name: Sync payments secret
         env:
@@ -144,6 +158,20 @@ jobs:
           PAYMENTS_API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
           PAYMENTS_SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
         run: |
+          for attempt in 1 2 3 4 5 6; do
+            if aws secretsmanager describe-secret --secret-id "$PAYMENTS_SECRET_NAME" >/dev/null 2>&1; then
+              break
+            fi
+
+            if [ "$attempt" = "6" ]; then
+              echo "Payments secret was not found after compute deploy: $PAYMENTS_SECRET_NAME" >&2
+              exit 1
+            fi
+
+            echo "Waiting for payments secret to become available: $PAYMENTS_SECRET_NAME"
+            sleep 10
+          done
+
           aws secretsmanager put-secret-value \
             --secret-id "$PAYMENTS_SECRET_NAME" \
             --secret-string "{\"api_key\":\"$PAYMENTS_API_KEY\",\"sign_phrase\":\"$PAYMENTS_SIGN_PHRASE\"}"
