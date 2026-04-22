@@ -34,7 +34,7 @@ class ComputeStack(Stack):
         )
 
         backend_task = ecs.FargateTaskDefinition(
-            self, "BackendTask", memory_limit_mib=4096, cpu=1024)
+            self, "BackendTask", memory_limit_mib=8192, cpu=2048)
 
         db_secret.grant_read(backend_task.task_role)
         password_pepper_secret.grant_read(backend_task.task_role)
