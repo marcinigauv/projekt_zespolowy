@@ -70,8 +70,21 @@ jobs:
       - name: Resolve foundation outputs
         id: foundation
         run: |
-          echo "backend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='BackendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
-          echo "frontend_repo_uri=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Containers --query \"Stacks[0].Outputs[?OutputKey=='FrontendRepositoryUri'].OutputValue\" --output text)" >> "$GITHUB_OUTPUT"
+          backend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-backend" --query "repositories[0].repositoryUri" --output text)
+          frontend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-frontend" --query "repositories[0].repositoryUri" --output text)
+
+          if [ -z "$backend_repo_uri" ] || [ "$backend_repo_uri" = "None" ]; then
+            echo "Could not resolve backend ECR repository URI" >&2
+            exit 1
+          fi
+
+          if [ -z "$frontend_repo_uri" ] || [ "$frontend_repo_uri" = "None" ]; then
+            echo "Could not resolve frontend ECR repository URI" >&2
+            exit 1
+          fi
+
+          echo "backend_repo_uri=$backend_repo_uri" >> "$GITHUB_OUTPUT"
+          echo "frontend_repo_uri=$frontend_repo_uri" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
