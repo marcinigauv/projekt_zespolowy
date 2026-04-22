@@ -28,6 +28,10 @@ class ComputeStack(Stack):
 
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc,
                               container_insights=True)
+        cluster.add_default_cloud_map_namespace(
+            name="store.local",
+            use_for_service_connect=True,
+        )
 
         backend_task = ecs.FargateTaskDefinition(
             self, "BackendTask", memory_limit_mib=4096, cpu=1024)
@@ -99,7 +103,6 @@ class ComputeStack(Stack):
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             service_connect_configuration=ecs.ServiceConnectProps(
-                namespace="store.local",
                 services=[ecs.ServiceConnectService(
                     port_mapping_name="backend",
                     dns_name="backend",
@@ -111,16 +114,13 @@ class ComputeStack(Stack):
             self, "FrontendService", cluster=cluster, task_definition=frontend_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            service_connect_configuration=ecs.ServiceConnectProps(
-                namespace="store.local",
-            ),
+            service_connect_configuration=ecs.ServiceConnectProps(),
         )
         chroma_service = ecs.FargateService(
             self, "ChromaService", cluster=cluster, task_definition=chroma_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             service_connect_configuration=ecs.ServiceConnectProps(
-                namespace="store.local",
                 services=[ecs.ServiceConnectService(
                     port_mapping_name="chroma",
                     dns_name="chroma",
