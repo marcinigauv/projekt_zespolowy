@@ -5,7 +5,7 @@
     "price": 249.99,
     "amount": 18,
     "categories": ["LEGO", "City"],
-    "image_url": "https://example.com/products/lego-city-fire-truck.jpg"
+    "image_url": "https://picsum.photos/id/0/200/300"
   },
   {
     "name": "LEGO Technic Samochod Rajdowy",
@@ -13,7 +13,7 @@
     "price": 399.99,
     "amount": 12,
     "categories": ["LEGO", "Technic", "Motoryzacja / sport motorowy"],
-    "image_url": "https://example.com/products/lego-technic-rally-car.jpg"
+    "image_url": "https://picsum.photos/id/1/200/300"
   },
   {
     "name": "Raspberry Pi 5 Starter Kit",
@@ -21,7 +21,7 @@
     "price": 549.0,
     "amount": 25,
     "categories": ["Elektronika", "Raspberry Pi", "IoT"],
-    "image_url": "https://example.com/products/raspberry-pi-5-starter-kit.jpg"
+    "image_url": "https://picsum.photos/id/2/200/300"
   },
   {
     "name": "Kamera sportowa 4K Action Pro",
@@ -29,6 +29,6 @@
     "price": 699.0,
     "amount": 9,
     "categories": ["Elektronika", "Kamera akcji", "Video"],
-    "image_url": "https://example.com/products/action-camera-4k-pro.jpg"
+    "image_url": "https://picsum.photos/id/3/200/300"
   }
 ]
