@@ -3,7 +3,7 @@ from constructs import Construct
 
 
 class ComputeStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.Secret, backend_repo: ecr.Repository, frontend_repo: ecr.Repository, payments_provider_url: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.Secret, backend_repo: ecr.Repository, db_initializer_repo: ecr.Repository, frontend_repo: ecr.Repository, payments_provider_url: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         password_pepper_secret = secretsmanager.Secret(
@@ -36,14 +36,32 @@ class ComputeStack(Stack):
         backend_task = ecs.FargateTaskDefinition(
             self, "BackendTask", memory_limit_mib=8192, cpu=2048)
 
+        db_initializer_log_group = logs.LogGroup(
+            self, "DbInitializerLogGroup",
+            retention=logs.RetentionDays.ONE_WEEK,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
+        db_initializer_task = ecs.FargateTaskDefinition(
+            self, "DbInitializerTask", memory_limit_mib=1024, cpu=512)
+
         db_secret.grant_read(backend_task.task_role)
         password_pepper_secret.grant_read(backend_task.task_role)
         payments_secret.grant_read(backend_task.task_role)
+        db_secret.grant_read(db_initializer_task.task_role)
+        password_pepper_secret.grant_read(db_initializer_task.task_role)
+        payments_secret.grant_read(db_initializer_task.task_role)
 
         if backend_task.execution_role is not None:
             db_secret.grant_read(backend_task.execution_role)
             password_pepper_secret.grant_read(backend_task.execution_role)
             payments_secret.grant_read(backend_task.execution_role)
+
+        if db_initializer_task.execution_role is not None:
+            db_secret.grant_read(db_initializer_task.execution_role)
+            password_pepper_secret.grant_read(
+                db_initializer_task.execution_role)
+            payments_secret.grant_read(db_initializer_task.execution_role)
 
         backend_task.add_container(
             "Backend",
@@ -69,6 +87,33 @@ class ComputeStack(Stack):
                 stream_prefix="backend", log_retention=logs.RetentionDays.ONE_WEEK),
             port_mappings=[ecs.PortMapping(
                 container_port=8000, protocol=ecs.Protocol.TCP, name="backend")],
+        )
+
+        db_initializer_task.add_container(
+            "DbInitializer",
+            image=ecs.ContainerImage.from_ecr_repository(
+                db_initializer_repo, tag="latest"),
+            command=["apply"],
+            environment={
+                "DB_SQL_SETTINGS__HOST": database.db_instance_endpoint_address,
+                "DB_SQL_SETTINGS__PORT": "5432",
+                "DB_SQL_SETTINGS__DATABASE": "store_db",
+                "VECTOR_STORE_SETTINGS__CHROMA_HOST": "chroma",
+                "VECTOR_STORE_SETTINGS__CHROMA_PORT": "8000",
+                "VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY": "false",
+                "PAYMENTS_SETTINGS__PROVIDER_URL": payments_provider_url,
+            },
+            secrets={
+                "AUTH_SETTINGS__PASSWORD_PEPPER": ecs.Secret.from_secrets_manager(password_pepper_secret),
+                "DB_SQL_SETTINGS__USERNAME": ecs.Secret.from_secrets_manager(db_secret, "username"),
+                "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
+                "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret, "api_key"),
+                "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret, "sign_phrase"),
+            },
+            logging=ecs.LogDrivers.aws_logs(
+                stream_prefix="db-initializer",
+                log_group=db_initializer_log_group,
+            ),
         )
 
         frontend_task = ecs.FargateTaskDefinition(
@@ -158,5 +203,13 @@ class ComputeStack(Stack):
         CfnOutput(self, "ChromaServiceName", value=chroma_service.service_name)
         CfnOutput(self, "PaymentsSecretName",
                   value=payments_secret.secret_name)
+        CfnOutput(self, "DbInitializerTaskDefinitionArn",
+                  value=db_initializer_task.task_definition_arn)
+        CfnOutput(self, "DbInitializerLogGroupName",
+                  value=db_initializer_log_group.log_group_name)
+        CfnOutput(self, "PrivateSubnetIds",
+                  value=",".join([subnet.subnet_id for subnet in vpc.private_subnets]))
+        CfnOutput(self, "EcsSecurityGroupId",
+                  value=ecs_security_group.security_group_id)
         CfnOutput(self, "LoadBalancerDNS",
                   value=alb.load_balancer_dns_name)

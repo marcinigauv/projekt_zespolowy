@@ -1,4 +1,4 @@
-name: Deploy Hosted
+name: Deploy and Seed
 
 on:
   workflow_dispatch:
@@ -72,6 +72,7 @@ jobs:
         run: |
           backend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-backend" --query "repositories[0].repositoryUri" --output text)
           frontend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-frontend" --query "repositories[0].repositoryUri" --output text)
+          db_initializer_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-db-initializer" --query "repositories[0].repositoryUri" --output text)
 
           if [ -z "$backend_repo_uri" ] || [ "$backend_repo_uri" = "None" ]; then
             echo "Could not resolve backend ECR repository URI" >&2
@@ -83,8 +84,14 @@ jobs:
             exit 1
           fi
 
+          if [ -z "$db_initializer_repo_uri" ] || [ "$db_initializer_repo_uri" = "None" ]; then
+            echo "Could not resolve db initializer ECR repository URI" >&2
+            exit 1
+          fi
+
           echo "backend_repo_uri=$backend_repo_uri" >> "$GITHUB_OUTPUT"
           echo "frontend_repo_uri=$frontend_repo_uri" >> "$GITHUB_OUTPUT"
+          echo "db_initializer_repo_uri=$db_initializer_repo_uri" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -102,6 +109,20 @@ jobs:
         run: |
           docker push "$BACKEND_REPO_URI:$IMAGE_TAG"
           docker push "$BACKEND_REPO_URI:latest"
+
+      - name: Build db initializer image
+        env:
+          DB_INITIALIZER_REPO_URI: ${{ steps.foundation.outputs.db_initializer_repo_uri }}
+        run: |
+          docker build -f backend/db_initializer/Dockerfile -t "$DB_INITIALIZER_REPO_URI:$IMAGE_TAG" backend
+          docker tag "$DB_INITIALIZER_REPO_URI:$IMAGE_TAG" "$DB_INITIALIZER_REPO_URI:latest"
+
+      - name: Push db initializer image
+        env:
+          DB_INITIALIZER_REPO_URI: ${{ steps.foundation.outputs.db_initializer_repo_uri }}
+        run: |
+          docker push "$DB_INITIALIZER_REPO_URI:$IMAGE_TAG"
+          docker push "$DB_INITIALIZER_REPO_URI:latest"
 
       - name: Build frontend image
         env:
@@ -137,8 +158,12 @@ jobs:
           frontend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='FrontendServiceName'].OutputValue" --output text)
           chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue" --output text)
           payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue" --output text)
+          db_initializer_task_definition_arn=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='DbInitializerTaskDefinitionArn'].OutputValue" --output text)
+          db_initializer_log_group_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='DbInitializerLogGroupName'].OutputValue" --output text)
+          private_subnet_ids=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PrivateSubnetIds'].OutputValue" --output text)
+          ecs_security_group_id=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='EcsSecurityGroupId'].OutputValue" --output text)
 
-          for value_name in cluster_name backend_service_name frontend_service_name chroma_service_name payments_secret_name; do
+          for value_name in cluster_name backend_service_name frontend_service_name chroma_service_name payments_secret_name db_initializer_task_definition_arn db_initializer_log_group_name private_subnet_ids ecs_security_group_id; do
             value="${!value_name}"
             if [ -z "$value" ] || [ "$value" = "None" ]; then
               echo "Could not resolve compute output: $value_name" >&2
@@ -151,6 +176,10 @@ jobs:
           echo "frontend_service_name=$frontend_service_name" >> "$GITHUB_OUTPUT"
           echo "chroma_service_name=$chroma_service_name" >> "$GITHUB_OUTPUT"
           echo "payments_secret_name=$payments_secret_name" >> "$GITHUB_OUTPUT"
+          echo "db_initializer_task_definition_arn=$db_initializer_task_definition_arn" >> "$GITHUB_OUTPUT"
+          echo "db_initializer_log_group_name=$db_initializer_log_group_name" >> "$GITHUB_OUTPUT"
+          echo "private_subnet_ids=$private_subnet_ids" >> "$GITHUB_OUTPUT"
+          echo "ecs_security_group_id=$ecs_security_group_id" >> "$GITHUB_OUTPUT"
 
       - name: Sync payments secret
         env:
@@ -187,6 +216,177 @@ jobs:
           aws ecs update-service --cluster "$CLUSTER_NAME" --service "$FRONTEND_SERVICE_NAME" --force-new-deployment
           aws ecs update-service --cluster "$CLUSTER_NAME" --service "$CHROMA_SERVICE_NAME" --force-new-deployment
           aws ecs wait services-stable --cluster "$CLUSTER_NAME" --services "$BACKEND_SERVICE_NAME" "$FRONTEND_SERVICE_NAME" "$CHROMA_SERVICE_NAME"
+
+      - name: Run seed initializer task
+        id: seed
+        continue-on-error: true
+        env:
+          CLUSTER_NAME: ${{ steps.compute.outputs.cluster_name }}
+          DB_INITIALIZER_TASK_DEFINITION_ARN: ${{ steps.compute.outputs.db_initializer_task_definition_arn }}
+          PRIVATE_SUBNET_IDS: ${{ steps.compute.outputs.private_subnet_ids }}
+          ECS_SECURITY_GROUP_ID: ${{ steps.compute.outputs.ecs_security_group_id }}
+        run: |
+          IFS=',' read -r -a subnet_array <<< "$PRIVATE_SUBNET_IDS"
+          subnet_json=$(printf '"%s",' "${subnet_array[@]}")
+          subnet_json="[${subnet_json%,}]"
+          network_configuration="awsvpcConfiguration={subnets=${subnet_json},securityGroups=[\"$ECS_SECURITY_GROUP_ID\"],assignPublicIp=DISABLED}"
+
+          run_result=$(aws ecs run-task \
+            --cluster "$CLUSTER_NAME" \
+            --task-definition "$DB_INITIALIZER_TASK_DEFINITION_ARN" \
+            --launch-type FARGATE \
+            --network-configuration "$network_configuration" \
+            --query '[tasks[0].taskArn, failures[0].reason]' \
+            --output text)
+
+          task_arn=$(printf '%s' "$run_result" | cut -f1)
+          failure_reason=$(printf '%s' "$run_result" | cut -f2-)
+
+          if [ -z "$task_arn" ] || [ "$task_arn" = "None" ]; then
+            echo "task_arn=" >> "$GITHUB_OUTPUT"
+            echo "task_id=" >> "$GITHUB_OUTPUT"
+            echo "exit_code=" >> "$GITHUB_OUTPUT"
+            echo "stopped_reason=${failure_reason:-run-task did not return a task ARN}" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          task_id="${task_arn##*/}"
+
+          aws ecs wait tasks-stopped --cluster "$CLUSTER_NAME" --tasks "$task_arn"
+
+          exit_code=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER_NAME" \
+            --tasks "$task_arn" \
+            --query 'tasks[0].containers[?name==`DbInitializer`].exitCode | [0]' \
+            --output text)
+          stopped_reason=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER_NAME" \
+            --tasks "$task_arn" \
+            --query 'tasks[0].stoppedReason' \
+            --output text)
+
+          echo "task_arn=$task_arn" >> "$GITHUB_OUTPUT"
+          echo "task_id=$task_id" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          echo "stopped_reason=$stopped_reason" >> "$GITHUB_OUTPUT"
+
+          if [ "$exit_code" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Retry seed initializer task
+        id: seed_retry
+        if: steps.seed.outcome != 'success'
+        continue-on-error: true
+        env:
+          CLUSTER_NAME: ${{ steps.compute.outputs.cluster_name }}
+          DB_INITIALIZER_TASK_DEFINITION_ARN: ${{ steps.compute.outputs.db_initializer_task_definition_arn }}
+          PRIVATE_SUBNET_IDS: ${{ steps.compute.outputs.private_subnet_ids }}
+          ECS_SECURITY_GROUP_ID: ${{ steps.compute.outputs.ecs_security_group_id }}
+        run: |
+          IFS=',' read -r -a subnet_array <<< "$PRIVATE_SUBNET_IDS"
+          subnet_json=$(printf '"%s",' "${subnet_array[@]}")
+          subnet_json="[${subnet_json%,}]"
+          network_configuration="awsvpcConfiguration={subnets=${subnet_json},securityGroups=[\"$ECS_SECURITY_GROUP_ID\"],assignPublicIp=DISABLED}"
+
+          run_result=$(aws ecs run-task \
+            --cluster "$CLUSTER_NAME" \
+            --task-definition "$DB_INITIALIZER_TASK_DEFINITION_ARN" \
+            --launch-type FARGATE \
+            --network-configuration "$network_configuration" \
+            --query '[tasks[0].taskArn, failures[0].reason]' \
+            --output text)
+
+          task_arn=$(printf '%s' "$run_result" | cut -f1)
+          failure_reason=$(printf '%s' "$run_result" | cut -f2-)
+
+          if [ -z "$task_arn" ] || [ "$task_arn" = "None" ]; then
+            echo "task_arn=" >> "$GITHUB_OUTPUT"
+            echo "task_id=" >> "$GITHUB_OUTPUT"
+            echo "exit_code=" >> "$GITHUB_OUTPUT"
+            echo "stopped_reason=${failure_reason:-run-task did not return a task ARN}" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          task_id="${task_arn##*/}"
+
+          aws ecs wait tasks-stopped --cluster "$CLUSTER_NAME" --tasks "$task_arn"
+
+          exit_code=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER_NAME" \
+            --tasks "$task_arn" \
+            --query 'tasks[0].containers[?name==`DbInitializer`].exitCode | [0]' \
+            --output text)
+          stopped_reason=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER_NAME" \
+            --tasks "$task_arn" \
+            --query 'tasks[0].stoppedReason' \
+            --output text)
+
+          echo "task_arn=$task_arn" >> "$GITHUB_OUTPUT"
+          echo "task_id=$task_id" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          echo "stopped_reason=$stopped_reason" >> "$GITHUB_OUTPUT"
+
+          if [ "$exit_code" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Failsafe seed report
+        if: always()
+        env:
+          SEED_PRIMARY_OUTCOME: ${{ steps.seed.outcome }}
+          SEED_PRIMARY_TASK_ARN: ${{ steps.seed.outputs.task_arn }}
+          SEED_PRIMARY_EXIT_CODE: ${{ steps.seed.outputs.exit_code }}
+          SEED_PRIMARY_STOPPED_REASON: ${{ steps.seed.outputs.stopped_reason }}
+          SEED_RETRY_OUTCOME: ${{ steps.seed_retry.outcome }}
+          SEED_RETRY_TASK_ARN: ${{ steps.seed_retry.outputs.task_arn }}
+          SEED_RETRY_EXIT_CODE: ${{ steps.seed_retry.outputs.exit_code }}
+          SEED_RETRY_STOPPED_REASON: ${{ steps.seed_retry.outputs.stopped_reason }}
+          SEED_LOG_GROUP_NAME: ${{ steps.compute.outputs.db_initializer_log_group_name }}
+        run: |
+          final_outcome="$SEED_PRIMARY_OUTCOME"
+          final_task_arn="$SEED_PRIMARY_TASK_ARN"
+          final_exit_code="$SEED_PRIMARY_EXIT_CODE"
+          final_stopped_reason="$SEED_PRIMARY_STOPPED_REASON"
+
+          if [ "$SEED_RETRY_OUTCOME" = "success" ]; then
+            final_outcome="$SEED_RETRY_OUTCOME"
+            final_task_arn="$SEED_RETRY_TASK_ARN"
+            final_exit_code="$SEED_RETRY_EXIT_CODE"
+            final_stopped_reason="$SEED_RETRY_STOPPED_REASON"
+          fi
+
+          {
+            echo "## Seed status"
+            echo ""
+
+            if [ "$final_outcome" = "success" ]; then
+              echo "Seed task completed successfully."
+              echo ""
+              echo "- Initial attempt: $SEED_PRIMARY_OUTCOME"
+              echo "- Retry attempt: ${SEED_RETRY_OUTCOME:-not-run}"
+              echo "- Task ARN: $final_task_arn"
+              echo "- Exit code: $final_exit_code"
+              echo "- Log group: $SEED_LOG_GROUP_NAME"
+            else
+              echo "Seed task failed after automatic retry or did not start cleanly."
+              echo ""
+              echo "- Initial attempt: $SEED_PRIMARY_OUTCOME"
+              echo "- Retry attempt: ${SEED_RETRY_OUTCOME:-not-run}"
+              echo "- Task ARN: ${final_task_arn:-not available}"
+              echo "- Exit code: ${final_exit_code:-not available}"
+              echo "- Stopped reason: ${final_stopped_reason:-not available}"
+              echo "- Log group: $SEED_LOG_GROUP_NAME"
+              echo ""
+              echo "Retry path: rerun the seed ECS task without redeploying the stacks."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$final_outcome" != "success" ]; then
+            echo "::warning::Seed task failed or did not start cleanly. Review CloudWatch log group $SEED_LOG_GROUP_NAME"
+            aws logs tail "$SEED_LOG_GROUP_NAME" --since 30m || true
+          fi
 
       - name: Print CloudFront URL
         run: |
