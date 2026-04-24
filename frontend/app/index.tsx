@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { Image } from 'react-native'
 import { Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { pollNotificationsUseCase } from '../src/notifications/useCases'
@@ -37,6 +38,7 @@ export default function Index() {
   const router = useRouter()
   const addItem = useCartStore(s => s.addItem)
   const [products, setProducts] = useState<Product[]>([])
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -76,6 +78,7 @@ export default function Index() {
         }
 
         setProducts(result)
+        setImageErrors({})
       } catch (caughtError) {
         if (!isMounted) {
           return
@@ -153,9 +156,33 @@ export default function Index() {
                     <ProductCard>
                       <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
                         <ProductVisual background="#F3F6FA">
-                          <Text fontSize="$10" fontWeight="800" color="$blue10">
-                            {product.name.slice(0, 1).toUpperCase()}
-                          </Text>
+                          {product.imageUrl && !imageErrors[product.id] ? (
+                            <Image
+                              source={{ uri: product.imageUrl }}
+                              resizeMode="cover"
+                              onError={() =>
+                                setImageErrors(currentErrors => {
+                                  if (currentErrors[product.id]) {
+                                    return currentErrors
+                                  }
+
+                                  return {
+                                    ...currentErrors,
+                                    [product.id]: true,
+                                  }
+                                })
+                              }
+                              style={{ width: '100%', height: '100%' }}
+                            />
+                          ) : imageErrors[product.id] ? (
+                            <Text color="$gray10" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
+                              Zdjęcie produktu niedostępne
+                            </Text>
+                          ) : (
+                            <Text fontSize="$10" fontWeight="800" color="$blue10">
+                              {product.name.slice(0, 1).toUpperCase()}
+                            </Text>
+                          )}
                         </ProductVisual>
                         <ProductInfo>
                           <ProductCardSection>
