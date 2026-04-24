@@ -1,0 +1,34 @@
+[
+  {
+    "name": "LEGO City Woz Strazacki",
+    "description": "Zestaw LEGO City z wozem strazackim, drabina i figurkami ratownikow.",
+    "price": 249.99,
+    "amount": 18,
+    "categories": ["LEGO", "City"],
+    "image_url": "https://example.com/products/lego-city-fire-truck.jpg"
+  },
+  {
+    "name": "LEGO Technic Samochod Rajdowy",
+    "description": "Model LEGO Technic dla starszych budowniczych z ruchomymi elementami i realistycznym napedem.",
+    "price": 399.99,
+    "amount": 12,
+    "categories": ["LEGO", "Technic", "Motoryzacja / sport motorowy"],
+    "image_url": "https://example.com/products/lego-technic-rally-car.jpg"
+  },
+  {
+    "name": "Raspberry Pi 5 Starter Kit",
+    "description": "Zestaw startowy z Raspberry Pi, zasilaczem, obudowa i karta pamieci do projektow IoT.",
+    "price": 549.0,
+    "amount": 25,
+    "categories": ["Elektronika", "Raspberry Pi", "IoT"],
+    "image_url": "https://example.com/products/raspberry-pi-5-starter-kit.jpg"
+  },
+  {
+    "name": "Kamera sportowa 4K Action Pro",
+    "description": "Kompaktowa kamera akcji 4K z wodoodporna obudowa i stabilizacja obrazu.",
+    "price": 699.0,
+    "amount": 9,
+    "categories": ["Elektronika", "Kamera akcji", "Video"],
+    "image_url": "https://example.com/products/action-camera-4k-pro.jpg"
+  }
+]

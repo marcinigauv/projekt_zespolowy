@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Admin",
+    "surname": "Sklepow",
+    "email": "test@test.com",
+    "password": "admin",
+    "is_admin": true
+  }
+]

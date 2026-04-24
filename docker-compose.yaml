@@ -37,7 +37,39 @@ services:
         condition: service_healthy
       # chroma:
       #   condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthcheck').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: always
+
+  db_initializer:
+    profiles: ["initializer"]
+    build:
+      context: ./backend
+      dockerfile: db_initializer/Dockerfile
+    container_name: db_initializer
+    environment:
+      AUTH_SETTINGS__PASSWORD_PEPPER: ${AUTH_SETTINGS__PASSWORD_PEPPER}
+      DB_SQL_SETTINGS__HOST: postgres
+      DB_SQL_SETTINGS__PORT: 5432
+      DB_SQL_SETTINGS__USERNAME: ${DB_SQL_SETTINGS__USERNAME}
+      DB_SQL_SETTINGS__PASSWORD: ${DB_SQL_SETTINGS__PASSWORD}
+      DB_SQL_SETTINGS__DATABASE: ${DB_SQL_SETTINGS__DATABASE}
+      VECTOR_STORE_SETTINGS__CHROMA_HOST: chroma
+      VECTOR_STORE_SETTINGS__CHROMA_PORT: 8000
+      VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY: ${VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY}
+      PAYMENTS_SETTINGS__PROVIDER_URL: ${PAYMENTS_SETTINGS__PROVIDER_URL}
+      PAYMENTS_SETTINGS__API_KEY: ${PAYMENTS_SETTINGS__API_KEY}
+      PAYMENTS_SETTINGS__SIGN_PHRASE: ${PAYMENTS_SETTINGS__SIGN_PHRASE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: "no"
 
   postgres:
     image: postgres:18-alpine
@@ -50,7 +82,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres18_data:/var/lib/postgresql
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -82,7 +114,7 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres_data:
+  postgres18_data:
     driver: local
   chroma_data:
     driver: local

@@ -20,7 +20,7 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8080",
     "http://localhost:8081",
-]  # Developerska konfuguracja CORS
+]
 
 
 @asynccontextmanager
