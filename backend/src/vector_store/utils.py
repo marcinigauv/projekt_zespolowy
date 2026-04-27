@@ -1,14 +1,19 @@
+from functools import lru_cache
+
 from sentence_transformers import SentenceTransformer
 
-_model = SentenceTransformer(
-    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", device="cpu")
+
+@lru_cache(maxsize=1)
+def get_model() -> SentenceTransformer:
+    return SentenceTransformer(
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", device="cpu")
 
 
 def get_embedding(text: str) -> list[float]:
     if not text or not text.strip():
         return [0.0] * 384
 
-    embedding = _model.encode(
+    embedding = get_model().encode(
         text.strip(),
         normalize_embeddings=True,
         convert_to_numpy=True,

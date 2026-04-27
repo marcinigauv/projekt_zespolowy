@@ -5,10 +5,13 @@ from asyncio import sleep
 
 delay_minutes = 15
 delay_time = delay_minutes * 60
+initial_delay_seconds = 90
 
 
 async def sync_missing_products_to_vector_store() -> None:
     """Syncs products that are in the SQL database but missing in the Chroma Vector Store."""
+    await sleep(delay=initial_delay_seconds)
+
     while True:
         try:
             session_gen = db.get_session()
