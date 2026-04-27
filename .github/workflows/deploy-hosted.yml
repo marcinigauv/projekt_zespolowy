@@ -71,16 +71,10 @@ jobs:
         id: foundation
         run: |
           backend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-backend" --query "repositories[0].repositoryUri" --output text)
-          frontend_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-frontend" --query "repositories[0].repositoryUri" --output text)
           db_initializer_repo_uri=$(aws ecr describe-repositories --repository-names "${PROJECT_SLUG}-db-initializer" --query "repositories[0].repositoryUri" --output text)
 
           if [ -z "$backend_repo_uri" ] || [ "$backend_repo_uri" = "None" ]; then
             echo "Could not resolve backend ECR repository URI" >&2
-            exit 1
-          fi
-
-          if [ -z "$frontend_repo_uri" ] || [ "$frontend_repo_uri" = "None" ]; then
-            echo "Could not resolve frontend ECR repository URI" >&2
             exit 1
           fi
 
@@ -90,7 +84,6 @@ jobs:
           fi
 
           echo "backend_repo_uri=$backend_repo_uri" >> "$GITHUB_OUTPUT"
-          echo "frontend_repo_uri=$frontend_repo_uri" >> "$GITHUB_OUTPUT"
           echo "db_initializer_repo_uri=$db_initializer_repo_uri" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Amazon ECR
@@ -124,23 +117,15 @@ jobs:
           docker push "$DB_INITIALIZER_REPO_URI:$IMAGE_TAG"
           docker push "$DB_INITIALIZER_REPO_URI:latest"
 
-      - name: Build frontend image
-        env:
-          FRONTEND_REPO_URI: ${{ steps.foundation.outputs.frontend_repo_uri }}
-        run: |
-          docker build \
-            --build-arg EXPO_PUBLIC_API_BASE_URL=/api \
-            -f frontend/Dockerfile \
-            -t "$FRONTEND_REPO_URI:$IMAGE_TAG" \
-            frontend
-          docker tag "$FRONTEND_REPO_URI:$IMAGE_TAG" "$FRONTEND_REPO_URI:latest"
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Push frontend image
+      - name: Build frontend web bundle
+        working-directory: frontend
         env:
-          FRONTEND_REPO_URI: ${{ steps.foundation.outputs.frontend_repo_uri }}
-        run: |
-          docker push "$FRONTEND_REPO_URI:$IMAGE_TAG"
-          docker push "$FRONTEND_REPO_URI:latest"
+          EXPO_PUBLIC_API_BASE_URL: /api
+        run: npm run build:web
 
       - name: Deploy compute and CDN stacks
         working-directory: infra
@@ -155,7 +140,6 @@ jobs:
         run: |
           cluster_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ClusterName'].OutputValue" --output text)
           backend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='BackendServiceName'].OutputValue" --output text)
-          frontend_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='FrontendServiceName'].OutputValue" --output text)
           chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue" --output text)
           payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue" --output text)
           db_initializer_task_definition_arn=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='DbInitializerTaskDefinitionArn'].OutputValue" --output text)
@@ -163,7 +147,7 @@ jobs:
           private_subnet_ids=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PrivateSubnetIds'].OutputValue" --output text)
           ecs_security_group_id=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='EcsSecurityGroupId'].OutputValue" --output text)
 
-          for value_name in cluster_name backend_service_name frontend_service_name chroma_service_name payments_secret_name db_initializer_task_definition_arn db_initializer_log_group_name private_subnet_ids ecs_security_group_id; do
+          for value_name in cluster_name backend_service_name chroma_service_name payments_secret_name db_initializer_task_definition_arn db_initializer_log_group_name private_subnet_ids ecs_security_group_id; do
             value="${!value_name}"
             if [ -z "$value" ] || [ "$value" = "None" ]; then
               echo "Could not resolve compute output: $value_name" >&2
@@ -173,13 +157,29 @@ jobs:
 
           echo "cluster_name=$cluster_name" >> "$GITHUB_OUTPUT"
           echo "backend_service_name=$backend_service_name" >> "$GITHUB_OUTPUT"
-          echo "frontend_service_name=$frontend_service_name" >> "$GITHUB_OUTPUT"
           echo "chroma_service_name=$chroma_service_name" >> "$GITHUB_OUTPUT"
           echo "payments_secret_name=$payments_secret_name" >> "$GITHUB_OUTPUT"
           echo "db_initializer_task_definition_arn=$db_initializer_task_definition_arn" >> "$GITHUB_OUTPUT"
           echo "db_initializer_log_group_name=$db_initializer_log_group_name" >> "$GITHUB_OUTPUT"
           echo "private_subnet_ids=$private_subnet_ids" >> "$GITHUB_OUTPUT"
           echo "ecs_security_group_id=$ecs_security_group_id" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve CDN outputs
+        id: cdn
+        run: |
+          cloudfront_distribution_id=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Cdn --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+          frontend_bucket_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Cdn --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)
+
+          for value_name in cloudfront_distribution_id frontend_bucket_name; do
+            value="${!value_name}"
+            if [ -z "$value" ] || [ "$value" = "None" ]; then
+              echo "Could not resolve CDN output: $value_name" >&2
+              exit 1
+            fi
+          done
+
+          echo "cloudfront_distribution_id=$cloudfront_distribution_id" >> "$GITHUB_OUTPUT"
+          echo "frontend_bucket_name=$frontend_bucket_name" >> "$GITHUB_OUTPUT"
 
       - name: Sync payments secret
         env:
@@ -209,13 +209,24 @@ jobs:
         env:
           CLUSTER_NAME: ${{ steps.compute.outputs.cluster_name }}
           BACKEND_SERVICE_NAME: ${{ steps.compute.outputs.backend_service_name }}
-          FRONTEND_SERVICE_NAME: ${{ steps.compute.outputs.frontend_service_name }}
           CHROMA_SERVICE_NAME: ${{ steps.compute.outputs.chroma_service_name }}
         run: |
           aws ecs update-service --cluster "$CLUSTER_NAME" --service "$BACKEND_SERVICE_NAME" --force-new-deployment
-          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$FRONTEND_SERVICE_NAME" --force-new-deployment
           aws ecs update-service --cluster "$CLUSTER_NAME" --service "$CHROMA_SERVICE_NAME" --force-new-deployment
-          aws ecs wait services-stable --cluster "$CLUSTER_NAME" --services "$BACKEND_SERVICE_NAME" "$FRONTEND_SERVICE_NAME" "$CHROMA_SERVICE_NAME"
+          aws ecs wait services-stable --cluster "$CLUSTER_NAME" --services "$BACKEND_SERVICE_NAME" "$CHROMA_SERVICE_NAME"
+
+      - name: Upload frontend bundle to S3
+        env:
+          FRONTEND_BUCKET_NAME: ${{ steps.cdn.outputs.frontend_bucket_name }}
+        run: |
+          aws s3 sync frontend/dist "s3://$FRONTEND_BUCKET_NAME" --delete --exclude "index.html" --cache-control "public,max-age=31536000,immutable"
+          aws s3 cp frontend/dist/index.html "s3://$FRONTEND_BUCKET_NAME/index.html" --cache-control "no-cache, no-store, must-revalidate" --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate CloudFront cache
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ steps.cdn.outputs.cloudfront_distribution_id }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*"
 
       - name: Run seed initializer task
         id: seed
@@ -392,5 +403,5 @@ jobs:
         run: |
           aws cloudformation describe-stacks \
             --stack-name ${STACK_PREFIX}Cdn \
-            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontUrl'].OutputValue" \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontURL'].OutputValue" \
             --output text

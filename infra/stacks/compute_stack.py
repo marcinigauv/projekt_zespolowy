@@ -3,7 +3,7 @@ from constructs import Construct
 
 
 class ComputeStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.Secret, backend_repo: ecr.Repository, db_initializer_repo: ecr.Repository, frontend_repo: ecr.Repository, payments_provider_url: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.Secret, backend_repo: ecr.Repository, db_initializer_repo: ecr.Repository, payments_provider_url: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         password_pepper_secret = secretsmanager.Secret(
@@ -116,18 +116,6 @@ class ComputeStack(Stack):
             ),
         )
 
-        frontend_task = ecs.FargateTaskDefinition(
-            self, "FrontendTask", memory_limit_mib=512, cpu=256)
-        frontend_task.add_container(
-            "Frontend",
-            image=ecs.ContainerImage.from_ecr_repository(
-                frontend_repo, tag="latest"),
-            logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="frontend", log_retention=logs.RetentionDays.ONE_WEEK),
-            port_mappings=[ecs.PortMapping(
-                container_port=8080, protocol=ecs.Protocol.TCP, name="frontend")],
-        )
-
         chroma_task = ecs.FargateTaskDefinition(
             self, "ChromaTask", memory_limit_mib=1024, cpu=512)
         chroma_task.add_container(
@@ -155,12 +143,6 @@ class ComputeStack(Stack):
                 )],
             ),
         )
-        frontend_service = ecs.FargateService(
-            self, "FrontendService", cluster=cluster, task_definition=frontend_task, desired_count=1,
-            security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            service_connect_configuration=ecs.ServiceConnectProps(),
-        )
         chroma_service = ecs.FargateService(
             self, "ChromaService", cluster=cluster, task_definition=chroma_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
@@ -183,8 +165,8 @@ class ComputeStack(Stack):
         listener = alb.add_listener("HTTPListener", port=80, open=True)
 
         listener.add_targets(
-            "FrontendTarget", port=8080, targets=[frontend_service],
-            health_check=elbv2.HealthCheck(path="/", interval=Duration.seconds(
+            "BackendTarget", port=8000, targets=[backend_service],
+            health_check=elbv2.HealthCheck(path="/healthcheck", interval=Duration.seconds(
                 30), timeout=Duration.seconds(5), healthy_threshold_count=2, unhealthy_threshold_count=3)
         )
 
@@ -198,8 +180,6 @@ class ComputeStack(Stack):
         CfnOutput(self, "ClusterName", value=cluster.cluster_name)
         CfnOutput(self, "BackendServiceName",
                   value=backend_service.service_name)
-        CfnOutput(self, "FrontendServiceName",
-                  value=frontend_service.service_name)
         CfnOutput(self, "ChromaServiceName", value=chroma_service.service_name)
         CfnOutput(self, "PaymentsSecretName",
                   value=payments_secret.secret_name)

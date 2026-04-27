@@ -1,11 +1,28 @@
 from fastapi import APIRouter, Query, Depends, Request
 from fastapi.responses import HTMLResponse
+from urllib.parse import urlsplit
 from src.sql.db import DBSession
 from src.sql.models import Payment, User
 from src.users.dependecies import require_authentication
 from src.payments.use_cases import get_payment_for_order_and_user, create_payment_for_order
 
 payments_router = APIRouter(prefix="/payments", tags=["payments"])
+
+
+def get_request_origin(request: Request) -> str | None:
+    origin = request.headers.get("origin")
+    if origin:
+        return origin.rstrip("/")
+
+    referer = request.headers.get("referer")
+    if not referer:
+        return None
+
+    parsed = urlsplit(referer)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+
+    return f"{parsed.scheme}://{parsed.netloc}"
 
 
 @payments_router.get("/status", response_model=Payment)
@@ -23,21 +40,28 @@ async def check_payment_get(
 @payments_router.post("/create", response_model=Payment)
 async def create_payment_post(
     session: DBSession,
-        request: Request,
+    request: Request,
     order_id: int = Query(
         description="The unique identifier of the order to create a payment for", default=1),
     user: User = Depends(require_authentication)
 ) -> Payment:
     """Endpoint to create a payment for an order."""
-    continue_url = str(request.url_for(
-        "payment_return_page").include_query_params(order_id=order_id))
+    public_origin = get_request_origin(request)
+
+    if public_origin:
+        continue_url = f"{public_origin}/api/payments/return?order_id={order_id}"
+    else:
+        continue_url = str(request.url_for(
+            "payment_return_page").include_query_params(order_id=order_id))
+
     payment = await create_payment_for_order(session, order_id, user, continue_url)
     return payment
 
 
 @payments_router.get("/return", include_in_schema=False, response_class=HTMLResponse)
-async def payment_return_page(order_id: int = Query(default=0)) -> HTMLResponse:
+async def payment_return_page(request: Request, order_id: int = Query(default=0)) -> HTMLResponse:
     app_url = f"myapp://orders/{order_id}?paymentReturn=1" if order_id > 0 else "myapp://orders?paymentReturn=1"
+    web_url = f"{str(request.base_url).rstrip('/')}/orders/{order_id}?paymentReturn=1" if order_id > 0 else f"{str(request.base_url).rstrip('/')}/orders?paymentReturn=1"
     html = f"""
 <!doctype html>
 <html lang="pl">
@@ -89,10 +113,11 @@ async def payment_return_page(order_id: int = Query(default=0)) -> HTMLResponse:
         <main>
             <h1>Wracamy do aplikacji</h1>
             <p>Możesz zamknąć to okno, jeśli nie zniknie automatycznie.</p>
-            <a href="{app_url}">Wróć do aplikacji</a>
+            <a href="{web_url}">Wróć do zamówienia</a>
         </main>
         <script>
             const appUrl = {app_url!r};
+            const webUrl = {web_url!r};
             const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent);
 
             try {{
@@ -104,6 +129,10 @@ async def payment_return_page(order_id: int = Query(default=0)) -> HTMLResponse:
             if (isMobile) {{
                 window.setTimeout(() => {{
                     window.location.replace(appUrl);
+                }}, 250);
+            }} else {{
+                window.setTimeout(() => {{
+                    window.location.replace(webUrl);
                 }}, 250);
             }}
 
