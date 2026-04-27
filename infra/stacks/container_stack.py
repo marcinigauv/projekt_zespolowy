@@ -14,14 +14,6 @@ class ContainerStack(Stack):
             image_scan_on_push=True,
         )
 
-        self.frontend_repo = ecr.Repository(
-            self, "Frontend",
-            repository_name="store-frontend",
-            removal_policy=RemovalPolicy.DESTROY,
-            empty_on_delete=True,
-            image_scan_on_push=True,
-        )
-
         self.db_initializer_repo = ecr.Repository(
             self, "DbInitializer",
             repository_name="store-db-initializer",
@@ -32,7 +24,5 @@ class ContainerStack(Stack):
 
         CfnOutput(self, "BackendRepositoryUri",
                   value=self.backend_repo.repository_uri)
-        CfnOutput(self, "FrontendRepositoryUri",
-                  value=self.frontend_repo.repository_uri)
         CfnOutput(self, "DbInitializerRepositoryUri",
                   value=self.db_initializer_repo.repository_uri)
