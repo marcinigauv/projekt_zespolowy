@@ -2,8 +2,8 @@ import React from 'react'
 import { useRouter } from 'expo-router'
 import { YStack, Text, Separator, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { useRouteAccess } from '../src/auth/useRouteAccess'
 import { logoutUserUseCase } from '../src/auth/useCases'
-import { useAuthStore } from '../src/store/authStore'
 import {
   ActionButtonRow,
   DataRow,
@@ -20,10 +20,9 @@ import {
 
 export default function Profile() {
   const router = useRouter()
-  const { user, isAuthenticated } = useAuthStore()
+  const { canRender, user } = useRouteAccess()
 
-  if (!isAuthenticated) {
-    router.replace('/login')
+  if (!canRender) {
     return null
   }
 

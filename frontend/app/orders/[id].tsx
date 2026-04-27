@@ -2,7 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { AppState, Platform } from 'react-native'
 import { ScrollView, Text, YStack } from 'tamagui'
+import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
+import { StateMessageCard } from '../../src/components/StateMessageCard'
+import { formatCurrency, formatDateTime } from '../../src/lib/formatters'
+import { parseBooleanParam, parsePositiveIntParam } from '../../src/lib/routeParams'
 import { getOrderUseCase, type Order } from '../../src/orders/useCases'
 import {
   createPaymentUseCase,
@@ -15,13 +19,11 @@ import {
   shouldShowPaymentRefresh,
   type Payment,
 } from '../../src/payments/useCases'
-import { useAuthStore } from '../../src/store/authStore'
 import { useOrdersStore } from '../../src/store/ordersStore'
 import {
   ActionButtonRow,
   BackLinkButton,
   DataRow,
-  EmptyStateCard,
   Eyebrow,
   PageContent,
   PageWrapper,
@@ -36,41 +38,6 @@ import {
   SurfaceCard,
 } from '../../src/components/styled'
 
-function parseOrderId(value: string | string[] | undefined): number | null {
-  if (Array.isArray(value)) {
-    return parseOrderId(value[0])
-  }
-
-  if (!value) {
-    return null
-  }
-
-  const parsedValue = Number(value)
-  return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : null
-}
-
-function parseFlag(value: string | string[] | undefined): boolean {
-  if (Array.isArray(value)) {
-    return parseFlag(value[0])
-  }
-
-  return value === '1' || value === 'true'
-}
-
-function formatCurrency(value: number): string {
-  return `${value.toFixed(2)} zł`
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleString('pl-PL')
-}
-
 function mergeOrderPayment(order: Order, payment: Payment): Order {
   return {
     ...order,
@@ -84,12 +51,12 @@ function mergeOrderPayment(order: Order, payment: Payment): Order {
 export default function OrderDetailsScreen() {
   const router = useRouter()
   const params = useLocalSearchParams<{ id?: string | string[]; paymentReturn?: string | string[]; startPayment?: string | string[] }>()
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { canRender, isAuthenticated } = useRouteAccess()
   const getOrderById = useOrdersStore((state) => state.getOrderById)
   const upsertOrder = useOrdersStore((state) => state.upsertOrder)
-  const orderId = parseOrderId(params.id)
-  const shouldAutoStartPayment = parseFlag(params.startPayment)
-  const didReturnFromPayment = parseFlag(params.paymentReturn)
+  const orderId = parsePositiveIntParam(params.id)
+  const shouldAutoStartPayment = parseBooleanParam(params.startPayment)
+  const didReturnFromPayment = parseBooleanParam(params.paymentReturn)
   const cachedOrder = orderId !== null ? getOrderById(orderId) : null
   const [order, setOrder] = useState<Order | null>(cachedOrder)
   const [isLoading, setIsLoading] = useState(cachedOrder === null)
@@ -191,8 +158,7 @@ export default function OrderDetailsScreen() {
   }
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login')
+    if (!canRender) {
       return
     }
 
@@ -205,14 +171,14 @@ export default function OrderDetailsScreen() {
 
     setOrder(cachedOrder)
     setIsLoading(cachedOrder === null)
-  }, [cachedOrder, isAuthenticated, orderId, router])
+  }, [cachedOrder, canRender, orderId])
 
   useEffect(() => {
     hasAutoStartedPaymentRef.current = false
   }, [orderId, shouldAutoStartPayment])
 
   useEffect(() => {
-    if (!isAuthenticated || orderId === null) {
+    if (!canRender || orderId === null) {
       return
     }
 
@@ -222,11 +188,11 @@ export default function OrderDetailsScreen() {
     return () => {
       isMountedRef.current = false
     }
-  }, [didReturnFromPayment, isAuthenticated, orderId])
+  }, [canRender, didReturnFromPayment, orderId])
 
   useFocusEffect(
     useCallback(() => {
-      if (!isAuthenticated || orderId === null) {
+      if (!canRender || orderId === null) {
         return undefined
       }
 
@@ -264,7 +230,7 @@ export default function OrderDetailsScreen() {
         window.removeEventListener('focus', handleFocus)
         window.removeEventListener('message', handleMessage)
       }
-    }, [isAuthenticated, orderId]),
+    }, [canRender, orderId]),
   )
 
   useEffect(() => {
@@ -281,7 +247,7 @@ export default function OrderDetailsScreen() {
     void startPaymentRef.current()
   }, [isLoading, isPaymentLoading, order?.id, order?.payment?.status, shouldAutoStartPayment])
 
-  if (!isAuthenticated) {
+  if (!canRender) {
     return null
   }
 
@@ -308,15 +274,9 @@ export default function OrderDetailsScreen() {
           </SectionHeading>
 
           {isLoading ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">…</Text>
-              <Text color="$gray10" fontSize="$5">Ładowanie szczegółów zamówienia</Text>
-            </EmptyStateCard>
+            <StateMessageCard icon="…" message="Ładowanie szczegółów zamówienia" />
           ) : error || !order ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">!</Text>
-              <Text color="$red10" fontSize="$5">{error || 'Nie znaleziono zamówienia'}</Text>
-            </EmptyStateCard>
+            <StateMessageCard icon="!" message={error || 'Nie znaleziono zamówienia'} tone="danger" />
           ) : (
             <YStack gap="$4">
               <SurfaceCard>
@@ -327,7 +287,7 @@ export default function OrderDetailsScreen() {
                   </DataRow>
                   <DataRow>
                     <Text color="$gray10">Data</Text>
-                    <Text fontWeight="700">{formatDate(order.orderDate)}</Text>
+                    <Text fontWeight="700">{formatDateTime(order.orderDate)}</Text>
                   </DataRow>
                   <DataRow>
                     <Text color="$gray10">Płatność</Text>

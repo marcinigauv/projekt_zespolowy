@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { YStack, Text, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
@@ -19,6 +19,8 @@ import {
 
 export default function Register() {
   const router = useRouter()
+  const emailInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const passwordInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -54,15 +56,42 @@ export default function Register() {
 
             <FormField>
               <Label htmlFor="name">Imię</Label>
-              <FormInput id="name" placeholder="Jan Kowalski" value={name} onChangeText={setName} />
+              <FormInput
+                id="name"
+                placeholder="Jan Kowalski"
+                value={name}
+                onChangeText={setName}
+                autoCorrect={false}
+                textContentType="name"
+                returnKeyType="next"
+                submitBehavior="submit"
+                disabled={isSubmitting}
+                onSubmitEditing={() => emailInputRef.current?.focus()}
+              />
             </FormField>
             <FormField>
               <Label htmlFor="email">Email</Label>
-              <FormInput id="email" placeholder="twoj@email.com" value={email} onChangeText={setEmail} autoCapitalize="none" />
+              <FormInput
+                ref={emailInputRef}
+                id="email"
+                placeholder="twoj@email.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                returnKeyType="next"
+                submitBehavior="submit"
+                disabled={isSubmitting}
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
+              />
             </FormField>
             <FormField>
               <Label htmlFor="password">Hasło</Label>
               <FormInput
+                ref={passwordInputRef}
                 id="password"
                 placeholder="••••••••"
                 value={password}
@@ -71,6 +100,12 @@ export default function Register() {
                 type="password"
                 autoComplete="new-password"
                 textContentType="newPassword"
+                returnKeyType="done"
+                submitBehavior="submit"
+                disabled={isSubmitting}
+                onSubmitEditing={() => {
+                  void handleRegister()
+                }}
               />
             </FormField>
             {error ? <Text color="$red10">{error}</Text> : null}

@@ -17,7 +17,7 @@ const media = {
 }
 
 const interFont = createFont({
-  family: isWeb ? 'Inter, Arial, sans-serif' : 'Inter',
+  family: isWeb ? 'Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif' : 'Inter',
   size: {
     1: 12,
     2: 14,
@@ -63,8 +63,10 @@ const interFont = createFont({
   },
   face: {
     400: { normal: 'Inter' },
+    500: { normal: 'InterMedium' },
+    600: { normal: 'InterSemiBold' },
     700: { normal: 'InterBold' },
-    800: { normal: 'InterBold' },
+    800: { normal: 'InterExtraBold' },
   },
 })
 

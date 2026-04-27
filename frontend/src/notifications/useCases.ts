@@ -33,12 +33,15 @@ function toNotificationItem(notification: NotificationDto): NotificationItem {
   }
 }
 
-export async function pollNotificationsUseCase(): Promise<void> {
+export async function loadNotificationsUseCase(): Promise<NotificationItem[]> {
   const notification = await getNotificationsApi()
-  const nextItems =
-    notification.message.trim().length > 0 && !isNotificationExpired(notification.expiresAt)
-      ? [toNotificationItem(notification)]
-      : []
 
+  return notification.message.trim().length > 0 && !isNotificationExpired(notification.expiresAt)
+    ? [toNotificationItem(notification)]
+    : []
+}
+
+export async function pollNotificationsUseCase(): Promise<void> {
+  const nextItems = await loadNotificationsUseCase()
   useNotificationsStore.getState().setNotifications(nextItems)
 }

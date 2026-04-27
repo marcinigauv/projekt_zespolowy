@@ -29,7 +29,8 @@ import {
 
 function ProfileMenu({ onClose }: { onClose: () => void }) {
   const router = useRouter()
-  const { isAuthenticated, user, logout } = useAuthStore()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
 
   const go = (path: string) => {
     onClose()
@@ -104,13 +105,16 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 export function Header() {
   const router = useRouter()
   const media = useMedia()
-  const getTotalItems = useCartStore((s) => s.getTotalItems())
+  const cartItems = useCartStore((state) => state.getTotalItems())
   const [profileOpen, setProfileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const isWeb = Platform.OS === 'web'
   const isDesktop = isWeb && media.gtSm
   const isWideDesktop = isWeb && media.gtMd
-  const cartItems = getTotalItems
+  const isCompactMobile = !isDesktop && media.xxs
+  const navBarStyle = isWeb
+    ? { position: 'sticky' as const, top: 0, zIndex: 40 }
+    : undefined
 
   useEffect(() => {
     if (isDesktop) {
@@ -126,28 +130,20 @@ export function Header() {
 
   if (isDesktop) {
     return (
-      <NavBar px={isWideDesktop ? '$6' : '$4'}>
+      <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
             <Text color="white" fontWeight="800">M</Text>
           </HeaderBrandMark>
           <HeaderBrandCopy>
-            <NavTitle onPress={() => router.push('/')}>Sklep Internetowy</NavTitle>
+            <NavTitle accessibilityLabel="Przejdź do strony głównej" onPress={() => router.push('/')}>Sklep Internetowy</NavTitle>
             {isWideDesktop && <HeaderMeta>Nowoczesne zakupy bez kolejek, stresu i problemów!</HeaderMeta>}
           </HeaderBrandCopy>
         </HeaderBrand>
 
-        {isWideDesktop ? (
-          <HeaderInlineNav>
-            <NavLink onPress={() => navigate('/')}>Strona główna</NavLink>
-            <NavLink onPress={() => navigate('/cart')}>Koszyk</NavLink>
-          </HeaderInlineNav>
-        ) : (
-          <XStack flex={1} />
-        )}
+        <XStack flex={1} />
 
         <HeaderControls>
-          {!isWideDesktop && <NavLink onPress={() => navigate('/')}>Strona główna</NavLink>}
           <Button
             chromeless
             onPress={() => navigate('/cart')}
@@ -155,7 +151,7 @@ export function Header() {
             px="$2"
           >
             <XStack gap="$2" style={{ alignItems: 'center' }}>
-              <Text fontSize="$7">Koszyk</Text>
+              <NavLink>Koszyk</NavLink>
               {cartItems > 0 && (
                 <Text
                   background="$red9"
@@ -179,7 +175,8 @@ export function Header() {
               </Button>
             </Popover.Trigger>
             <Popover.Content
-              bg="#ffffff"
+              theme="surface"
+              bg="$background"
               bordered
               elevate
               p={0}
@@ -198,17 +195,18 @@ export function Header() {
 
   return (
     <>
-      <NavBar>
+      <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
             <Text color="white" fontWeight="800" fontSize="$3">M</Text>
           </HeaderBrandMark>
           <NavTitle
+            accessibilityLabel="Przejdź do strony głównej"
             onPress={() => navigate('/')}
             numberOfLines={1}
             style={{ flexShrink: 1 }}
           >
-            Sklep Internetowy
+            {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
           </NavTitle>
         </HeaderBrand>
 
@@ -241,7 +239,7 @@ export function Header() {
       </NavBar>
 
       {menuOpen && (
-        <HeaderMenuWrap>
+        <HeaderMenuWrap style={{ zIndex: 39 }}>
           <HeaderMenuCard>
             <Text fontSize="$6" fontWeight="800" color="$color">Menu</Text>
 

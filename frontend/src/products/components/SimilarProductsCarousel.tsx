@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Text, XStack, YStack } from 'tamagui'
+import { StateMessageCard } from '../../components/StateMessageCard'
 import type { Product } from '../useCases'
 import {
   BadgeRow,
   CarouselControls,
   CategoryBadge,
   DataRow,
-  EmptyStateCard,
   ProductCardAddButton,
   ProductCardFooter,
   ProductCardLinkButton,
@@ -63,30 +63,15 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
   }, [products])
 
   if (isLoading) {
-    return (
-      <EmptyStateCard gap="$3">
-        <Text fontSize="$8">…</Text>
-        <Text color="$gray10" fontSize="$5">Ładowanie podobnych produktów</Text>
-      </EmptyStateCard>
-    )
+    return <StateMessageCard icon="…" message="Ładowanie podobnych produktów" />
   }
 
   if (error) {
-    return (
-      <EmptyStateCard gap="$3">
-        <Text fontSize="$8">!</Text>
-        <Text color="$red10" fontSize="$5">{error}</Text>
-      </EmptyStateCard>
-    )
+    return <StateMessageCard icon="!" message={error} tone="danger" />
   }
 
   if (products.length === 0) {
-    return (
-      <EmptyStateCard gap="$3">
-        <Text fontSize="$8">∅</Text>
-        <Text color="$gray10" fontSize="$5">Brak podobnych produktów</Text>
-      </EmptyStateCard>
-    )
+    return <StateMessageCard icon="∅" message="Brak podobnych produktów" />
   }
 
   const product = products[normalizeIndex(activeIndex, products.length)]

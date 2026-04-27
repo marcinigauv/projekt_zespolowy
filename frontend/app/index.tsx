@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { useFocusEffect, useRouter } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'expo-router'
 import { Image } from 'react-native'
 import { Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
-import { pollNotificationsUseCase } from '../src/notifications/useCases'
+import { StateMessageCard } from '../src/components/StateMessageCard'
+import { useHomeScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
 import { getProductsUseCase, type Product } from '../src/products/useCases'
 import { useCartStore } from '../src/store/cartStore'
 import {
@@ -28,7 +29,6 @@ import {
   SectionDescription,
   SectionTitle,
   ProductMetaRow,
-  EmptyStateCard,
   SearchInput,
   SearchRow,
   SecondaryButton,
@@ -37,18 +37,13 @@ import {
 export default function Index() {
   const router = useRouter()
   const addItem = useCartStore(s => s.addItem)
+  useHomeScreenNotificationsPolling()
   const [products, setProducts] = useState<Product[]>([])
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-
-  useFocusEffect(
-    useCallback(() => {
-      void pollNotificationsUseCase()
-    }, []),
-  )
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -131,31 +126,23 @@ export default function Index() {
             </SearchRow>
 
             {isLoading ? (
-              <EmptyStateCard gap="$3">
-                <Text fontSize="$8">…</Text>
-                <Text color="$gray10" fontSize="$5">Ładowanie produktów</Text>
-              </EmptyStateCard>
+              <StateMessageCard icon="…" message="Ładowanie produktów" />
             ) : error ? (
-              <EmptyStateCard gap="$3">
-                <Text fontSize="$8">!</Text>
-                <Text color="$red10" fontSize="$5">{error}</Text>
-              </EmptyStateCard>
+              <StateMessageCard icon="!" message={error} tone="danger" />
             ) : products.length === 0 ? (
-              <EmptyStateCard gap="$3">
-                <Text fontSize="$8">∅</Text>
-                <Text color="$gray10" fontSize="$5">
-                  {debouncedSearchTerm
-                    ? 'Brak produktów pasujących do wyszukiwania'
-                    : 'Brak produktów do wyświetlenia'}
-                </Text>
-              </EmptyStateCard>
+              <StateMessageCard
+                icon="∅"
+                message={debouncedSearchTerm
+                  ? 'Brak produktów pasujących do wyszukiwania'
+                  : 'Brak produktów do wyświetlenia'}
+              />
             ) : (
               <ProductList>
                 {products.map(product => (
                   <ProductListItem key={product.id}>
                     <ProductCard>
                       <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
-                        <ProductVisual background="#F3F6FA">
+                        <ProductVisual background="$backgroundPress">
                           {product.imageUrl && !imageErrors[product.id] ? (
                             <Image
                               source={{ uri: product.imageUrl }}

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ScrollView, Text, YStack } from 'tamagui'
+import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
+import { StateMessageCard } from '../../src/components/StateMessageCard'
+import { formatCurrency, formatDateTime } from '../../src/lib/formatters'
 import { listOrdersUseCase } from '../../src/orders/useCases'
 import { getPaymentStatusLabel, getPaymentTone } from '../../src/payments/useCases'
-import { useAuthStore } from '../../src/store/authStore'
 import { useOrdersStore } from '../../src/store/ordersStore'
 import {
   DataRow,
-  EmptyStateCard,
   Eyebrow,
   PageContent,
   PageWrapper,
@@ -22,30 +23,15 @@ import {
   SurfaceCard,
 } from '../../src/components/styled'
 
-function formatCurrency(value: number): string {
-  return `${value.toFixed(2)} zł`
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleString('pl-PL')
-}
-
 export default function OrdersScreen() {
   const router = useRouter()
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { canRender, isAuthenticated } = useRouteAccess()
   const cachedOrders = useOrdersStore((state) => state.orders)
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login')
+    if (!canRender) {
       return
     }
 
@@ -79,9 +65,9 @@ export default function OrdersScreen() {
     return () => {
       isMounted = false
     }
-  }, [isAuthenticated])
+  }, [canRender, isAuthenticated])
 
-  if (!isAuthenticated) {
+  if (!canRender) {
     return null
   }
 
@@ -99,20 +85,11 @@ export default function OrdersScreen() {
           </SectionHeading>
 
           {isLoading ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">…</Text>
-              <Text color="$gray10" fontSize="$5">Ładowanie zamówień</Text>
-            </EmptyStateCard>
+            <StateMessageCard icon="…" message="Ładowanie zamówień" />
           ) : error ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">!</Text>
-              <Text color="$red10" fontSize="$5">{error}</Text>
-            </EmptyStateCard>
+            <StateMessageCard icon="!" message={error} tone="danger" />
           ) : cachedOrders.length === 0 ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">∅</Text>
-              <Text color="$gray10" fontSize="$5">Nie masz jeszcze żadnych zamówień</Text>
-            </EmptyStateCard>
+            <StateMessageCard icon="∅" message="Nie masz jeszcze żadnych zamówień" />
           ) : (
             <YStack gap="$4">
               {cachedOrders.map((order) => (
@@ -124,7 +101,7 @@ export default function OrdersScreen() {
                     </DataRow>
                     <DataRow>
                       <Text color="$gray10">Data</Text>
-                      <Text fontWeight="600">{formatDate(order.orderDate)}</Text>
+                      <Text fontWeight="600">{formatDateTime(order.orderDate)}</Text>
                     </DataRow>
                     <DataRow>
                       <Text color="$gray10">Liczba pozycji</Text>

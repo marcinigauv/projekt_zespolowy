@@ -1,7 +1,8 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
-import { YStack, Text, ScrollView } from 'tamagui'
+import { Button, YStack, Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
+import { useScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
 import { createOrderCommandFromCart, createOrderUseCase } from '../src/orders/useCases'
 import { useAuthStore } from '../src/store/authStore'
 import { useCartStore } from '../src/store/cartStore'
@@ -19,13 +20,21 @@ import {
   SectionHeading,
   SectionTitle,
   SurfaceCard,
+  ProductMetaText,
   ProductPrice,
+  ProductTitle,
 } from '../src/components/styled'
 
 export default function Cart() {
   const router = useRouter()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCartStore()
+  useScreenNotificationsPolling()
+  const items = useCartStore((state) => state.items)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const updateQuantity = useCartStore((state) => state.updateQuantity)
+  const clearCart = useCartStore((state) => state.clearCart)
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice)
+  const getTotalItems = useCartStore((state) => state.getTotalItems)
 
   const handleCheckout = async () => {
     if (!isAuthenticated) {
@@ -62,10 +71,20 @@ export default function Cart() {
                 <SurfaceCard key={item.id}>
                   <YStack gap="$3">
                     <DataRow>
-                      <YStack flex={1} gap="$1.5">
-                        <Text fontSize="$5" fontWeight="700">{item.name}</Text>
-                        <Text color="$placeholderColor" fontSize="$3">Cena bazowa: {item.price.toFixed(2)} zł</Text>
-                      </YStack>
+                      <Button
+                        chromeless
+                        onPress={() => router.push(`/products/${item.id}`)}
+                        pressStyle={{ opacity: 0.78 }}
+                        px="$0"
+                        py="$0"
+                        style={{ flex: 1, minWidth: 0, alignItems: 'flex-start' }}
+                      >
+                        <YStack flex={1} gap="$1" style={{ minWidth: 0, alignItems: 'flex-start' }}>
+                          <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
+                          <ProductMetaText>Cena bazowa: {item.price.toFixed(2)} zł</ProductMetaText>
+                          <Text color="$blue10" fontSize="$2" fontWeight="700">Szczegóły produktu</Text>
+                        </YStack>
+                      </Button>
                       <GhostDangerButton size="$2" onPress={() => removeItem(item.id)}>Usuń</GhostDangerButton>
                     </DataRow>
                     <DataRow>

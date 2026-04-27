@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, type Href } from 'expo-router'
 import { Animated, Easing, Linking, Platform, Pressable, type LayoutChangeEvent } from 'react-native'
-import { YStack } from 'tamagui'
+import { YStack, useMedia } from 'tamagui'
 import {
   ToastCardWrap,
   ToastCardButton,
@@ -20,6 +20,10 @@ const MARQUEE_PIXELS_PER_SECOND = 38
 
 function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url)
+}
+
+interface NotificationsToastHostProps {
+  onMobileInsetChange?: (value: number) => void
 }
 
 function NotificationMarqueeText({ message }: { message: string }) {
@@ -118,23 +122,16 @@ function NotificationMarqueeText({ message }: { message: string }) {
             transform: [{ translateX }],
           }}
         >
-          <ToastText numberOfLines={1}>{message}</ToastText>
-        </Animated.View>
-
-        <YStack
-          opacity={0}
-          position="absolute"
-          pointerEvents="none"
-        >
           <ToastText numberOfLines={1} onLayout={handleTextLayout}>{message}</ToastText>
-        </YStack>
+        </Animated.View>
       </ToastMarqueeViewport>
     </YStack>
   )
 }
 
-export function NotificationsToastHost() {
+export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToastHostProps) {
   const router = useRouter()
+  const media = useMedia()
   const notifications = useNotificationsStore((state) => state.notifications)
   const dismissNotification = useNotificationsStore((state) => state.dismissNotification)
   const [renderedNotification, setRenderedNotification] = useState<(typeof notifications)[number] | null>(null)
@@ -142,10 +139,26 @@ export function NotificationsToastHost() {
   const opacity = useRef(new Animated.Value(0)).current
   const translateY = useRef(new Animated.Value(-10)).current
   const activeNotification = useMemo(() => notifications[0] ?? null, [notifications])
+  const shouldUseNativeDriver = Platform.OS !== 'web'
   const toastViewportStyle = Platform.OS === 'web'
     ? undefined
-    : { top: 76, left: 12, right: 12, alignItems: 'center' as const }
-  const toastCardWidth = Platform.OS === 'web' ? 360 : 320
+    : {
+        top: media.xxs ? 8 : 12,
+        left: media.xxs ? 8 : 12,
+        right: media.xxs ? 8 : 12,
+        alignItems: 'center' as const,
+      }
+  const toastCardWidth = Platform.OS === 'web' ? 360 : media.xxs ? 280 : media.xs ? 300 : 320
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      return
+    }
+
+    if (!renderedNotification) {
+      onMobileInsetChange?.(0)
+    }
+  }, [onMobileInsetChange, renderedNotification])
 
   useEffect(() => {
     if (!activeNotification) {
@@ -154,13 +167,13 @@ export function NotificationsToastHost() {
           toValue: 0,
           duration: 170,
           easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: shouldUseNativeDriver,
         }),
         Animated.timing(translateY, {
           toValue: -10,
           duration: 170,
           easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: shouldUseNativeDriver,
         }),
       ]).start(({ finished }) => {
         if (finished) {
@@ -188,16 +201,16 @@ export function NotificationsToastHost() {
         toValue: 1,
         duration: 220,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: shouldUseNativeDriver,
       }),
       Animated.timing(translateY, {
         toValue: 0,
         duration: 220,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: shouldUseNativeDriver,
       }),
     ]).start()
-  }, [activeNotification, opacity, translateY])
+  }, [activeNotification, opacity, shouldUseNativeDriver, translateY])
 
   if (!renderedNotification) {
     return null
@@ -205,7 +218,17 @@ export function NotificationsToastHost() {
 
   return (
     <ToastViewport style={toastViewportStyle}>
-      <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      <Animated.View
+        onLayout={(event) => {
+          if (Platform.OS === 'web') {
+            return
+          }
+
+          const reservedInset = event.nativeEvent.layout.height + (media.xxs ? 16 : 24)
+          onMobileInsetChange?.(reservedInset)
+        }}
+        style={{ opacity, transform: [{ translateY }] }}
+      >
         <Pressable
           onHoverIn={Platform.OS === 'web' ? () => setHoveredNotificationId(renderedNotification.id) : undefined}
           onHoverOut={Platform.OS === 'web' ? () => setHoveredNotificationId((current) => (current === renderedNotification.id ? null : current)) : undefined}

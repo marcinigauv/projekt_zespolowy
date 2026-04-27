@@ -24,6 +24,7 @@ interface NotificationsState {
   notifications: NotificationItem[]
   dismissedIds: string[]
   setNotifications: (notifications: NotificationItem[]) => void
+  clearNotifications: () => void
   dismissNotification: (id: string) => void
 }
 
@@ -72,6 +73,10 @@ export const useNotificationsStore = create<NotificationsState>((set) => ({
         notifications: activeNotifications,
       }
     })
+  },
+
+  clearNotifications: () => {
+    set({ notifications: [] })
   },
 
   dismissNotification: (id) => {

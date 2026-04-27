@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { YStack, Text, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
@@ -19,6 +19,7 @@ import {
 
 export default function Login() {
   const router = useRouter()
+  const passwordInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -53,11 +54,26 @@ export default function Login() {
 
             <FormField>
               <Label htmlFor="email">Email</Label>
-              <FormInput id="email" placeholder="twoj@email.com" value={email} onChangeText={setEmail} autoCapitalize="none" />
+              <FormInput
+                id="email"
+                placeholder="twoj@email.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                returnKeyType="next"
+                submitBehavior="submit"
+                disabled={isSubmitting}
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
+              />
             </FormField>
             <FormField>
               <Label htmlFor="password">Hasło</Label>
               <FormInput
+                ref={passwordInputRef}
                 id="password"
                 placeholder="••••••••"
                 value={password}
@@ -66,6 +82,12 @@ export default function Login() {
                 type="password"
                 autoComplete="current-password"
                 textContentType="password"
+                returnKeyType="done"
+                submitBehavior="submit"
+                disabled={isSubmitting}
+                onSubmitEditing={() => {
+                  void handleLogin()
+                }}
               />
             </FormField>
             {error ? <Text color="$red10">{error}</Text> : null}

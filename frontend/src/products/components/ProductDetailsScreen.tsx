@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Image } from 'react-native'
+import { Image, Platform } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ScrollView, Text, YStack } from 'tamagui'
 import { Header } from '../../components/Header'
+import { StateMessageCard } from '../../components/StateMessageCard'
+import { parsePositiveIntParam } from '../../lib/routeParams'
+import { useScreenNotificationsPolling } from '../../notifications/useHomeScreenNotificationsPolling'
 import {
   getProductUseCase,
   getSimilarProductsUseCase,
@@ -15,7 +18,6 @@ import {
   BadgeRow,
   CategoryBadge,
   DataRow,
-  EmptyStateCard,
   Eyebrow,
   PageWrapper,
   ProductDetailLayout,
@@ -35,26 +37,21 @@ import {
 } from '../../components/styled'
 import { SimilarProductsCarousel } from './SimilarProductsCarousel'
 
-function parseProductId(value: string | string[] | undefined): number | null {
-  if (Array.isArray(value)) {
-    return parseProductId(value[0])
-  }
-
-  if (!value) {
-    return null
-  }
-
-  const parsedValue = Number(value)
-
-  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
-    return null
-  }
-
-  return parsedValue
-}
-
 function ProductHeroImage({ product }: { product: Product }) {
   if (product.imageUrl) {
+    if (Platform.OS === 'web') {
+      return (
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      )
+    }
+
     return (
       <Image
         source={{ uri: product.imageUrl }}
@@ -77,7 +74,8 @@ export function ProductDetailsScreen() {
   const router = useRouter()
   const params = useLocalSearchParams<{ id?: string | string[] }>()
   const addItem = useCartStore((state) => state.addItem)
-  const productId = parseProductId(params.id)
+  useScreenNotificationsPolling()
+  const productId = parsePositiveIntParam(params.id)
   const [product, setProduct] = useState<Product | null>(null)
   const [productError, setProductError] = useState('')
   const [isProductLoading, setIsProductLoading] = useState(true)
@@ -186,15 +184,9 @@ export function ProductDetailsScreen() {
             </BackLinkButton>
 
             {isProductLoading ? (
-              <EmptyStateCard gap="$3">
-                <Text fontSize="$8">…</Text>
-                <Text color="$gray10" fontSize="$5">Ładowanie produktu</Text>
-              </EmptyStateCard>
+              <StateMessageCard icon="…" message="Ładowanie produktu" />
             ) : productError || !product ? (
-              <EmptyStateCard gap="$3">
-                <Text fontSize="$8">!</Text>
-                <Text color="$red10" fontSize="$5">{productError || 'Nie znaleziono produktu'}</Text>
-              </EmptyStateCard>
+              <StateMessageCard icon="!" message={productError || 'Nie znaleziono produktu'} tone="danger" />
             ) : (
               <SurfaceCard gap="$5">
                 <ProductDetailLayout>

@@ -20,6 +20,17 @@ interface AuthState {
   logout: () => void
 }
 
+function createClearedAuthState() {
+  useCartStore.getState().clearCart()
+  useOrdersStore.getState().clearOrders()
+
+  return {
+    user: null,
+    isAuthenticated: false,
+    isAuthResolved: true,
+  }
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
@@ -42,22 +53,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearSession: () => {
-    useCartStore.getState().clearCart()
-    useOrdersStore.getState().clearOrders()
-    set({
-      user: null,
-      isAuthenticated: false,
-      isAuthResolved: true,
-    })
+    set(createClearedAuthState())
   },
 
   logout: () => {
-    useCartStore.getState().clearCart()
-    useOrdersStore.getState().clearOrders()
-    set({
-      user: null,
-      isAuthenticated: false,
-      isAuthResolved: true,
-    })
+    set(createClearedAuthState())
   },
 }))

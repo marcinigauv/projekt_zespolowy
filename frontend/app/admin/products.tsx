@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Modal } from 'react-native'
 import { Label, ScrollView, Text, YStack } from 'tamagui'
+import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
 import {
   createProductUseCase,
@@ -10,7 +11,6 @@ import {
   type Product,
   updateProductUseCase,
 } from '../../src/products/useCases'
-import { useAuthStore } from '../../src/store/authStore'
 import {
   ActionButtonRow,
   AdminFeedbackText,
@@ -91,7 +91,13 @@ function parseCategories(value: string): string[] {
 
 export default function AdminProductsScreen() {
   const router = useRouter()
-  const { isAuthenticated, user } = useAuthStore()
+  const { canRender } = useRouteAccess({ requireAdmin: true })
+  const nameInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const descriptionInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const priceInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const amountInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const categoriesInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
+  const imageUrlInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const [createForm, setCreateForm] = useState<ProductFormState>(emptyFormState)
   const [editForm, setEditForm] = useState<ProductFormState>(emptyFormState)
   const [searchQuery, setSearchQuery] = useState('')
@@ -107,17 +113,6 @@ export default function AdminProductsScreen() {
   const [editError, setEditError] = useState('')
   const [editSuccessMessage, setEditSuccessMessage] = useState('')
   const [modalMode, setModalMode] = useState<ProductModalMode | null>(null)
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login')
-      return
-    }
-
-    if (!user?.isAdmin) {
-      router.replace('/')
-    }
-  }, [isAuthenticated, router, user?.isAdmin])
 
   const handleFormChange = (
     mode: 'create' | 'edit',
@@ -141,6 +136,7 @@ export default function AdminProductsScreen() {
     setCreateForm(emptyFormState)
     setCreateError('')
     setCreateSuccessMessage('')
+    nameInputRef.current?.focus()
   }
 
   const closeModal = () => {
@@ -308,6 +304,7 @@ export default function AdminProductsScreen() {
   const canRenderEditForm = !isEditMode || selectedProduct !== null
   const modalPrimaryActionLabel = isEditMode ? 'Zapisz zmiany' : 'Dodaj produkt'
   const modalSecondaryActionLabel = isEditMode ? 'Przywróć dane' : 'Wyczyść formularz'
+  const isFormDisabled = isSubmitting || isDeleting
   const selectedProductSummary = useMemo(() => {
     if (!selectedProduct) {
       return 'Wybierz produkt z listy wyników, aby otworzyć formularz edycji.'
@@ -316,7 +313,7 @@ export default function AdminProductsScreen() {
     return `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
   }, [selectedProduct])
 
-  if (!isAuthenticated || !user?.isAdmin) {
+  if (!canRender) {
     return null
   }
 
@@ -477,58 +474,98 @@ export default function AdminProductsScreen() {
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-name' : 'create-product-name'}>Nazwa</Label>
                     <FormInput
+                      ref={nameInputRef}
                       id={isEditMode ? 'edit-product-name' : 'create-product-name'}
                       value={activeForm.name}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'name', value)}
+                      returnKeyType="next"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => descriptionInputRef.current?.focus()}
                     />
                   </FormField>
 
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-description' : 'create-product-description'}>Opis</Label>
                     <FormInput
+                      ref={descriptionInputRef}
                       id={isEditMode ? 'edit-product-description' : 'create-product-description'}
                       value={activeForm.description}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'description', value)}
                       multiline
+                      blurOnSubmit
+                      returnKeyType="next"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => priceInputRef.current?.focus()}
                     />
                   </FormField>
 
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-price' : 'create-product-price'}>Cena</Label>
                     <FormInput
+                      ref={priceInputRef}
                       id={isEditMode ? 'edit-product-price' : 'create-product-price'}
                       value={activeForm.price}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'price', value)}
                       keyboardType="decimal-pad"
+                      returnKeyType="next"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => amountInputRef.current?.focus()}
                     />
                   </FormField>
 
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-amount' : 'create-product-amount'}>Stan magazynowy</Label>
                     <FormInput
+                      ref={amountInputRef}
                       id={isEditMode ? 'edit-product-amount' : 'create-product-amount'}
                       value={activeForm.amount}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'amount', value)}
                       keyboardType="number-pad"
+                      returnKeyType="next"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => categoriesInputRef.current?.focus()}
                     />
                   </FormField>
 
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-categories' : 'create-product-categories'}>Kategorie</Label>
                     <FormInput
+                      ref={categoriesInputRef}
                       id={isEditMode ? 'edit-product-categories' : 'create-product-categories'}
                       value={activeForm.categories}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'categories', value)}
+                      returnKeyType="next"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => imageUrlInputRef.current?.focus()}
                     />
                   </FormField>
 
                   <FormField>
                     <Label htmlFor={isEditMode ? 'edit-product-image-url' : 'create-product-image-url'}>URL obrazu</Label>
                     <FormInput
+                      ref={imageUrlInputRef}
                       id={isEditMode ? 'edit-product-image-url' : 'create-product-image-url'}
                       value={activeForm.imageUrl}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'imageUrl', value)}
                       autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="url"
+                      returnKeyType="done"
+                      submitBehavior="submit"
+                      disabled={isFormDisabled}
+                      onSubmitEditing={() => {
+                        if (isEditMode) {
+                          void handleUpdateProduct()
+                          return
+                        }
+
+                        void handleCreateProduct()
+                      }}
                     />
                   </FormField>
 
