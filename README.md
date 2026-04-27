@@ -17,9 +17,16 @@ Trzy główne foldery:
 - Docker/Podman wraz z Docker Compose (uruchomienie backendu i frontendu przy użyciu jednej komendy)
 
 ```bash
-cd projekt_zespolowyc
+cd projekt_zespolowy
 docker compose up -d  --build         # albo podman compose up -d --build
 ```
+
+Aby wypełnić danych przykładowymi przedmiotami i użytkownikami (ich zawartość jest w plikach folderu backend/db_initializer/data) należy użyć komendy:
+
+```bash
+docker compose --profile initializer run --rm db_initializer
+```
+
 
 ## .env (dev)
 
