@@ -211,9 +211,46 @@ jobs:
           BACKEND_SERVICE_NAME: ${{ steps.compute.outputs.backend_service_name }}
           CHROMA_SERVICE_NAME: ${{ steps.compute.outputs.chroma_service_name }}
         run: |
-          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$BACKEND_SERVICE_NAME" --force-new-deployment
-          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$CHROMA_SERVICE_NAME" --force-new-deployment
-          aws ecs wait services-stable --cluster "$CLUSTER_NAME" --services "$BACKEND_SERVICE_NAME" "$CHROMA_SERVICE_NAME"
+          wait_for_service_stable() {
+            local service_name="$1"
+            local timeout_seconds="$2"
+            local poll_interval_seconds=15
+            local start_time
+            start_time=$(date +%s)
+
+            while true; do
+              read -r running_count desired_count pending_count deployment_count rollout_state < <(
+                aws ecs describe-services \
+                  --cluster "$CLUSTER_NAME" \
+                  --services "$service_name" \
+                  --query 'services[0].[runningCount,desiredCount,pendingCount,length(deployments),deployments[?status==`PRIMARY`]|[0].rolloutState]' \
+                  --output text
+              )
+
+              echo "service=$service_name running=$running_count desired=$desired_count pending=$pending_count deployments=$deployment_count rollout=$rollout_state"
+
+              if [ "$running_count" = "$desired_count" ] && [ "$pending_count" = "0" ] && [ "$deployment_count" = "1" ] && [ "$rollout_state" = "COMPLETED" ]; then
+                return 0
+              fi
+
+              if [ $(( $(date +%s) - start_time )) -ge "$timeout_seconds" ]; then
+                echo "Timed out waiting for ECS service to stabilize: $service_name" >&2
+                aws ecs describe-services \
+                  --cluster "$CLUSTER_NAME" \
+                  --services "$service_name" \
+                  --output json >&2
+                return 1
+              fi
+
+              sleep "$poll_interval_seconds"
+            done
+          }
+
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$CHROMA_SERVICE_NAME" --force-new-deployment >/dev/null
+          wait_for_service_stable "$CHROMA_SERVICE_NAME" 900
+
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$BACKEND_SERVICE_NAME" --force-new-deployment >/dev/null
+          wait_for_service_stable "$BACKEND_SERVICE_NAME" 1200
 
       - name: Upload frontend bundle to S3
         env:
