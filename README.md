@@ -30,7 +30,7 @@ http://localhost:8081
 
 ## Wyłączenie
 
-Wyłączenie usługi następuje po wywołaniu komendy:
+Wyłącz usługi:
 
 ```bash
 docker compose down
