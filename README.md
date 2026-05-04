@@ -1,53 +1,37 @@
-```markdown
 # Sklep internetowy
 
-Projekt zespołowy – sklep internetowy.
+Projekt można uruchomić lokalnie przy pomocy Docker Compose.
 
-Trzy główne foldery:
+## Uruchomienie
 
-- `backend` – REST API + Logika biznesowa
-- `frontend` – Expo (web + mobile)
-- `infra` – AWS CDK (IaC)
-
-
-## Szybki start
-
-### Co jest potrzebne do uruchomienia:
-- plik .env ze zmiennymi środowiskowymi (patrz .env.example)
-- Docker/Podman wraz z Docker Compose (uruchomienie backendu i frontendu przy użyciu jednej komendy)
+1. W katalogu głównym projektu utwórz plik `.env` na podstawie `.env.example`.
+2. Uruchom usługi:
 
 ```bash
-cd projekt_zespolowy
-docker compose up -d  --build         # albo podman compose up -d --build
+docker compose up -d --build
 ```
 
-Aby wypełnić danych przykładowymi przedmiotami i użytkownikami (ich zawartość jest w plikach folderu backend/db_initializer/data) należy użyć komendy:
+## Seed danych
+
+Po uruchomieniu usług wykonaj inicjalizację danych przykładowych: produktów oraz użytkowników.
 
 ```bash
 docker compose --profile initializer run --rm db_initializer
 ```
 
+## Dostęp
 
-## .env (dev)
+Aplikacja jest dostępna pod adresem:
 
-```env
-AUTH_SETTINGS__PASSWORD_PEPPER=default_pepper_value
-DB_SQL_SETTINGS__HOST=localhost
-DB_SQL_SETTINGS__PORT=5432
-DB_SQL_SETTINGS__USERNAME=postgres
-DB_SQL_SETTINGS__PASSWORD=postgres
-DB_SQL_SETTINGS__DATABASE=store_db
-VECTOR_STORE_SETTINGS__CHROMA_HOST=localhost
-VECTOR_STORE_SETTINGS__CHROMA_PORT=8001
-VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY=false
-PAYMENTS_SETTINGS__PROVIDER_URL=https://api.sandbox.paynow.pl/v1/payments
-PAYMENTS_SETTINGS__API_KEY=API_KEY_OD_PROVIDERA
-PAYMENTS_SETTINGS__SIGN_PHRASE=sign-phrase-od-providera
+```text
+http://localhost:8081
 ```
 
-## Porty
 
-- backend: 8000
-- postgres: 5432
-- chroma: 8001
-````
+## Wyłączenie
+
+Wyłączenie usługi następuje po wywołaniu komendy:
+
+```bash
+docker compose down
+```
