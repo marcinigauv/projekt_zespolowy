@@ -47,11 +47,11 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
   if (isAuthenticated && user) {
     return (
-      <HeaderProfileSurface>
+      <HeaderProfileSurface >
         <HeaderProfileSummary>
           <HeaderProfileRow>
             <HeaderAvatar>
-              <Text color="white" fontWeight="700" fontSize="$5">
+              <Text color="#bef7e2" fontWeight="700" fontSize="$5">
                 {user.name?.[0] || '?'}
               </Text>
             </HeaderAvatar>
@@ -91,11 +91,11 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <HeaderProfileSurface>
+    <HeaderProfileSurface width="90%" style={{paddingTop:"12px", paddingBottom:"12px"}} >
       <HeaderMenuButton onPress={() => go('/login')}>
         Zaloguj się
       </HeaderMenuButton>
-      <HeaderMenuButton onPress={() => go('/register')}>
+      <HeaderMenuButton  onPress={() => go('/register')}>
         Zarejestruj się
       </HeaderMenuButton>
     </HeaderProfileSurface>
@@ -131,9 +131,9 @@ export function Header() {
   if (isDesktop) {
     return (
       <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
-        <HeaderBrand>
+        <HeaderBrand >
           <HeaderBrandMark>
-            <Text color="white" fontWeight="800">M</Text>
+            <Text color="#325649" fontSize="$7" fontWeight="800">SI</Text>
           </HeaderBrandMark>
           <HeaderBrandCopy>
             <NavTitle accessibilityLabel="Przejdź do strony głównej" onPress={() => router.push('/')}>Sklep Internetowy</NavTitle>
@@ -149,9 +149,12 @@ export function Header() {
             onPress={() => navigate('/cart')}
             pressStyle={{ opacity: 0.7 }}
             px="$2"
+            background="#f8fffd" 
+            hoverStyle={{bg: '#bef7e2',}}
+            
           >
             <XStack gap="$2" style={{ alignItems: 'center' }}>
-              <NavLink>Koszyk</NavLink>
+              <NavLink >🛒 Koszyk </NavLink>
               {cartItems > 0 && (
                 <Text
                   background="$red9"
@@ -168,15 +171,16 @@ export function Header() {
             </XStack>
           </Button>
 
-          <Popover open={profileOpen} onOpenChange={setProfileOpen} placement="bottom-end">
+          <Popover  open={profileOpen} onOpenChange={setProfileOpen} placement="bottom-end">
             <Popover.Trigger>
-              <Button chromeless px="$0">
-                <NavLink>Profil</NavLink>
+              <Button background="#f8fffd" chromeless px="$0" hoverStyle={{bg: '#bef7e2',}} >
+                <NavLink> 👤 Profil  </NavLink>
               </Button>
             </Popover.Trigger>
             <Popover.Content
+            bg="#bef7e2"
               theme="surface"
-              bg="$background"
+             /*  bg="$background" */
               bordered
               elevate
               p={0}
@@ -198,7 +202,7 @@ export function Header() {
       <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="white" fontWeight="800" fontSize="$3">M</Text>
+            <Text color="#325649" fontWeight="800" fontSize="$3">SI</Text>
           </HeaderBrandMark>
           <NavTitle
             accessibilityLabel="Przejdź do strony głównej"
@@ -214,10 +218,12 @@ export function Header() {
           <Button
             unstyled
             onPress={() => navigate('/cart')}
-            pressStyle={{ opacity: 0.85 }}
+            style={{ background: '#bef7e2' }}
+            pressStyle={{ opacity: 0.85, }}
           >
             <HeaderIconButton>
-              <Text fontSize="$6">🛒</Text>
+              <Text color="#325649" fontSize="$6" fontWeight="800">🛒</Text>
+             {/*  <Text fontSize="$6">🛒</Text> */}
               {cartItems > 0 && (
                 <HeaderBadge>
                   <Text color="white" fontSize="$1" fontWeight="800">{cartItems}</Text>
@@ -230,9 +236,10 @@ export function Header() {
             unstyled
             onPress={() => setMenuOpen((current) => !current)}
             pressStyle={{ opacity: 0.85 }}
+            style={{ background: '#bef7e2' }}
           >
             <HeaderPrimaryIconButton>
-              <Text color="white" fontSize="$6" fontWeight="800">☰</Text>
+              <Text color="white" fontSize="$6" fontWeight="800">👤</Text>
             </HeaderPrimaryIconButton>
           </Button>
         </HeaderControls>

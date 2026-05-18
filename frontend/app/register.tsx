@@ -89,7 +89,7 @@ export default function Register() {
               />
             </FormField>
             <FormField>
-              <Label htmlFor="password">Hasło</Label>
+              <Label style={{color: '#325649'}} htmlFor="password">Hasło</Label>
               <FormInput
                 ref={passwordInputRef}
                 id="password"

@@ -25873,19 +25873,19 @@
             "normal": "Inter"
           },
           "500": {
-            "normal": "Inter"
+            "normal": "InterMedium"
           },
           "600": {
-            "normal": "Inter"
+            "normal": "InterSemiBold"
           },
           "700": {
             "normal": "InterBold"
           },
           "800": {
-            "normal": "InterBold"
+            "normal": "InterExtraBold"
           },
           "900": {
-            "normal": "InterBold"
+            "normal": "InterExtraBold"
           }
         }
       },
@@ -25953,19 +25953,19 @@
             "normal": "Inter"
           },
           "500": {
-            "normal": "Inter"
+            "normal": "InterMedium"
           },
           "600": {
-            "normal": "Inter"
+            "normal": "InterSemiBold"
           },
           "700": {
             "normal": "InterBold"
           },
           "800": {
-            "normal": "InterBold"
+            "normal": "InterExtraBold"
           },
           "900": {
-            "normal": "InterBold"
+            "normal": "InterExtraBold"
           }
         }
       }
@@ -74216,7 +74216,7 @@
         "color04": "hsla(0, 0%, 2%, 0.4)",
         "color06": "hsla(0, 0%, 2%, 0.6)",
         "color08": "hsla(0, 0%, 2%, 0.8)",
-        "color": "#162033",
+        "color": "#325649",
         "colorHover": "#0e1728",
         "colorPress": "#24324b",
         "colorFocus": "#24324b",

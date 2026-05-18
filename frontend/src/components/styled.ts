@@ -4,7 +4,7 @@ const styles = <Value,>(value: Value) => value
 
 export const PageWrapper = styled(YStack, styles({
   flex: 1,
-  bg: '$background',
+  bg: '#ebf9f4',
 }))
 
 export const PageContent = styled(YStack, styles({
@@ -60,9 +60,9 @@ export const Eyebrow = styled(Text, styles({
 }))
 
 export const SectionTitle = styled(Text, styles({
-  color: '$color',
-  fontSize: '$9',
-  fontWeight: '800',
+  color: '#325649',
+  fontSize: '$10',
+  fontWeight: '100',
   letterSpacing: -0.8,
   lineHeight: '$9',
   $md: {
@@ -95,7 +95,7 @@ export const SurfaceCard = styled(YStack, styles({
   bg: '$background',
   borderWidth: 1,
   borderColor: '$borderColor',
-  borderRadius: '$8',
+  borderRadius: '$2',
   p: '$4',
   gap: '$3',
   shadowColor: '$shadowColor',
@@ -130,6 +130,7 @@ export const ModalCard = styled(SurfaceCard, styles({
   maxWidth: 720,
   maxHeight: '100%',
   gap: '$4',
+  background:'#e6f4ff',
 }))
 
 export const ModalHeaderRow = styled(XStack, styles({
@@ -145,22 +146,23 @@ export const ModalBodyScroll = styled(ScrollView, styles({
 
 export const ToastViewport = styled(YStack, styles({
   position: 'absolute',
-  top: 88,
-  right: '$4',
-  left: '$4',
+  bottom: '0',
+  /* top: 88, */
+  right:'0'  /*  '$4' */,
+  left: '0'  /* '$4' */,
   gap: '$2.5',
-  alignItems: 'flex-end',
+  alignItems: 'stretch' /*  'flex-end' */,
   pointerEvents: 'box-none',
   zIndex: 30,
 }))
 
 export const ToastCardButton = styled(Button, styles({
   width: '100%',
-  maxWidth: 360,
-  bg: '#edf4fb',
+  /* maxWidth: 360, */
+  bg: 'rgba(212, 8, 8, 0.65)',
   borderWidth: 1,
   borderColor: '#c9d9ea',
-  borderRadius: '$8',
+  borderRadius: '0',
   px: '$3.5',
   py: '$3',
   alignItems: 'stretch',
@@ -170,11 +172,15 @@ export const ToastCardButton = styled(Button, styles({
   shadowOpacity: 0.12,
   shadowRadius: 20,
   elevation: 3,
+  hoverStyle: {
+    bg: '#FFD700',         
+    borderColor: '#FFC800', 
+  },
 }))
 
 export const ToastCardWrap = styled(YStack, styles({
   width: '100%',
-  maxWidth: 360,
+  /* maxWidth: 360, */
   position: 'relative',
   alignItems: 'stretch',
   pointerEvents: 'box-none',
@@ -192,13 +198,13 @@ export const ToastMarqueeViewport = styled(YStack, styles({
 
 export const ToastTooltip = styled(YStack, styles({
   position: 'absolute',
-  right: 0,
-  top: '100%',
+  right: 250,
+  bottom: '100%',
   mt: '$2',
   maxWidth: 420,
   bg: '#17324b',
   borderRadius: '$6',
-  px: '$3',
+  px: '$4',
   py: '$2.5',
   shadowColor: 'rgba(9, 19, 29, 0.28)',
   shadowOffset: { width: 0, height: 10 },
@@ -241,9 +247,11 @@ export const CategoryBadge = styled(XStack, styles({
   bg: '$blue2',
   px: '$2.5',
   py: '$1',
-  borderRadius: '$10',
+  borderRadius: '$2',
   borderWidth: 1,
   borderColor: '$blue4',
+  marginTop: '$2',
+  marginBottom: '$4',
 }))
 
 export const AuthCenter = styled(YStack, styles({
@@ -267,7 +275,12 @@ export const AuthForm = styled(YStack, styles({
 
 export const FormCard = styled(SurfaceCard, styles({
   width: '100%',
+  background:'#e6f4ff',
   maxWidth: 440,
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.06,
+  shadowRadius: 18,
   alignSelf: 'center',
   p: '$5',
   gap: '$4',
@@ -293,23 +306,25 @@ export const FormField = styled(YStack, styles({
 export const FormInput = styled(Input, styles({
   theme: 'surface',
   size: '$4',
-  bg: '$background',
+  bg: '#c6e1f7',
   borderColor: '$borderColor',
-  color: '$color',
-  borderRadius: '$6',
+  color: '#325649',
+  borderRadius: '$2',
   px: '$3',
   focusStyle: {
     borderColor: '$outlineColor',
+    bg: '#c6e1f7',
   },
 }))
 
 export const SearchInput = styled(FormInput, styles({
   width: '100%',
+  bg: '#c6e1f7',
 }))
 
 export const NavBar = styled(XStack, styles({
   theme: 'surface',
-  bg: '$background',
+  bg:'#5d6d7b',
   minHeight: 72,
   minWidth: 0,
   ai: 'center',
@@ -332,13 +347,13 @@ export const NavBar = styled(XStack, styles({
 }))
 
 export const NavTitle = styled(Text, styles({
-  color: '$color',
+   color: '#effff9',
   fontSize: '$6',
   fontWeight: '800',
   letterSpacing: -0.3,
   cursor: 'pointer',
   hoverStyle: {
-    color: '$colorHover',
+   color: '#bef7e2',
   },
   pressStyle: { opacity: 0.7 },
   $md: {
@@ -375,12 +390,12 @@ export const HeaderBrand = styled(XStack, styles({
 }))
 
 export const HeaderBrandMark = styled(YStack, styles({
-  width: 36,
-  height: 36,
-  bg: '$blue9',
-  borderRadius: '$6',
+  width: 46,
+  height: 46,
+  bg:'#bef7e2',
+  borderRadius: '$15',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'center',  
   $sm: {
     width: 32,
     height: 32,
@@ -394,9 +409,9 @@ export const HeaderBrandCopy = styled(YStack, styles({
 }))
 
 export const HeaderMeta = styled(Text, styles({
-  color: '$placeholderColor',
+  color: '#effff9',
   fontSize: '$2',
-  lineHeight: '$2',
+  lineHeight: '$2',  
 }))
 
 export const HeaderInlineNav = styled(XStack, styles({
@@ -431,7 +446,7 @@ export const HeaderIconButton = styled(YStack, styles({
   borderRadius: '$7',
   borderWidth: 1,
   borderColor: '$borderColor',
-  bg: '$backgroundPress',
+  bg: '#bef7e2',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
@@ -441,7 +456,7 @@ export const HeaderPrimaryIconButton = styled(YStack, styles({
   width: 42,
   height: 42,
   borderRadius: '$7',
-  bg: '$blue9',
+  bg: '#bef7e2',
   alignItems: 'center',
   justifyContent: 'center',
 }))
@@ -467,6 +482,7 @@ export const HeaderBadge = styled(YStack, styles({
 export const HeaderMenuWrap = styled(YStack, styles({
   px: '$3',
   pt: '$2',
+  
   $xs: {
     px: '$2.5',
   },
@@ -475,21 +491,31 @@ export const HeaderMenuWrap = styled(YStack, styles({
 export const HeaderMenuCard = styled(SurfaceCard, styles({
   p: '$3',
   gap: '$2',
-  borderRadius: '$8',
+  borderRadius: '$2',
+  bg: '#bef7e2'
+  
 }))
 
 export const HeaderMenuButton = styled(Button, styles({
   chromeless: true,
+  width: '100%',
   size: '$5',
   justifyContent: 'flex-start',
   cursor: 'pointer',
   px: '$4',
   py: '$3',
+  color: '#325649',
+  bg: '#bef7e2',
+   hoverStyle: {
+    width: '100%',
+    bg: '#ecf6f3',          
+  }, 
+  
 }))
 
 export const HeaderProfileSurface = styled(YStack, styles({
   theme: 'surface',
-  bg: '$background',
+  bg: '#bef7e2'
 }))
 
 export const HeaderProfileSummary = styled(YStack, styles({
@@ -501,12 +527,13 @@ export const HeaderProfileSummary = styled(YStack, styles({
 export const HeaderProfileRow = styled(XStack, styles({
   gap: '$3',
   alignItems: 'center',
+  
 }))
 
 export const HeaderAvatar = styled(YStack, styles({
   width: 40,
   height: 40,
-  bg: '$blue9',
+  bg: '#325649',
   borderRadius: '$10',
   alignItems: 'center',
   justifyContent: 'center',
@@ -514,6 +541,7 @@ export const HeaderAvatar = styled(YStack, styles({
 
 export const ProductList = styled(XStack, styles({
   flexWrap: 'wrap',
+  
   gap: '$4',
   justifyContent: 'space-between',
   $xs: {
@@ -523,6 +551,7 @@ export const ProductList = styled(XStack, styles({
 
 export const ProductListItem = styled(YStack, styles({
   width: '100%',
+  
   $gtXs: {
     width: '48%',
     minWidth: 240,
@@ -537,10 +566,10 @@ export const ProductListItem = styled(YStack, styles({
 
 export const ProductCard = styled(YStack, styles({
   theme: 'surface',
-  bg: '$background',
+  /* background:'#c6e1f7', */
   borderWidth: 1,
   borderColor: '$borderColor',
-  borderRadius: '$8',
+  borderRadius: '$2',
   overflow: 'hidden',
   shadowColor: '$shadowColor',
   shadowOffset: { width: 0, height: 6 },
@@ -578,10 +607,11 @@ export const ProductInfo = styled(YStack, styles({
 }))
 
 export const ProductCardSection = styled(YStack, styles({
-  p: '$3',
-  gap: '$1.5',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
+ /*  p: '$3', */
+/*   gap: '$1.5', */
+  /* borderBottomWidth: 1, */
+   background:'#ecf7ff !important',
+ /*  borderBottomColor: '$borderColor', */
   $sm: {
     p: '$2.5',
   },
@@ -590,14 +620,16 @@ export const ProductCardSection = styled(YStack, styles({
 export const ProductCardFooter = styled(YStack, styles({
   p: '$3',
   theme: 'surface',
-  bg: '$background',
+  background:'#ecf7ff',
 }))
 
 export const ProductTitle = styled(Text, styles({
-  color: '$color',
-  fontSize: '$5',
-  fontWeight: '700',
-  lineHeight: '$5',
+  color: '#325649',
+  fontSize: '$7',
+  textAlign: 'left',
+  fontWeight: '100',
+  lineHeight: '$7',
+  marginBottom: '$3',
   $sm: {
     fontSize: '$4',
     lineHeight: '$4',
@@ -616,8 +648,12 @@ export const ProductMetaText = styled(Text, styles({
 
 export const ProductPrice = styled(Text, styles({
   fontSize: '$6',
+  /* widthMax: 'content', */
+  /* justifyContent:"flex-end", */
   fontWeight: '800',
-  color: '$blue10',
+  color:'#04946e' , 
+  padding: '$2',
+  borderRadius: '$2',
   $sm: {
     fontSize: '$5',
   },
@@ -626,7 +662,8 @@ export const ProductPrice = styled(Text, styles({
 export const ProductMetaRow = styled(XStack, styles({
   gap: '$2',
   justifyContent: 'flex-start',
-  alignItems: 'center',
+  /* alignItems: 'center', */
+   background:'#ecf7ff',
 }))
 
 export const DataRow = styled(XStack, styles({
@@ -708,6 +745,7 @@ export const StatusBadgeText = styled(Text, styles({
 export const BackLinkButton = styled(Button, styles({
   chromeless: true,
   px: '$0',
+  
   alignSelf: 'flex-start',
 }))
 
@@ -742,10 +780,10 @@ export const ProductCarouselMedia = styled(ProductVisual, styles({}))
 
 export const ProductImagePlaceholder = styled(YStack, styles({
   flex: 1,
-  ai: 'center',
-  jc: 'center',
+  alignItems: 'center',
+  justifyContent: 'center',
   theme: 'surface',
-  bg: '$backgroundPress',
+  bg: '#bef7e2',   
 }))
 
 export const ProductCarouselFrame = styled(YStack, styles({
@@ -754,7 +792,7 @@ export const ProductCarouselFrame = styled(YStack, styles({
   overflow: 'hidden',
   borderWidth: 1,
   borderColor: '$borderColor',
-  bg: '$background',
+ bg:'#c6e1f7',
 }))
 
 export const CarouselControls = styled(XStack, styles({
@@ -769,9 +807,18 @@ export const InlineCenter = styled(XStack, styles({
 }))
 
 export const InlineControls = styled(XStack, styles({
-  gap: '$2',
-  alignItems: 'center',
-}))
+    gap: '$2',
+    alignItems: 'center',
+   /*  marginTop: '$8', */
+  }), 
+  
+  // 👇 DRUGI ARGUMENT: przekazujemy $xs bezpośrednio do Tamagui, POMIJAJĄC funkcję styles()
+  /* {
+    $xs: {
+      marginTop: 0,
+    },
+  } */
+)
 
 export const EmptyStateCard = styled(SurfaceCard, styles({
   py: '$8',
@@ -787,7 +834,7 @@ export const AdminSectionHeader = styled(YStack, styles({
 }))
 
 export const AdminSectionTitle = styled(Text, styles({
-  color: '$color',
+  color: '#325649',
   fontSize: '$6',
   fontWeight: '800',
   letterSpacing: -0.3,
@@ -865,12 +912,18 @@ export const PrimaryButton = styled(Button, styles({
   theme: 'brand',
   size: '$5',
   px: '$6',
-  borderRadius: '$10',
   fontWeight: '700',
   shadowColor: 'rgba(31, 75, 143, 0.18)',
   shadowOffset: { width: 0, height: 6 },
   shadowOpacity: 0.12,
   shadowRadius: 16,
+  background: '#62eebb',
+  color: '#325649',
+  borderRadius: '$2',
+  borderColor:'#05ea96f5',
+  hoverStyle: {
+    bg: '#e0fff4',          
+  },
   $xs: {
     width: '100%',
   },
@@ -881,8 +934,18 @@ export const AddToCartButton = styled(Button, styles({
   px: '$4',
   py: '$2',
   fontSize: '$4',
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.06,
+  shadowRadius: 18,
   fontWeight: '600',
-  borderRadius: '$8',
+  background: '#62eebb',
+  color: '#325649',
+  borderRadius: '$2',
+  borderColor:'#05ea96f5',
+  hoverStyle: {
+    bg: '#e0fff4',          
+  },
   $xs: {
     width: '100%',
   },
@@ -890,21 +953,34 @@ export const AddToCartButton = styled(Button, styles({
 
 export const ProductCardAddButton = styled(AddToCartButton, styles({
   width: '100%',
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.06,
+  shadowRadius: 18,
 }))
 
 export const SecondaryButton = styled(Button, styles({
-  theme: 'surface',
-  bg: '$background',
-  color: '$color',
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  size: '$5',
-  borderRadius: '$10',
+  theme: 'surface',   
+  borderWidth: 1,  
+  size: '$5',  
   fontWeight: '700',
+  background: 'rgb(76, 194, 221)',
+  color: '#325649',
+  borderRadius: '$2',
+  borderColor:'#71e4fbf5',
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.06,
+  shadowRadius: 18,
+  hoverStyle: {
+  bg: '#c6e1f7',          
+  },
+  
 }))
 
 export const GhostDangerButton = styled(Button, styles({
   chromeless: true,
   color: '$red10',
   fontWeight: '700',
+  borderRadius: '$2',
 }))

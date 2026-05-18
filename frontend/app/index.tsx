@@ -137,14 +137,14 @@ export default function Index() {
                   : 'Brak produktów do wyświetlenia'}
               />
             ) : (
-              <ProductList>
+              <ProductList >
                 {products.map(product => (
                   <ProductListItem key={product.id}>
-                    <ProductCard>
-                      <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
-                        <ProductVisual background="$backgroundPress">
+                    <ProductCard style={{animation:'quickly'}} hoverStyle={{ scale: 1.03 }} >
+                      <ProductCardLinkButton background="#ecf7ff"  style={{  borderWidth: 0 }}  onPress={() => router.push(`/products/${product.id}`)}>
+                        <ProductVisual >
                           {product.imageUrl && !imageErrors[product.id] ? (
-                            <Image
+                            <Image 
                               source={{ uri: product.imageUrl }}
                               resizeMode="cover"
                               onError={() =>
@@ -162,20 +162,20 @@ export default function Index() {
                               style={{ width: '100%', height: '100%' }}
                             />
                           ) : imageErrors[product.id] ? (
-                            <Text color="$gray10" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
+                            <Text  color="$gray10" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center', justifyContent:"center" }}>
                               Zdjęcie produktu niedostępne
                             </Text>
                           ) : (
-                            <Text fontSize="$10" fontWeight="800" color="$blue10">
+                            <Text fontWeight="900" color="#325649" style={{fontFamily:'Segoe UI', fontSize:"6em", height: '160px', background: '#bef7e2', lineHeight: '140px', textAlign: 'center', alignItems:"center", justifyContent:"center" }}>
                               {product.name.slice(0, 1).toUpperCase()}
                             </Text>
                           )}
                         </ProductVisual>
-                        <ProductInfo>
-                          <ProductCardSection>
+                        <ProductInfo >
+                          <ProductCardSection >
                             <BadgeRow>
                               <CategoryBadge>
-                                <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                                <Text fontSize="$1" color="#fe3d3d" fontWeight="600" letterSpacing={0.5}>
                                   DOSTĘPNE: {product.amount}
                                 </Text>
                               </CategoryBadge>
@@ -186,7 +186,7 @@ export default function Index() {
                           </ProductCardSection>
                           <ProductCardSection>
                             <ProductMetaRow>
-                              <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
+                              <ProductPrice style={{width: '100%', justifyContent:"flex-end"}}>{product.price.toFixed(2)} zł</ProductPrice>
                             </ProductMetaRow>
                           </ProductCardSection>
                         </ProductInfo>

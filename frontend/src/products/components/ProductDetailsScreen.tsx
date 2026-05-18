@@ -56,14 +56,15 @@ function ProductHeroImage({ product }: { product: Product }) {
       <Image
         source={{ uri: product.imageUrl }}
         resizeMode="cover"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%'  }}
+        
       />
     )
   }
 
   return (
     <ProductImagePlaceholder>
-      <Text fontSize="$10" fontWeight="800" color="$blue10">
+      <Text  fontWeight="900" color="#325649" style={{fontWeight: '900', fontFamily:'Segoe UI', fontSize:"6em" }}>
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>
@@ -180,7 +181,7 @@ export function ProductDetailsScreen() {
         <ProductGrid>
           <Section>
             <BackLinkButton onPress={() => router.push('/')}>
-              <Text color="$blue10" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
+              <Text color="#83c7ff" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
             </BackLinkButton>
 
             {isProductLoading ? (
@@ -188,7 +189,7 @@ export function ProductDetailsScreen() {
             ) : productError || !product ? (
               <StateMessageCard icon="!" message={productError || 'Nie znaleziono produktu'} tone="danger" />
             ) : (
-              <SurfaceCard gap="$5">
+              <SurfaceCard  background='#ecf7ff' gap="$5">
                 <ProductDetailLayout>
                   <ProductMediaColumn>
                     <ProductHeroMedia>
@@ -207,7 +208,7 @@ export function ProductDetailsScreen() {
 
                     <BadgeRow>
                       <CategoryBadge>
-                        <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                        <Text fontSize="$1" color="#fe3d3d" fontWeight="600" letterSpacing={0.5}>
                           DOSTĘPNE: {product.amount}
                         </Text>
                       </CategoryBadge>
@@ -230,16 +231,18 @@ export function ProductDetailsScreen() {
                     </SurfaceCard>
 
                     <DataRow>
-                      <SecondaryButton size="$4" onPress={() => router.push('/cart')}>
+                      <SecondaryButton size="$4" $xs={{ width: '100%' }} onPress={() => router.push('/cart')}>
                         Przejdź do koszyka
                       </SecondaryButton>
                       <AddToCartButton
                         size="$4"
                         onPress={() =>
+                          
                           addItem({
                             id: product.id,
                             name: product.name,
                             price: product.price,
+                            
                           })
                         }
                       >

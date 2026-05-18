@@ -89,7 +89,7 @@ const config = createTamagui({
       backgroundFocus: '#dce5f0',
       backgroundStrong: '#d8e2ee',
       backgroundTransparent: 'rgba(244,247,251,0.88)',
-      color: '#162033',
+      color: '#325649',
       colorHover: '#0e1728',
       colorPress: '#24324b',
       colorFocus: '#24324b',

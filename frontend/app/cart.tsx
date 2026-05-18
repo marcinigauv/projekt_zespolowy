@@ -71,26 +71,26 @@ export default function Cart() {
                 <SurfaceCard key={item.id}>
                   <YStack gap="$3">
                     <DataRow>
-                      <Button
+                      <Button 
                         chromeless
                         onPress={() => router.push(`/products/${item.id}`)}
                         pressStyle={{ opacity: 0.78 }}
                         px="$0"
                         py="$0"
-                        style={{ flex: 1, minWidth: 0, alignItems: 'flex-start' }}
+                        style={{ flex: 1, minWidth: 0, alignItems: 'flex-start', marginBottom: '40px' }}
                       >
                         <YStack flex={1} gap="$1" style={{ minWidth: 0, alignItems: 'flex-start' }}>
-                          <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
+                          <ProductTitle   numberOfLines={2}>{item.name}</ProductTitle>
                           <ProductMetaText>Cena bazowa: {item.price.toFixed(2)} zł</ProductMetaText>
-                          <Text color="$blue10" fontSize="$2" fontWeight="700">Szczegóły produktu</Text>
+                          <Text  color="$blue10" fontSize="$2" fontWeight="700">Szczegóły produktu</Text>
                         </YStack>
                       </Button>
                       <GhostDangerButton size="$2" onPress={() => removeItem(item.id)}>Usuń</GhostDangerButton>
                     </DataRow>
                     <DataRow>
-                      <InlineControls>
+                     <InlineControls  >
                         <SecondaryButton size="$3" circular onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</SecondaryButton>
-                        <Text fontSize="$5" style={{ minWidth: 24, textAlign: 'center' }}>{item.quantity}</Text>
+                        <Text fontSize="$5" style={{  minWidth: 24, textAlign: 'center' }}>{item.quantity}</Text>
                         <SecondaryButton size="$3" circular onPress={() => updateQuantity(item.id, item.quantity + 1)}>+</SecondaryButton>
                       </InlineControls>
                       <ProductPrice>{(item.price * item.quantity).toFixed(2)} zł</ProductPrice>

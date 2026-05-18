@@ -335,7 +335,7 @@ export default function AdminProductsScreen() {
             </ActionButtonRow>
           </SectionHeading>
 
-          <AdminSectionCard>
+          <AdminSectionCard background='#e6f4ff'>
             <AdminSectionHeader>
               <AdminSectionTitle>Znajdź produkt do edycji</AdminSectionTitle>
               <AdminHelperText>
@@ -378,7 +378,7 @@ export default function AdminProductsScreen() {
               <AdminResultsList>
                 {searchResults.map((product) => (
                   <AdminResultCard key={product.id}>
-                    <DataRow>
+                    <DataRow  >
                       <AdminResultSummary>
                         <AdminResultTitle>{product.name}</AdminResultTitle>
                         <AdminResultMeta numberOfLines={2}>{product.description}</AdminResultMeta>
@@ -410,7 +410,7 @@ export default function AdminProductsScreen() {
             ) : null}
           </AdminSectionCard>
 
-          <AdminSectionCard>
+          <AdminSectionCard background='#e6f4ff'>
             <AdminSectionHeader>
               <AdminSectionTitle>Wybrany produkt</AdminSectionTitle>
               <AdminHelperText>{selectedProductSummary}</AdminHelperText>
@@ -460,8 +460,8 @@ export default function AdminProductsScreen() {
           <ModalCard>
             <ModalHeaderRow>
               <AdminSectionHeader flex={1}>
-                <AdminSectionTitle>{modalTitle}</AdminSectionTitle>
-                <AdminHelperText>{modalDescription}</AdminHelperText>
+                <AdminSectionTitle style={{fontFamily:'Segoe UI', fontSize:'2em', fontWeight:'400'}}> {modalTitle}</AdminSectionTitle>
+                <AdminHelperText style={{fontFamily:'Segoe UI', fontSize:'1em', fontWeight:'400'}}>{modalDescription}</AdminHelperText>
               </AdminSectionHeader>
               <SecondaryButton onPress={closeModal}>
                 Zamknij
