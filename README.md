@@ -19,6 +19,12 @@ Po uruchomieniu usług wykonaj inicjalizację danych przykładowych: produktów 
 docker compose --profile initializer run --rm db_initializer
 ```
 
+Stan inicjalizacji można sprawdzić poleceniem:
+
+```bash
+docker compose --profile initializer run --rm db_initializer status
+```
+
 ## Dostęp
 
 Aplikacja jest dostępna pod adresem:

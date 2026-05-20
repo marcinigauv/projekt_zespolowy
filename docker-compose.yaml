@@ -51,6 +51,7 @@ services:
       context: ./backend
       dockerfile: db_initializer/Dockerfile
     container_name: db_initializer
+    command: ["apply"]
     environment:
       AUTH_SETTINGS__PASSWORD_PEPPER: ${AUTH_SETTINGS__PASSWORD_PEPPER}
       DB_SQL_SETTINGS__HOST: postgres
