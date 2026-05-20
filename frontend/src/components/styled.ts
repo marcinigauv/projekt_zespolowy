@@ -921,6 +921,9 @@ export const PrimaryButton = styled(Button, styles({
   color: '#325649',
   borderRadius: '$2',
   borderColor:'#05ea96f5',
+  pressStyle: {
+    bg: 'rgb(76, 194, 221)', 
+  },
   hoverStyle: {
     bg: '#e0fff4',          
   },
@@ -943,6 +946,9 @@ export const AddToCartButton = styled(Button, styles({
   color: '#325649',
   borderRadius: '$2',
   borderColor:'#05ea96f5',
+  pressStyle: {
+    bg: 'rgb(76, 194, 221)', 
+  },
   hoverStyle: {
     bg: '#e0fff4',          
   },
@@ -972,6 +978,9 @@ export const SecondaryButton = styled(Button, styles({
   shadowOffset: { width: 0, height: 6 },
   shadowOpacity: 0.06,
   shadowRadius: 18,
+   pressStyle: {
+    bg: '#62eebb', 
+  },
   hoverStyle: {
   bg: '#c6e1f7',          
   },
