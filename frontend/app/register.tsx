@@ -50,7 +50,7 @@ export default function Register() {
               <Eyebrow>Konto</Eyebrow>
               <SectionTitle>Utwórz konto</SectionTitle>
               <SectionDescription>
-                Nie masz jeszcze konta? Podaj swoje dane, aby się zarejestrować i zacząć korzystać z naszej aplikacji - całkowicie za darmo!
+                Nie masz jeszcze konta?{'\n'}Podaj swoje dane, aby się zarejestrować i zacząć korzystać z naszej aplikacji - całkowicie za darmo!
               </SectionDescription>
             </YStack>
 
@@ -89,7 +89,7 @@ export default function Register() {
               />
             </FormField>
             <FormField>
-              <Label style={{color: '#325649'}} htmlFor="password">Hasło</Label>
+              <Label htmlFor="password">Hasło</Label>
               <FormInput
                 ref={passwordInputRef}
                 id="password"

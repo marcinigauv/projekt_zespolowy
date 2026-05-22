@@ -63,7 +63,7 @@ function ProductHeroImage({ product }: { product: Product }) {
 
   return (
     <ProductImagePlaceholder>
-      <Text fontWeight="900" color="#0d6efd" style={{ fontWeight: '900', fontFamily: 'Segoe UI', fontSize: '6em' }}>
+      <Text fontFamily="$heading" fontWeight="700" color="$blue10" style={{ fontSize: 120, lineHeight: 132 }}>
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>
@@ -146,7 +146,7 @@ export function ProductDetailsScreen() {
         <ProductGrid>
           <Section>
             <BackLinkButton onPress={() => router.push('/')}>
-              <Text color="#0d6efd" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
+              <Text color="$blue10" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
             </BackLinkButton>
 
             {isProductLoading ? (
@@ -154,7 +154,7 @@ export function ProductDetailsScreen() {
             ) : productError || !product ? (
               <StateMessageCard icon="!" message={productError || 'Nie znaleziono produktu'} tone="danger" />
             ) : (
-              <SurfaceCard background="#f8f9fa" gap="$5">
+              <SurfaceCard gap="$5">
                 <ProductDetailLayout>
                   <ProductMediaColumn>
                     <ProductHeroMedia>
@@ -164,34 +164,34 @@ export function ProductDetailsScreen() {
 
                   <ProductInfoColumn>
                     <SectionHeading>
-                      <Eyebrow color="#6c757d">Produkt</Eyebrow>
-                      <SectionTitle color="#212529">{product.name}</SectionTitle>
-                      <SectionDescription color="#6c757d">
+                      <Eyebrow>Produkt</Eyebrow>
+                      <SectionTitle>{product.name}</SectionTitle>
+                      <SectionDescription>
                         Sprawdź szczegóły produktu, dostępność i propozycje podobnych pozycji.
                       </SectionDescription>
                     </SectionHeading>
 
                     <BadgeRow>
-                      <CategoryBadge style={{ backgroundColor: '#fff3cd' }}>
-                        <Text fontSize="$1" color="#856404" fontWeight="600" letterSpacing={0.5}>
+                      <CategoryBadge>
+                        <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.5}>
                           DOSTĘPNE: {product.amount}
                         </Text>
                       </CategoryBadge>
                       {product.categories.map((category) => (
-                        <CategoryBadge key={`${product.id}-${category}`} style={{ backgroundColor: '#e7f1ff' }}>
-                          <Text fontSize="$1" color="#0d6efd" fontWeight="600" letterSpacing={0.5}>
+                        <CategoryBadge key={`${product.id}-${category}`}>
+                          <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
                             {category}
                           </Text>
                         </CategoryBadge>
                       ))}
                     </BadgeRow>
 
-                    <ProductPrice color="#212529">{product.price.toFixed(2)} zł</ProductPrice>
+                    <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
 
-                    <SurfaceCard style={{ backgroundColor: '#ffffff' }}>
+                    <SurfaceCard>
                       <YStack gap="$2">
-                        <Text fontSize="$5" fontWeight="800" color="#212529">Opis</Text>
-                        <ProductMetaText color="#495057">{product.description}</ProductMetaText>
+                        <Text fontSize="$5" fontWeight="800" color="$color">Opis</Text>
+                        <ProductMetaText>{product.description}</ProductMetaText>
                       </YStack>
                     </SurfaceCard>
 
@@ -201,7 +201,6 @@ export function ProductDetailsScreen() {
                       </SecondaryButton>
                       <AddToCartButton
                         size="$4"
-                        style={{ backgroundColor: '#0d6efd' }}
                         onPress={() =>
                           addItem({
                             id: product.id,
@@ -220,8 +219,8 @@ export function ProductDetailsScreen() {
 
             <Section>
               <SectionHeading>
-                <Eyebrow color="#6c757d">Inspiracje</Eyebrow>
-                <SectionTitle color="#212529">Podobne produkty</SectionTitle>
+                <Eyebrow>Inspiracje</Eyebrow>
+                <SectionTitle>Podobne produkty</SectionTitle>
               </SectionHeading>
               <SimilarProductsCarousel
                 products={similarProducts}

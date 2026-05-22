@@ -4,6 +4,17 @@ import { Stack } from 'expo-router'
 import { Platform } from 'react-native'
 import { TamaguiProvider, YStack } from 'tamagui'
 import { useFonts } from 'expo-font'
+import {
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+} from '@expo-google-fonts/manrope'
+import {
+  Newsreader_500Medium,
+  Newsreader_600SemiBold,
+  Newsreader_700Bold,
+} from '@expo-google-fonts/newsreader'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { hydrateAuthSessionUseCase } from '../src/auth/useCases'
 import { NotificationsToastHost } from '../src/components/NotificationsToastHost'
@@ -14,11 +25,13 @@ export default function RootLayout() {
   const isAuthResolved = useAuthStore((state) => state.isAuthResolved)
   const [mobileNotificationsInset, setMobileNotificationsInset] = useState(0)
   const [loaded] = useFonts({
-    Inter: require('@tamagui/font-inter/otf/Inter-Regular.otf'),
-    InterMedium: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
-    InterSemiBold: require('@tamagui/font-inter/otf/Inter-SemiBold.otf'),
-    InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
-    InterExtraBold: require('@tamagui/font-inter/otf/Inter-ExtraBold.otf'),
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Newsreader_500Medium,
+    Newsreader_600SemiBold,
+    Newsreader_700Bold,
   })
 
   useEffect(() => {

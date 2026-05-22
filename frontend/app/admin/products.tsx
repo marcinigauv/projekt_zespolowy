@@ -334,7 +334,7 @@ export default function AdminProductsScreen() {
             </ActionButtonRow>
           </SectionHeading>
 
-          <AdminSectionCard background='#e6f4ff'>
+          <AdminSectionCard>
             <AdminSectionHeader>
               <AdminSectionTitle>Znajdź produkt do edycji</AdminSectionTitle>
               <AdminHelperText>
@@ -409,7 +409,7 @@ export default function AdminProductsScreen() {
             ) : null}
           </AdminSectionCard>
 
-          <AdminSectionCard background='#e6f4ff'>
+          <AdminSectionCard>
             <AdminSectionHeader>
               <AdminSectionTitle>Wybrany produkt</AdminSectionTitle>
               <AdminHelperText>{selectedProductSummary}</AdminHelperText>

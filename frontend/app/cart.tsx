@@ -77,7 +77,7 @@ export default function Cart() {
                         pressStyle={{ opacity: 0.78 }}
                         px="$0"
                         py="$0"
-                        style={{ flex: 1, minWidth: 0, alignItems: 'flex-start', marginBottom: '40px' }}
+                        style={{ flex: 1, minWidth: 0, alignItems: 'flex-start' }}
                       >
                         <YStack flex={1} gap="$1" style={{ minWidth: 0, alignItems: 'flex-start' }}>
                           <ProductTitle   numberOfLines={2}>{item.name}</ProductTitle>

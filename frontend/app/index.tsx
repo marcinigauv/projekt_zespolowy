@@ -94,9 +94,9 @@ export default function Index() {
         <ProductGrid>
           <Section>
             <SectionHeading>
-              <Eyebrow color="#6c757d">Katalog</Eyebrow>
-              <SectionTitle color="#212529">Odkryj nasze produkty</SectionTitle>
-              <SectionDescription color="#6c757d">
+              <Eyebrow>Katalog</Eyebrow>
+              <SectionTitle>Odkryj nasze produkty</SectionTitle>
+              <SectionDescription>
                 Przeglądaj nasz szeroki wybór produktów i znajdź coś dla siebie!
               </SectionDescription>
             </SectionHeading>
@@ -132,7 +132,7 @@ export default function Index() {
                 {products.map((product) => (
                   <ProductListItem key={product.id}>
                     <ProductCard hoverStyle={{ scale: 1.03 }}>
-                      <ProductCardLinkButton background="#f8f9fa" style={{ borderWidth: 0 }} onPress={() => router.push(`/products/${product.id}`)}>
+                      <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
                         <ProductVisual>
                           {product.imageUrl && !imageErrors[product.id] ? (
                             <Image
@@ -142,11 +142,11 @@ export default function Index() {
                               style={{ width: '100%', height: '100%' }}
                             />
                           ) : imageErrors[product.id] ? (
-                            <Text color="#6c757d" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
+                            <Text color="$placeholderColor" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
                               Zdjęcie produktu niedostępne
                             </Text>
                           ) : (
-                            <Text fontWeight="900" color="#0d6efd" style={{ fontFamily: 'Segoe UI', fontSize: '6em', height: 160, backgroundColor: '#e7f1ff', lineHeight: 140, textAlign: 'center' }}>
+                            <Text fontFamily="$heading" fontWeight="700" color="$blue10" style={{ fontSize: 112, lineHeight: 132, textAlign: 'center' }}>
                               {product.name.slice(0, 1).toUpperCase()}
                             </Text>
                           )}
@@ -154,19 +154,19 @@ export default function Index() {
                         <ProductInfo>
                           <ProductCardSection>
                             <BadgeRow>
-                              <CategoryBadge style={{ backgroundColor: '#fff3cd' }}>
-                                <Text fontSize="$1" color="#856404" fontWeight="600" letterSpacing={0.5}>
+                              <CategoryBadge>
+                                <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.5}>
                                   DOSTĘPNE: {product.amount}
                                 </Text>
                               </CategoryBadge>
                             </BadgeRow>
                           </ProductCardSection>
                           <ProductCardSection>
-                            <ProductTitle numberOfLines={2} color="#212529">{product.name}</ProductTitle>
+                            <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
                           </ProductCardSection>
                           <ProductCardSection>
                             <ProductMetaRow>
-                              <ProductPrice color="#212529" style={{ width: '100%', textAlign: 'right' }}>{product.price.toFixed(2)} zł</ProductPrice>
+                              <ProductPrice style={{ width: '100%', textAlign: 'right' }}>{product.price.toFixed(2)} zł</ProductPrice>
                             </ProductMetaRow>
                           </ProductCardSection>
                         </ProductInfo>
@@ -174,7 +174,6 @@ export default function Index() {
                       <ProductCardFooter>
                         <ProductCardAddButton
                           size="$3"
-                          style={{ backgroundColor: '#0d6efd' }}
                           onPress={() => addItem({ id: product.id, name: product.name, price: product.price })}
                         >
                           Dodaj
