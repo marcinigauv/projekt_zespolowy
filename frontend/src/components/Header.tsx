@@ -47,22 +47,22 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
   if (isAuthenticated && user) {
     return (
-      <HeaderProfileSurface >
+      <HeaderProfileSurface>
         <HeaderProfileSummary>
           <HeaderProfileRow>
             <HeaderAvatar>
-              <Text color="#bef7e2" fontWeight="700" fontSize="$5">
+              <Text color="#0d6efd" fontWeight="700" fontSize="$5">
                 {user.name?.[0] || '?'}
               </Text>
             </HeaderAvatar>
             <YStack>
-              <Text fontWeight="700" fontSize="$5">{user.name}</Text>
-              <Text fontSize="$3" color="$gray10">{user.email}</Text>
+              <Text fontWeight="700" fontSize="$5" color="#212529">{user.name}</Text>
+              <Text fontSize="$3" color="#6c757d">{user.email}</Text>
             </YStack>
           </HeaderProfileRow>
         </HeaderProfileSummary>
 
-        <Separator />
+        <Separator borderBottomColor="#e9ecef" />
 
         <HeaderMenuButton onPress={() => go('/profile')}>
           Moje konto
@@ -72,9 +72,9 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         </HeaderMenuButton>
         {user.isAdmin ? (
           <>
-            <Separator />
+            <Separator borderBottomColor="#e9ecef" />
             <YStack px="$3" pt="$2" pb="$1">
-              <Text fontSize="$2" color="$gray10" fontWeight="700" textTransform="uppercase" letterSpacing={0.8}>
+              <Text fontSize="$2" color="#6c757d" fontWeight="700" textTransform="uppercase" letterSpacing={0.8}>
                 Panel Admina
               </Text>
             </YStack>
@@ -84,18 +84,18 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           </>
         ) : null}
         <HeaderMenuButton onPress={handleLogout}>
-          <Text color="$red10">Wyloguj się</Text>
+          <Text color="#dc3545">Wyloguj się</Text>
         </HeaderMenuButton>
       </HeaderProfileSurface>
     )
   }
 
   return (
-    <HeaderProfileSurface width="90%" style={{paddingTop:"12px", paddingBottom:"12px"}} >
+    <HeaderProfileSurface width="90%" style={{ paddingTop: "12px", paddingBottom: "12px" }}>
       <HeaderMenuButton onPress={() => go('/login')}>
         Zaloguj się
       </HeaderMenuButton>
-      <HeaderMenuButton  onPress={() => go('/register')}>
+      <HeaderMenuButton onPress={() => go('/register')}>
         Zarejestruj się
       </HeaderMenuButton>
     </HeaderProfileSurface>
@@ -131,13 +131,13 @@ export function Header() {
   if (isDesktop) {
     return (
       <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
-        <HeaderBrand >
+        <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="#325649" fontSize="$7" fontWeight="800">SI</Text>
+            <Text color="#dae5f6" fontSize="$8" fontWeight="800">SI</Text>
           </HeaderBrandMark>
           <HeaderBrandCopy>
-            <NavTitle accessibilityLabel="Przejdź do strony głównej" onPress={() => router.push('/')}>Sklep Internetowy</NavTitle>
-            {isWideDesktop && <HeaderMeta>Nowoczesne zakupy bez kolejek, stresu i problemów!</HeaderMeta>}
+            <NavTitle accessibilityLabel="Przejdź do strony głównej" onPress={() => router.push('/')} color="#212529">Sklep Internetowy</NavTitle>
+            {isWideDesktop && <HeaderMeta color="#6c757d">Nowoczesne zakupy bez kolejek, stresu i problemów!</HeaderMeta>}
           </HeaderBrandCopy>
         </HeaderBrand>
 
@@ -149,15 +149,14 @@ export function Header() {
             onPress={() => navigate('/cart')}
             pressStyle={{ opacity: 0.7 }}
             px="$2"
-            background="#f8fffd" 
-            hoverStyle={{bg: '#bef7e2',}}
-            
+            background="#f8f9fa"
+            hoverStyle={{ bg: '#e9ecef' }}
           >
             <XStack gap="$2" style={{ alignItems: 'center' }}>
-              <NavLink >🛒 Koszyk </NavLink>
+              <NavLink color="#495057">🛒 Koszyk </NavLink>
               {cartItems > 0 && (
                 <Text
-                  background="$red9"
+                  background="#0d6efd"
                   color="white"
                   fontSize="$2"
                   fontWeight="700"
@@ -171,20 +170,18 @@ export function Header() {
             </XStack>
           </Button>
 
-          <Popover  open={profileOpen} onOpenChange={setProfileOpen} placement="bottom-end">
+          <Popover open={profileOpen} onOpenChange={setProfileOpen} placement="bottom-end">
             <Popover.Trigger>
-              <Button background="#f8fffd" chromeless px="$0" hoverStyle={{bg: '#bef7e2',}} >
-                <NavLink> 👤 Profil  </NavLink>
+              <Button background="#f8f9fa" chromeless px="$0" hoverStyle={{ bg: '#e9ecef' }}>
+                <NavLink color="#495057"> 👤 Profil </NavLink>
               </Button>
             </Popover.Trigger>
             <Popover.Content
-            bg="#bef7e2"
-              theme="surface"
-             /*  bg="$background" */
+              bg="#ffffff"
               bordered
               elevate
               p={0}
-              shadowColor="$shadowColor"
+              shadowColor="#000000"
               shadowRadius={20}
               shadowOffset={{ width: 0, height: 10 }}
               style={{ minWidth: 240, borderRadius: 16 }}
@@ -202,13 +199,14 @@ export function Header() {
       <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="#325649" fontWeight="800" fontSize="$3">SI</Text>
+            <Text color="#dae5f6" fontWeight="800" fontSize="$3">SI</Text>
           </HeaderBrandMark>
           <NavTitle
             accessibilityLabel="Przejdź do strony głównej"
             onPress={() => navigate('/')}
             numberOfLines={1}
             style={{ flexShrink: 1 }}
+            color="#212529"
           >
             {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
           </NavTitle>
@@ -218,14 +216,13 @@ export function Header() {
           <Button
             unstyled
             onPress={() => navigate('/cart')}
-            style={{ background: '#bef7e2' }}
-            pressStyle={{ opacity: 0.85, }}
+            style={{ background: '#f8f9fa' }}
+            pressStyle={{ opacity: 0.85 }}
           >
             <HeaderIconButton>
-              <Text color="#325649" fontSize="$6" fontWeight="800">🛒</Text>
-             {/*  <Text fontSize="$6">🛒</Text> */}
+              <Text color="#0d6efd" fontSize="$6" fontWeight="800">🛒</Text>
               {cartItems > 0 && (
-                <HeaderBadge>
+                <HeaderBadge /* style={{ backgroundColor: '#0d6efd' }} */>
                   <Text color="white" fontSize="$1" fontWeight="800">{cartItems}</Text>
                 </HeaderBadge>
               )}
@@ -236,10 +233,10 @@ export function Header() {
             unstyled
             onPress={() => setMenuOpen((current) => !current)}
             pressStyle={{ opacity: 0.85 }}
-            style={{ background: '#bef7e2' }}
+            style={{ background: '#f8f9fa' }}
           >
             <HeaderPrimaryIconButton>
-              <Text color="white" fontSize="$6" fontWeight="800">👤</Text>
+              <Text color="#dae5f6" fontSize="$6" fontWeight="800" >👤</Text>
             </HeaderPrimaryIconButton>
           </Button>
         </HeaderControls>
@@ -248,7 +245,7 @@ export function Header() {
       {menuOpen && (
         <HeaderMenuWrap style={{ zIndex: 39 }}>
           <HeaderMenuCard>
-            <Text fontSize="$6" fontWeight="800" color="$color">Menu</Text>
+            <Text fontSize="$6" fontWeight="800" color="#212529" >Menu</Text>
 
             <HeaderMenuButton onPress={() => navigate('/')}>
               Strona główna
@@ -258,7 +255,7 @@ export function Header() {
               Koszyk {cartItems > 0 ? `(${cartItems})` : ''}
             </HeaderMenuButton>
 
-            <Separator my="$2" />
+            <Separator my="$2" borderBottomColor="#e9ecef" />
 
             <ProfileMenu onClose={() => setMenuOpen(false)} />
           </HeaderMenuCard>

@@ -42,7 +42,7 @@ function ProductImage({ product }: { product: Product }) {
 
   return (
     <ProductImagePlaceholder>
-      <Text color="#325649"  fontSize="$10" fontWeight="800" >
+      <Text color="#0d6efd" fontSize="$10" fontWeight="800">
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>
@@ -54,7 +54,6 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
   const addItem = useCartStore((state) => state.addItem)
   const [activeIndex, setActiveIndex] = useState(0)
   
-  // Wykrywanie rozmiaru ekranu za pomocą Tamagui
   const media = useMedia()
   const isMobile = !media.gtSm
 
@@ -76,7 +75,6 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
 
   const total = products.length
 
-  // ZMIENIONA LOGIKA: Okno wyświetlania dostosowane do 3 produktów na desktopie
   let startIndex = activeIndex
   if (!isMobile && total >= 2) {
     if (activeIndex >= total - 1) {
@@ -100,24 +98,22 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
     <SurfaceCard gap="$4">
       <DataRow>
         <YStack gap="$1">
-          <Text fontSize="$6" color='#325649' fontWeight="600">Podobne produkty</Text>
-          <Text color="$placeholderColor" fontSize="$3">
-            Przeglądaj propozycje dopasowane do oglądanego produktu.
+          <Text fontSize="$6" color="#212529" fontWeight="600">Podobne produkty</Text>
+          <Text color="#6c757d" fontSize="$3">
+           Propozycje dopasowane do oglądanego produktu.
           </Text>
         </YStack>
         <CarouselControls>
-          {/* Przycisk "Poprzedni" znika automatycznie, gdy jesteśmy na pierwszym slajdzie */}
           {activeIndex > 0 && (
             <SecondaryButton size="$3" onPress={() => setActiveIndex((current) => current - 1)}>
               Poprzedni
             </SecondaryButton>
           )}
           
-          <Text color="$placeholderColor" fontSize="$3">
+          <Text color="#6c757d" fontSize="$3">
             {activeIndex + 1} / {total}
           </Text>
           
-          {/* Przycisk "Następny" znika automatycznie, gdy dotrzemy do ostatniego elementu */}
           {activeIndex < total - 1 && (
             <SecondaryButton size="$3" onPress={() => setActiveIndex((current) => current + 1)}>
               Następny
@@ -126,20 +122,17 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
         </CarouselControls>
       </DataRow>
 
-      {/* Dodałem delikatny py="$2" (padding pionowy), aby powiększony produkt nie był ścinany na krawędziach */}
       <XStack gap="$3" width="100%" py="$2">
         {displayedProducts.map((item) => {
-          // Sprawdzamy, czy aktualnie iterowany produkt to ten zaznaczony (aktywny)
           const isActive = item.id === products[activeIndex].id
 
           return (
             <ProductCarouselFrame 
               key={item.id} 
               flex={1}
-             style={{ scale: isActive ? 1.04 : 1,  zIndex: isActive ? 2 : 1 }}     // 👈 POWIĘKSZENIE aktywnego slajdu o 4%
-                    // 👈 Wypchnięcie aktywnego slajdu nad sąsiadów
+              style={{ scale: isActive ? 1.04 : 1, zIndex: isActive ? 2 : 1 }}
             >
-              <ProductCardLinkButton  background="#ecf7ff" style={{  borderWidth: 0 }}  onPress={() => router.push(`/products/${item.id}`)}>
+              <ProductCardLinkButton background="#f8f9fa" style={{ borderWidth: 0, padding: 15 }} onPress={() => router.push(`/products/${item.id}`)}>
                 <ProductCarouselMedia>
                   <ProductImage product={item} />
                 </ProductCarouselMedia>
@@ -147,14 +140,14 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
                 <YStack>
                   <ProductCardSection>
                     <BadgeRow>
-                      <CategoryBadge>
-                        <Text fontSize="$2" color="#fe3d3d"  fontWeight="600" letterSpacing={0.5}>
+                      <CategoryBadge style={{ backgroundColor: '#fff3cd' }}>
+                        <Text fontSize="$2" color="#856404" fontWeight="600" letterSpacing={0.5}>
                           DOSTĘPNE: {item.amount}
                         </Text>
                       </CategoryBadge>
                       {item.categories.map((category) => (
-                        <CategoryBadge key={`${item.id}-${category}`}>
-                          <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.5}>
+                        <CategoryBadge key={`${item.id}-${category}`} style={{ backgroundColor: '#e7f1ff' }}>
+                          <Text fontSize="$1" color="#0d6efd" fontWeight="600" letterSpacing={0.5}>
                             {category}
                           </Text>
                         </CategoryBadge>
@@ -163,12 +156,12 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
                   </ProductCardSection>
 
                   <ProductCardSection>
-                    <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
+                    <ProductTitle numberOfLines={2} color="#212529">{item.name}</ProductTitle>
                   </ProductCardSection>
 
                   <ProductCardSection>
-                    <DataRow style={{justifyContent:"flex-end" }}>
-                      <ProductPrice >{item.price.toFixed(2)} zł</ProductPrice>
+                    <DataRow style={{ justifyContent: "flex-end" }}>
+                      <ProductPrice color="#212529">{item.price.toFixed(2)} zł</ProductPrice>
                     </DataRow>
                   </ProductCardSection>
                 </YStack>
@@ -176,6 +169,7 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
               <ProductCardFooter>
                 <ProductCardAddButton
                   size="$3"
+                  style={{ backgroundColor: "#0d6efd" }}
                   onPress={() =>
                     addItem({
                       id: item.id,

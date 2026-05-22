@@ -36,7 +36,7 @@ import {
 
 export default function Index() {
   const router = useRouter()
-  const addItem = useCartStore(s => s.addItem)
+  const addItem = useCartStore((s) => s.addItem)
   useHomeScreenNotificationsPolling()
   const [products, setProducts] = useState<Product[]>([])
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
@@ -68,22 +68,15 @@ export default function Index() {
           substring: debouncedSearchTerm,
         })
 
-        if (!isMounted) {
-          return
-        }
+        if (!isMounted) return
 
         setProducts(result)
         setImageErrors({})
       } catch (caughtError) {
-        if (!isMounted) {
-          return
-        }
-
+        if (!isMounted) return
         setError(caughtError instanceof Error ? caughtError.message : 'Nie udało się pobrać produktów')
       } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        if (isMounted) setIsLoading(false)
       }
     }
 
@@ -101,9 +94,9 @@ export default function Index() {
         <ProductGrid>
           <Section>
             <SectionHeading>
-              <Eyebrow>Katalog</Eyebrow>
-              <SectionTitle>Odkryj nasze produkty</SectionTitle>
-              <SectionDescription>
+              <Eyebrow color="#6c757d">Katalog</Eyebrow>
+              <SectionTitle color="#212529">Odkryj nasze produkty</SectionTitle>
+              <SectionDescription color="#6c757d">
                 Przeglądaj nasz szeroki wybór produktów i znajdź coś dla siebie!
               </SectionDescription>
             </SectionHeading>
@@ -132,61 +125,48 @@ export default function Index() {
             ) : products.length === 0 ? (
               <StateMessageCard
                 icon="∅"
-                message={debouncedSearchTerm
-                  ? 'Brak produktów pasujących do wyszukiwania'
-                  : 'Brak produktów do wyświetlenia'}
+                message={debouncedSearchTerm ? 'Brak produktów pasujących do wyszukiwania' : 'Brak produktów do wyświetlenia'}
               />
             ) : (
-              <ProductList >
-                {products.map(product => (
+              <ProductList>
+                {products.map((product) => (
                   <ProductListItem key={product.id}>
-                    <ProductCard style={{animation:'quickly'}} hoverStyle={{ scale: 1.03 }} >
-                      <ProductCardLinkButton background="#ecf7ff"  style={{  borderWidth: 0 }}  onPress={() => router.push(`/products/${product.id}`)}>
-                        <ProductVisual >
+                    <ProductCard hoverStyle={{ scale: 1.03 }}>
+                      <ProductCardLinkButton background="#f8f9fa" style={{ borderWidth: 0 }} onPress={() => router.push(`/products/${product.id}`)}>
+                        <ProductVisual>
                           {product.imageUrl && !imageErrors[product.id] ? (
-                            <Image 
+                            <Image
                               source={{ uri: product.imageUrl }}
                               resizeMode="cover"
-                              onError={() =>
-                                setImageErrors(currentErrors => {
-                                  if (currentErrors[product.id]) {
-                                    return currentErrors
-                                  }
-
-                                  return {
-                                    ...currentErrors,
-                                    [product.id]: true,
-                                  }
-                                })
-                              }
+                              onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
                               style={{ width: '100%', height: '100%' }}
                             />
                           ) : imageErrors[product.id] ? (
-                            <Text  color="$gray10" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center', justifyContent:"center" }}>
+                            <Text color="#6c757d" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
                               Zdjęcie produktu niedostępne
                             </Text>
                           ) : (
-                            <Text fontWeight="900" color="#325649" style={{fontFamily:'Segoe UI', fontSize:"6em", height: '160px', background: '#bef7e2', lineHeight: '140px', textAlign: 'center', alignItems:"center", justifyContent:"center" }}>
+                            <Text fontWeight="900" color="#0d6efd" style={{ fontFamily: 'Segoe UI', fontSize: '6em', height: 160, backgroundColor: '#e7f1ff', lineHeight: 140, textAlign: 'center' }}>
                               {product.name.slice(0, 1).toUpperCase()}
                             </Text>
                           )}
                         </ProductVisual>
-                        <ProductInfo >
-                          <ProductCardSection >
+                        <ProductInfo>
+                          <ProductCardSection>
                             <BadgeRow>
-                              <CategoryBadge>
-                                <Text fontSize="$1" color="#fe3d3d" fontWeight="600" letterSpacing={0.5}>
+                              <CategoryBadge style={{ backgroundColor: '#fff3cd' }}>
+                                <Text fontSize="$1" color="#856404" fontWeight="600" letterSpacing={0.5}>
                                   DOSTĘPNE: {product.amount}
                                 </Text>
                               </CategoryBadge>
                             </BadgeRow>
                           </ProductCardSection>
                           <ProductCardSection>
-                            <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
+                            <ProductTitle numberOfLines={2} color="#212529">{product.name}</ProductTitle>
                           </ProductCardSection>
                           <ProductCardSection>
                             <ProductMetaRow>
-                              <ProductPrice style={{width: '100%', justifyContent:"flex-end"}}>{product.price.toFixed(2)} zł</ProductPrice>
+                              <ProductPrice color="#212529" style={{ width: '100%', textAlign: 'right' }}>{product.price.toFixed(2)} zł</ProductPrice>
                             </ProductMetaRow>
                           </ProductCardSection>
                         </ProductInfo>
@@ -194,13 +174,8 @@ export default function Index() {
                       <ProductCardFooter>
                         <ProductCardAddButton
                           size="$3"
-                          onPress={() =>
-                            addItem({
-                              id: product.id,
-                              name: product.name,
-                              price: product.price,
-                            })
-                          }
+                          style={{ backgroundColor: '#0d6efd' }}
+                          onPress={() => addItem({ id: product.id, name: product.name, price: product.price })}
                         >
                           Dodaj
                         </ProductCardAddButton>

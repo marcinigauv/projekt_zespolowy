@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Modal } from 'react-native'
-import { Label, ScrollView, Text, YStack } from 'tamagui'
+import { Label, ScrollView, Text, YStack, H1, Paragraph } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
 import {
@@ -28,7 +28,6 @@ import {
   DataRow,
   EmptyStateCard,
   Eyebrow,
-  FormCard,
   FormField,
   FormInput,
   GhostDangerButton,
@@ -378,7 +377,7 @@ export default function AdminProductsScreen() {
               <AdminResultsList>
                 {searchResults.map((product) => (
                   <AdminResultCard key={product.id}>
-                    <DataRow  >
+                    <DataRow>
                       <AdminResultSummary>
                         <AdminResultTitle>{product.name}</AdminResultTitle>
                         <AdminResultMeta numberOfLines={2}>{product.description}</AdminResultMeta>
@@ -460,8 +459,8 @@ export default function AdminProductsScreen() {
           <ModalCard>
             <ModalHeaderRow>
               <AdminSectionHeader flex={1}>
-                <AdminSectionTitle style={{fontFamily:'Segoe UI', fontSize:'2em', fontWeight:'400'}}> {modalTitle}</AdminSectionTitle>
-                <AdminHelperText style={{fontFamily:'Segoe UI', fontSize:'1em', fontWeight:'400'}}>{modalDescription}</AdminHelperText>
+                <H1 size="$8" fontWeight="400">{modalTitle}</H1>
+                <Paragraph size="$4" color="$gray11">{modalDescription}</Paragraph>
               </AdminSectionHeader>
               <SecondaryButton onPress={closeModal}>
                 Zamknij
@@ -479,7 +478,6 @@ export default function AdminProductsScreen() {
                       value={activeForm.name}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'name', value)}
                       returnKeyType="next"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => descriptionInputRef.current?.focus()}
                     />
@@ -495,7 +493,6 @@ export default function AdminProductsScreen() {
                       multiline
                       blurOnSubmit
                       returnKeyType="next"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => priceInputRef.current?.focus()}
                     />
@@ -510,7 +507,6 @@ export default function AdminProductsScreen() {
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'price', value)}
                       keyboardType="decimal-pad"
                       returnKeyType="next"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => amountInputRef.current?.focus()}
                     />
@@ -525,7 +521,6 @@ export default function AdminProductsScreen() {
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'amount', value)}
                       keyboardType="number-pad"
                       returnKeyType="next"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => categoriesInputRef.current?.focus()}
                     />
@@ -539,7 +534,6 @@ export default function AdminProductsScreen() {
                       value={activeForm.categories}
                       onChangeText={(value) => handleFormChange(isEditMode ? 'edit' : 'create', 'categories', value)}
                       returnKeyType="next"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => imageUrlInputRef.current?.focus()}
                     />
@@ -556,14 +550,12 @@ export default function AdminProductsScreen() {
                       autoCorrect={false}
                       keyboardType="url"
                       returnKeyType="done"
-                      submitBehavior="submit"
                       disabled={isFormDisabled}
                       onSubmitEditing={() => {
                         if (isEditMode) {
                           void handleUpdateProduct()
                           return
                         }
-
                         void handleCreateProduct()
                       }}
                     />
@@ -580,7 +572,6 @@ export default function AdminProductsScreen() {
                           void handleUpdateProduct()
                           return
                         }
-
                         void handleCreateProduct()
                       }}
                     >
@@ -597,7 +588,6 @@ export default function AdminProductsScreen() {
                           setEditSuccessMessage('')
                           return
                         }
-
                         handleCreateReset()
                       }}
                     >
