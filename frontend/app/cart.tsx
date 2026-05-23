@@ -135,7 +135,7 @@ export default function Cart() {
                 <Eyebrow>Koszyk</Eyebrow>
                 <SectionTitle>Koszyk ({totalItems} {getProductNoun(totalItems)})</SectionTitle>
                 <SectionDescription>
-                  Zarządzaj ilością produktów i przejdź do finalizacji zamówienia.
+                  Zarządzaj liczbą produktów, następnie przejdź do finalizacji zamówienia.
                 </SectionDescription>
               </YStack>
 
@@ -156,7 +156,7 @@ export default function Cart() {
               <Text fontSize="$8">🛒</Text>
               <Text color="$gray10" fontSize="$5">Twój koszyk jest pusty</Text>
               <SectionDescription style={{ textAlign: 'center' }}>
-                Dodaj produkty z katalogu, aby przejść do zamówienia.
+                Dodaj produkty z katalogu, aby przejść do finalizacji zamówienia.
               </SectionDescription>
               <PrimaryButton onPress={() => router.push('/')}>Przejdź do katalogu</PrimaryButton>
             </EmptyStateCard>

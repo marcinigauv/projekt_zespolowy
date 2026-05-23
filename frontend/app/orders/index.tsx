@@ -80,7 +80,7 @@ export default function OrdersScreen() {
             <Eyebrow>Zamówienia</Eyebrow>
             <SectionTitle>Historia zamówień</SectionTitle>
             <SectionDescription>
-              Sprawdź listę swoich zamówień i przejdź do szczegółów konkretnej pozycji.
+              Sprawdź listę swoich zamówień, przejrzyj szczegóły każdego z nich
             </SectionDescription>
           </SectionHeading>
 

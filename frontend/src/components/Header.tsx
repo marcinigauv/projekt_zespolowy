@@ -72,7 +72,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           Moje konto
         </HeaderMenuButton>
         <HeaderMenuButton onPress={() => go('/orders')}>
-          Historia zamowien
+          Historia zamówień
         </HeaderMenuButton>
         {user.isAdmin ? (
           <>
@@ -83,12 +83,12 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
               </Text>
             </YStack>
             <HeaderMenuButton onPress={() => go('/admin/products')}>
-              Zarzadzanie Przedmiotami
+              Zarządzanie Przedmiotami
             </HeaderMenuButton>
           </>
         ) : null}
         <HeaderMenuButton onPress={handleLogout}>
-          <Text color="$red10">Wyloguj sie</Text>
+          <Text color="$red10">Wyloguj się</Text>
         </HeaderMenuButton>
       </HeaderProfileSurface>
     )
@@ -97,10 +97,10 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
   return (
     <HeaderProfileSurface width="90%" style={{ paddingTop: 12, paddingBottom: 12 }}>
       <HeaderMenuButton onPress={() => go('/login')}>
-        Zaloguj sie
+        Zaloguj się
       </HeaderMenuButton>
       <HeaderMenuButton onPress={() => go('/register')}>
-        Zarejestruj sie
+        Zarejestruj się
       </HeaderMenuButton>
     </HeaderProfileSurface>
   )
@@ -194,7 +194,7 @@ export function Header() {
             </NavTitle>
             {isWideDesktop && (
               <HeaderMeta>
-                Spokojne zakupy online z nowoczesnym, minimalistycznym interfejsem.
+                Spokojne zakupy online
               </HeaderMeta>
             )}
           </HeaderBrandCopy>

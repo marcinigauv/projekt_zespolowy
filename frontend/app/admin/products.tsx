@@ -325,7 +325,7 @@ export default function AdminProductsScreen() {
             <Eyebrow>Panel Admina</Eyebrow>
             <SectionTitle>Zarządzanie Przedmiotami</SectionTitle>
             <SectionDescription>
-              Dodawaj nowe produkty oraz przechodź przez etapy wyszukania, wyboru i edycji konkretnej pozycji.
+              Dodawaj nowe produkty bezpośrednio do bazy danych sklepu.
             </SectionDescription>
             <ActionButtonRow>
               <PrimaryButton onPress={openCreateModal}>
@@ -338,7 +338,7 @@ export default function AdminProductsScreen() {
             <AdminSectionHeader>
               <AdminSectionTitle>Znajdź produkt do edycji</AdminSectionTitle>
               <AdminHelperText>
-                Wpisz ID produktu albo kilka tokenów tekstowych. Liczby traktujemy jako ID, tekst wyszukujemy po nazwie i opisie.
+                Wpisz ID produktu lub kilka fraz (np. Lego, komputer)
               </AdminHelperText>
             </AdminSectionHeader>
 
