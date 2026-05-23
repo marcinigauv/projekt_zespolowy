@@ -19,6 +19,7 @@ import {
   ProductCardFooter,
   ProductCardLinkButton,
   ProductCardSection,
+  ProductTitleSection,
   ProductInfo,
   ProductPrice,
   ProductTitle,
@@ -131,8 +132,13 @@ export default function Index() {
               <ProductList>
                 {products.map((product) => (
                   <ProductListItem key={product.id}>
-                    <ProductCard hoverStyle={{ scale: 1.03 }}>
-                      <ProductCardLinkButton onPress={() => router.push(`/products/${product.id}`)}>
+                    <ProductCard hoverStyle={{ scale: 1.01 }}>
+                      <ProductCardLinkButton
+                        onPress={() => router.push(`/products/${product.id}`)}
+                        height={352}
+                        $md={{ height: 322 }}
+                        $sm={{ height: 288 }}
+                      >
                         <ProductVisual>
                           {product.imageUrl && !imageErrors[product.id] ? (
                             <Image
@@ -146,7 +152,7 @@ export default function Index() {
                               Zdjęcie produktu niedostępne
                             </Text>
                           ) : (
-                            <Text fontFamily="$heading" fontWeight="700" color="$blue10" style={{ fontSize: 112, lineHeight: 132, textAlign: 'center' }}>
+                            <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9" style={{ textAlign: 'center' }}>
                               {product.name.slice(0, 1).toUpperCase()}
                             </Text>
                           )}
@@ -161,9 +167,9 @@ export default function Index() {
                               </CategoryBadge>
                             </BadgeRow>
                           </ProductCardSection>
-                          <ProductCardSection>
+                          <ProductTitleSection>
                             <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
-                          </ProductCardSection>
+                          </ProductTitleSection>
                           <ProductCardSection>
                             <ProductMetaRow>
                               <ProductPrice style={{ width: '100%', textAlign: 'right' }}>{product.price.toFixed(2)} zł</ProductPrice>

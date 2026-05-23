@@ -63,7 +63,7 @@ function ProductHeroImage({ product }: { product: Product }) {
 
   return (
     <ProductImagePlaceholder>
-      <Text fontFamily="$heading" fontWeight="700" color="$blue10" style={{ fontSize: 120, lineHeight: 132 }}>
+      <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9">
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>

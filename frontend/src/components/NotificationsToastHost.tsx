@@ -23,7 +23,7 @@ interface NotificationsToastHostProps {
   onMobileInsetChange?: (value: number) => void
 }
 
-function NotificationMarqueeText({ message }: { message: string }) {
+function NotificationMarqueeText({ message, hovered }: { message: string; hovered: boolean }) {
   const translateX = useRef(new Animated.Value(0)).current
   const [textWidth, setTextWidth] = useState(0)
   const isAnimatingRef = useRef(true)
@@ -87,13 +87,13 @@ function NotificationMarqueeText({ message }: { message: string }) {
             transform: [{ translateX }],
           }}
         >
-          <ToastText numberOfLines={1} onLayout={handleTextLayout} style={{ marginRight: gap }}>
+          <ToastText hovered={hovered} numberOfLines={1} onLayout={handleTextLayout} style={{ marginRight: gap }}>
             {message}
           </ToastText>
-          <ToastText numberOfLines={1} style={{ marginRight: gap }}>
+          <ToastText hovered={hovered} numberOfLines={1} style={{ marginRight: gap }}>
             {message}
           </ToastText>
-          <ToastText numberOfLines={1}>
+          <ToastText hovered={hovered} numberOfLines={1}>
             {message}
           </ToastText>
         </Animated.View>
@@ -187,6 +187,8 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
     return null
   }
 
+  const isToastHovered = Platform.OS === 'web' && hoveredNotificationId === renderedNotification.id
+
   return (
     <ToastViewport style={toastViewportStyle}>
       <Animated.View
@@ -227,7 +229,7 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
               }}
             >
               <YStack gap="$1.5" width="100%" style={{ minWidth: 0, alignSelf: 'stretch' }}>
-                <NotificationMarqueeText message={renderedNotification.message} />
+                <NotificationMarqueeText message={renderedNotification.message} hovered={isToastHovered} />
               </YStack>
             </ToastCardButton>
 

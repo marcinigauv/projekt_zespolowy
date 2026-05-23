@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Platform } from 'react-native'
-import { useRouter } from 'expo-router'
-import { XStack, YStack, Text, Button, Popover, Separator, useMedia } from 'tamagui'
+import { Platform, useWindowDimensions } from 'react-native'
+import { usePathname, useRouter } from 'expo-router'
+import { XStack, YStack, Text, Button, Popover, Separator } from 'tamagui'
 import { logoutUserUseCase } from '../auth/useCases'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
@@ -18,6 +18,11 @@ import {
   HeaderMenuWrap,
   HeaderMeta,
   HeaderPrimaryIconButton,
+  PhoneTabBadge,
+  PhoneTabButton,
+  PhoneTabLabel,
+  PhoneTabsRail,
+  PhoneTabsWrap,
   HeaderProfileRow,
   HeaderProfileSummary,
   HeaderProfileSurface,
@@ -103,23 +108,58 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
 export function Header() {
   const router = useRouter()
-  const media = useMedia()
+  const pathname = usePathname()
+  const { width: viewportWidth } = useWindowDimensions()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const cartItems = useCartStore((state) => state.getTotalItems())
   const [profileOpen, setProfileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const isWeb = Platform.OS === 'web'
-  const isDesktop = isWeb && media.gtSm
-  const isWideDesktop = isWeb && media.gtMd
-  const isCompactMobile = !isDesktop && media.xxs
-  const navBarStyle = isWeb
+  const isDesktop = viewportWidth > 768
+  const isPhone = viewportWidth <= 520
+  const isWideDesktop = viewportWidth > 1024
+  const isCompactMobile = viewportWidth <= 390
+  const navBarStyle = isWeb && !isPhone
     ? { position: 'sticky' as const, top: 0, zIndex: 40 }
     : undefined
+  const phoneHeaderStyle = isWeb && isPhone
+    ? { position: 'sticky' as const, top: 0, zIndex: 40 }
+    : undefined
+  const accountPath = isAuthenticated ? '/profile' : '/login'
+  const isAccountActive = pathname.startsWith('/profile') || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/admin')
+  const phoneTabs = [
+    {
+      key: 'home',
+      label: 'Start',
+      path: '/',
+      active: pathname === '/',
+    },
+    {
+      key: 'cart',
+      label: 'Koszyk',
+      path: '/cart',
+      active: pathname === '/cart',
+      badge: cartItems > 0 ? cartItems : null,
+    },
+    {
+      key: 'orders',
+      label: 'Zamowienia',
+      path: '/orders',
+      active: pathname === '/orders' || pathname.startsWith('/orders/'),
+    },
+    {
+      key: 'account',
+      label: 'Konto',
+      path: accountPath,
+      active: isAccountActive,
+    },
+  ]
 
   useEffect(() => {
-    if (isDesktop) {
+    if (isDesktop || isPhone) {
       setMenuOpen(false)
     }
-  }, [isDesktop])
+  }, [isDesktop, isPhone])
 
   const navigate = (path: string) => {
     setMenuOpen(false)
@@ -204,6 +244,53 @@ export function Header() {
           </Popover>
         </HeaderControls>
       </NavBar>
+    )
+  }
+
+  if (isPhone) {
+    return (
+      <YStack style={phoneHeaderStyle}>
+        <NavBar>
+          <HeaderBrand>
+            <HeaderBrandMark>
+              <Text color="$color" fontWeight="700" fontSize="$3">SI</Text>
+            </HeaderBrandMark>
+            <NavTitle
+              accessibilityLabel="Przejdz do strony glownej"
+              onPress={() => navigate('/')}
+              numberOfLines={1}
+              style={{ flexShrink: 1 }}
+            >
+              {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
+            </NavTitle>
+          </HeaderBrand>
+        </NavBar>
+
+        <PhoneTabsWrap>
+          <PhoneTabsRail>
+            {phoneTabs.map((tab) => (
+              <PhoneTabButton
+                key={tab.key}
+                onPress={() => navigate(tab.path)}
+                bg={tab.active ? '#365e5a' : 'transparent'}
+                hoverStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
+                pressStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
+              >
+                <XStack gap="$1" style={{ alignItems: 'center' }}>
+                  <PhoneTabLabel color={tab.active ? '#f5faf7' : '$gray11'}>{tab.label}</PhoneTabLabel>
+                  {tab.badge ? (
+                    <PhoneTabBadge bg={tab.active ? '#f5faf7' : '$backgroundStrong'}>
+                      <Text color={tab.active ? '#365e5a' : '$color'} fontSize="$1" fontWeight="800">
+                        {tab.badge}
+                      </Text>
+                    </PhoneTabBadge>
+                  ) : null}
+                </XStack>
+              </PhoneTabButton>
+            ))}
+          </PhoneTabsRail>
+        </PhoneTabsWrap>
+      </YStack>
     )
   }
 
