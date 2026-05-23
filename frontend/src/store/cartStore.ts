@@ -8,6 +8,7 @@ export interface CartItem {
   name: string
   price: number
   quantity: number
+  imageUrl?: string
 }
 
 interface PersistedCart {
@@ -18,6 +19,7 @@ interface PersistedCart {
 interface CartState {
   items: CartItem[]
   addItem: (item: Omit<CartItem, 'quantity'>) => void
+  setItemImageUrl: (id: number, imageUrl?: string) => void
   removeItem: (id: number) => void
   updateQuantity: (id: number, quantity: number) => void
   clearCart: () => void
@@ -35,6 +37,7 @@ function isValidCartItem(value: unknown): value is CartItem {
   }
 
   const item = value as Record<string, unknown>
+  const hasValidImageUrl = typeof item.imageUrl === 'undefined' || typeof item.imageUrl === 'string' || item.imageUrl === null
 
   return Number.isInteger(item.id)
     && typeof item.name === 'string'
@@ -42,6 +45,17 @@ function isValidCartItem(value: unknown): value is CartItem {
     && typeof item.quantity === 'number'
     && Number.isInteger(item.quantity)
     && item.quantity > 0
+    && hasValidImageUrl
+}
+
+function normalizeImageUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const trimmedValue = value.trim()
+
+  return trimmedValue.length > 0 ? trimmedValue : undefined
 }
 
 function normalizeItems(items: unknown): CartItem[] {
@@ -49,7 +63,12 @@ function normalizeItems(items: unknown): CartItem[] {
     return []
   }
 
-  return items.filter(isValidCartItem)
+  return items
+    .filter(isValidCartItem)
+    .map((item) => ({
+      ...item,
+      imageUrl: normalizeImageUrl(item.imageUrl),
+    }))
 }
 
 function clearPersistedCart() {
@@ -118,19 +137,53 @@ export const useCartStore = create<CartState>((set, get) => ({
   
   addItem: (item) => {
     set((state) => {
+      const normalizedImageUrl = normalizeImageUrl(item.imageUrl)
       const existingItem = state.items.find(i => i.id === item.id)
       const nextItems = existingItem
         ? state.items.map(i =>
             i.id === item.id
-              ? { ...i, quantity: i.quantity + 1 }
+              ? { ...i, quantity: i.quantity + 1, imageUrl: i.imageUrl ?? normalizedImageUrl }
               : i
           )
-        : [...state.items, { ...item, quantity: 1 }]
+        : [...state.items, { ...item, quantity: 1, imageUrl: normalizedImageUrl }]
 
       persistCart(nextItems)
       
       return {
         items: nextItems
+      }
+    })
+  },
+
+  setItemImageUrl: (id, imageUrl) => {
+    set((state) => {
+      const trimmedImageUrl = typeof imageUrl === 'string' ? imageUrl.trim() : ''
+
+      if (!trimmedImageUrl) {
+        return state
+      }
+
+      let changed = false
+      const nextItems = state.items.map((item) => {
+        if (item.id !== id || item.imageUrl === trimmedImageUrl) {
+          return item
+        }
+
+        changed = true
+        return {
+          ...item,
+          imageUrl: trimmedImageUrl,
+        }
+      })
+
+      if (!changed) {
+        return state
+      }
+
+      persistCart(nextItems)
+
+      return {
+        items: nextItems,
       }
     })
   },

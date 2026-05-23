@@ -33,11 +33,20 @@ function toNotificationItem(notification: NotificationDto): NotificationItem {
   }
 }
 
+function normalizeNotificationMessage(value: unknown): string {
+  if (typeof value !== 'string') {
+    return ''
+  }
+
+  return value.trim()
+}
+
 export async function loadNotificationsUseCase(): Promise<NotificationItem[]> {
   const notification = await getNotificationsApi()
+  const normalizedMessage = normalizeNotificationMessage((notification as { message?: unknown }).message)
 
-  return notification.message.trim().length > 0 && !isNotificationExpired(notification.expiresAt)
-    ? [toNotificationItem(notification)]
+  return normalizedMessage.length > 0 && !isNotificationExpired(notification.expiresAt)
+    ? [toNotificationItem({ ...notification, message: normalizedMessage })]
     : []
 }
 

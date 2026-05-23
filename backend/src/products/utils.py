@@ -1,4 +1,4 @@
-from sqlalchemy import select, or_, update
+from sqlalchemy import select, or_, update, func
 from src.products.enums import ProductSortingDirection
 from src.products.models import ProductCreateRequest, ProductUpdateRequest, Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
 from src.sql.db import DBSession
@@ -22,7 +22,8 @@ async def get_products_from_db(
         stmt = stmt.where(
             or_(
                 Product.name.ilike(pattern),
-                Product.description.ilike(pattern)
+                Product.description.ilike(pattern),
+                func.array_to_string(Product.categories, ' ').ilike(pattern),
             )
         )
 

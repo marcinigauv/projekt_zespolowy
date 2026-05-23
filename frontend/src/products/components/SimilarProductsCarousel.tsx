@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Image } from 'react-native'
+import { Image, useWindowDimensions } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Text, XStack, YStack, useMedia } from 'tamagui'
+import { Text, XStack, YStack } from 'tamagui'
 import { StateMessageCard } from '../../components/StateMessageCard'
+import { formatCurrency } from '../../lib/formatters'
 import type { Product } from '../useCases'
 import {
   BadgeRow,
@@ -16,6 +17,7 @@ import {
   ProductCarouselFrame,
   ProductCarouselMedia,
   ProductImagePlaceholder,
+  ProductMetaText,
   ProductPrice,
   ProductTitle,
   SecondaryButton,
@@ -52,21 +54,23 @@ function ProductImage({ product }: { product: Product }) {
 export function SimilarProductsCarousel({ products, isLoading, error }: SimilarProductsCarouselProps) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [pageIndex, setPageIndex] = useState(0)
+  const { width: viewportWidth } = useWindowDimensions()
+  const isPhone = viewportWidth <= 520
+  const isNarrowPhone = viewportWidth <= 390
+  const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
 
-  const media = useMedia()
-  const isPhone = media.xs
   const total = products.length
-  const visibleCount = isPhone ? 1 : 2
-  const maxStartIndex = Math.max(0, total - visibleCount)
+  const pageSize = isPhone ? 1 : 2
+  const pageCount = Math.max(1, Math.ceil(total / pageSize))
 
   useEffect(() => {
-    setActiveIndex(0)
-  }, [products])
+    setPageIndex(0)
+  }, [products, pageSize])
 
   useEffect(() => {
-    setActiveIndex((current) => Math.min(current, maxStartIndex))
-  }, [maxStartIndex])
+    setPageIndex((current) => Math.min(current, pageCount - 1))
+  }, [pageCount])
 
   if (isLoading) {
     return <StateMessageCard icon="…" message="Ładowanie podobnych produktów" />
@@ -80,41 +84,102 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
     return <StateMessageCard icon="∅" message="Brak podobnych produktów" />
   }
 
-  const startIndex = Math.min(activeIndex, maxStartIndex)
-  const displayedProducts = products.slice(startIndex, startIndex + visibleCount)
-  const cardHeight = isPhone ? 336 : 360
+  const startIndex = pageIndex * pageSize
+  const displayedProducts = products.slice(startIndex, startIndex + pageSize)
+  const cardHeight = isNarrowPhone ? 356 : isPhone ? 372 : isTabletRange ? 468 : 424
+  const cardMediaHeight = isNarrowPhone ? 156 : isPhone ? 166 : isTabletRange ? 214 : 186
+  const descriptionLines = isTabletRange ? 3 : 2
+  const controlsButtonMinWidth = isNarrowPhone ? 86 : isPhone ? 96 : 108
+  const controlsLabelMinWidth = isNarrowPhone ? 44 : isPhone ? 54 : 70
+
+  const headerControls = (
+    <CarouselControls
+      style={{
+        width: isPhone ? '100%' : undefined,
+        justifyContent: isPhone ? 'space-between' : 'flex-end',
+        alignItems: 'center',
+        gap: isNarrowPhone ? 6 : isPhone ? 8 : 10,
+        flexShrink: 0,
+      }}
+    >
+      <SecondaryButton
+        size="$3"
+        disabled={pageIndex === 0}
+        onPress={() => setPageIndex((current) => Math.max(0, current - 1))}
+        style={{ minWidth: controlsButtonMinWidth, opacity: pageIndex === 0 ? 0.56 : 1 }}
+      >
+        Poprzedni
+      </SecondaryButton>
+
+      <YStack alignItems="center" justifyContent="center" style={{ minWidth: controlsLabelMinWidth }}>
+        <Text color="$placeholderColor" fontSize={isNarrowPhone ? '$2' : '$3'} fontWeight="700">
+          {pageIndex + 1} / {pageCount}
+        </Text>
+      </YStack>
+
+      <SecondaryButton
+        size="$3"
+        disabled={pageIndex >= pageCount - 1}
+        onPress={() => setPageIndex((current) => Math.min(pageCount - 1, current + 1))}
+        style={{ minWidth: controlsButtonMinWidth, opacity: pageIndex >= pageCount - 1 ? 0.56 : 1 }}
+      >
+        Następny
+      </SecondaryButton>
+    </CarouselControls>
+  )
 
   return (
     <SurfaceCard gap="$4">
-      <DataRow>
-        <YStack gap="$1">
-          <Text fontSize="$6" color="$color" fontWeight="700" fontFamily="$heading">Podobne produkty</Text>
-          <Text color="$placeholderColor" fontSize="$3">
-           Propozycje dopasowane do oglądanego produktu.
-          </Text>
+      {isPhone ? (
+        <YStack gap="$2.5" style={{ width: '100%' }}>
+          <YStack gap="$1" minWidth={0} style={{ width: '100%' }}>
+            <Text
+              fontSize={isNarrowPhone ? '$4' : '$5'}
+              color="$color"
+              fontWeight="700"
+              fontFamily="$heading"
+              style={{ lineHeight: isNarrowPhone ? 28 : 30 }}
+            >
+              Podobne produkty
+            </Text>
+            <Text
+              color="$placeholderColor"
+              fontSize={isNarrowPhone ? '$2' : '$3'}
+              style={{ lineHeight: isNarrowPhone ? 18 : 20 }}
+            >
+              Propozycje dopasowane do oglądanego produktu.
+            </Text>
+          </YStack>
+          {headerControls}
         </YStack>
-        <CarouselControls>
-          {startIndex > 0 && (
-            <SecondaryButton size="$3" onPress={() => setActiveIndex((current) => Math.max(0, current - 1))}>
-              Poprzedni
-            </SecondaryButton>
-          )}
-
-          <Text color="$placeholderColor" fontSize="$3">
-            {startIndex + 1} / {total}
-          </Text>
-
-          {startIndex < maxStartIndex && (
-            <SecondaryButton size="$3" onPress={() => setActiveIndex((current) => Math.min(maxStartIndex, current + 1))}>
-              Następny
-            </SecondaryButton>
-          )}
-        </CarouselControls>
-      </DataRow>
+      ) : (
+        <XStack
+          alignItems="center"
+          justifyContent="space-between"
+          gap="$3"
+          style={{ width: '100%', minHeight: isTabletRange ? 64 : 60 }}
+        >
+          <YStack gap="$1" flex={1} minWidth={0} style={{ paddingRight: 12 }}>
+            <Text
+              fontSize="$6"
+              color="$color"
+              fontWeight="700"
+              fontFamily="$heading"
+              numberOfLines={1}
+            >
+              Podobne produkty
+            </Text>
+            <Text color="$placeholderColor" fontSize="$3" numberOfLines={2}>
+              Propozycje dopasowane do oglądanego produktu.
+            </Text>
+          </YStack>
+          {headerControls}
+        </XStack>
+      )}
 
       <XStack gap="$2.5" width="100%" py="$2" alignItems="stretch">
         {displayedProducts.map((item) => {
-          const visibleCategories = item.categories.slice(0, 2)
+          const visibleCategories = item.categories.slice(0, 1)
           const remainingCategories = Math.max(0, item.categories.length - visibleCategories.length)
 
           return (
@@ -126,12 +191,12 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
             >
               <YStack flex={1}>
                 <ProductCardLinkButton style={{ padding: 0, flex: 1 }} onPress={() => router.push(`/products/${item.id}`)}>
-                  <ProductCarouselMedia>
+                  <ProductCarouselMedia style={{ height: cardMediaHeight }}>
                     <ProductImage product={item} />
                   </ProductCarouselMedia>
 
                   <YStack flex={1}>
-                    <ProductCardSection style={{ minHeight: isPhone ? 54 : 60 }}>
+                    <ProductCardSection style={{ minHeight: isPhone ? 48 : isTabletRange ? 58 : 54 }}>
                       <BadgeRow>
                         <CategoryBadge>
                           <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.4}>
@@ -155,13 +220,30 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
                       </BadgeRow>
                     </ProductCardSection>
 
-                    <ProductCardSection style={{ flex: 1, minHeight: isPhone ? 52 : 60 }}>
+                    <ProductCardSection
+                      style={{
+                        flex: 1,
+                        minHeight: isPhone ? 92 : isTabletRange ? 136 : 110,
+                        gap: isTabletRange ? '$2' : '$1.5',
+                      }}
+                    >
                       <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
+                      <ProductMetaText
+                        numberOfLines={descriptionLines}
+                        style={{
+                          color: '$gray11',
+                          fontSize: isNarrowPhone ? '$2' : isTabletRange ? '$3' : '$2',
+                          lineHeight: isNarrowPhone ? 18 : isTabletRange ? 22 : 20,
+                        }}
+                      >
+                        {item.description}
+                      </ProductMetaText>
                     </ProductCardSection>
 
                     <ProductCardSection>
-                      <DataRow style={{ justifyContent: 'flex-end' }}>
-                        <ProductPrice>{item.price.toFixed(2)} zł</ProductPrice>
+                      <DataRow style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                        <ProductMetaText>Dostępnych: {item.amount}</ProductMetaText>
+                        <ProductPrice>{formatCurrency(item.price)}</ProductPrice>
                       </DataRow>
                     </ProductCardSection>
                   </YStack>
@@ -169,15 +251,17 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
                 <ProductCardFooter>
                   <ProductCardAddButton
                     size="$3"
+                    style={{ minHeight: isPhone ? 44 : isTabletRange ? 46 : 42 }}
                     onPress={() =>
                       addItem({
                         id: item.id,
                         name: item.name,
                         price: item.price,
+                        imageUrl: item.imageUrl,
                       })
                     }
                   >
-                    Dodaj
+                    Dodaj do koszyka
                   </ProductCardAddButton>
                 </ProductCardFooter>
               </YStack>

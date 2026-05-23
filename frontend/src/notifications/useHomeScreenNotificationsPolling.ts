@@ -7,7 +7,6 @@ const NOTIFICATIONS_POLL_INTERVAL_MS = 30000
 
 function useScreenNotificationsPollingImpl() {
   const setNotifications = useNotificationsStore((state) => state.setNotifications)
-  const clearNotifications = useNotificationsStore((state) => state.clearNotifications)
 
   useFocusEffect(
     useCallback(() => {
@@ -57,10 +56,8 @@ function useScreenNotificationsPollingImpl() {
         if (timeoutId !== null) {
           clearTimeout(timeoutId)
         }
-
-        clearNotifications()
       }
-    }, [clearNotifications, setNotifications]),
+    }, [setNotifications]),
   )
 }
 

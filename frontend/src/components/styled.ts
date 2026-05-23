@@ -177,10 +177,11 @@ export const ToastCardButton = styled(Button, styles({
   borderWidth: 1,
   borderColor: '#3f5752',
   borderRadius: '$0',
-  px: '$3.5',
-  py: '$3',
-  alignItems: 'stretch',
-  justifyContent: 'flex-start',
+  px: '$4',
+  py: '$2.5',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 56,
   shadowColor: 'rgba(8,14,13,0.32)',
   shadowOffset: { width: 0, height: 10 },
   shadowOpacity: 0.18,
@@ -192,6 +193,11 @@ export const ToastCardButton = styled(Button, styles({
   },
   pressStyle: {
     bg: '#1f2d2b',
+  },
+  $xs: {
+    px: '$3',
+    py: '$2',
+    minHeight: 52,
   },
 }))
 
@@ -205,7 +211,7 @@ export const ToastCardWrap = styled(YStack, styles({
 export const ToastMarqueeViewport = styled(YStack, styles({
   width: '100%',
   maxWidth: '100%',
-  minHeight: 24,
+  minHeight: 28,
   minWidth: 0,
   overflow: 'hidden',
   justifyContent: 'center',
@@ -628,18 +634,22 @@ export const HeaderAvatar = styled(YStack, styles({
 }))
 
 export const ProductList = styled(XStack, styles({
+  width: '100%',
   flexWrap: 'wrap',
   gap: '$3',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-start',
+  alignContent: 'flex-start',
+  alignItems: 'stretch',
   $xs: {
     gap: '$2',
   },
 }))
 
 export const ProductListItem = styled(YStack, styles({
+  alignSelf: 'stretch',
   width: '100%',
   $xs: {
-    width: '48.5%',
+    width: '100%',
   },
   $gtXs: {
     width: '49%',
@@ -649,7 +659,7 @@ export const ProductListItem = styled(YStack, styles({
     width: '32%',
   },
   $gtLg: {
-    width: '24%',
+    width: '32%',
   },
 }))
 
@@ -665,11 +675,143 @@ export const ProductCard = styled(YStack, styles({
   shadowRadius: 18,
   elevation: 3,
   width: '100%',
+  height: '100%',
+}))
+
+export const CatalogProductCard = styled(YStack, styles({
+  theme: 'surface',
+  bg: '$background',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+  borderRadius: '$8',
+  overflow: 'hidden',
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.12,
+  shadowRadius: 18,
+  elevation: 3,
+  width: '100%',
+}))
+
+export const CatalogProductPressable = styled(Button, styles({
+  unstyled: true,
+  width: '100%',
+  flexDirection: 'column',
+  alignItems: 'stretch',
+  justifyContent: 'flex-start',
+  cursor: 'pointer',
+  hoverStyle: {
+    opacity: 0.985,
+  },
+  pressStyle: {
+    opacity: 0.95,
+  },
+}))
+
+export const CatalogProductMedia = styled(YStack, styles({
+  width: '100%',
+  height: 188,
+  bg: '$backgroundHover',
+  p: '$2',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  $md: {
+    height: 178,
+  },
+  $sm: {
+    height: 168,
+  },
+  $xs: {
+    height: 156,
+    p: '$1.5',
+  },
+}))
+
+export const CatalogProductMediaFrame = styled(YStack, styles({
+  width: '100%',
+  height: '100%',
+  bg: '$background',
+  borderRadius: '$6',
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+}))
+
+export const CatalogProductBody = styled(YStack, styles({
+  width: '100%',
+  bg: '$background',
+  p: '$2.5',
+  gap: '$1.5',
+  minHeight: 98,
+  $sm: {
+    p: '$2',
+    minHeight: 92,
+  },
+  $xs: {
+    minHeight: 86,
+  },
+}))
+
+export const CatalogProductTitle = styled(Text, styles({
+  color: '$color',
+  fontSize: '$4',
+  lineHeight: '$5',
+  fontWeight: '600',
+  minHeight: 48,
+  $sm: {
+    fontSize: '$3',
+    lineHeight: '$4',
+    minHeight: 42,
+  },
+}))
+
+export const CatalogProductPriceRow = styled(XStack, styles({
+  gap: '$1.5',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+}))
+
+export const CatalogProductDescription = styled(Text, styles({
+  color: '$placeholderColor',
+  fontSize: '$2',
+  lineHeight: '$3',
+  fontWeight: '600',
+  letterSpacing: 0.15,
+  $xs: {
+    fontSize: '$1',
+    lineHeight: '$2',
+  },
+}))
+
+export const CatalogProductPrice = styled(Text, styles({
+  color: '$blue10',
+  fontSize: '$6',
+  fontWeight: '800',
+  letterSpacing: -0.25,
+  $sm: {
+    fontSize: '$5',
+  },
+  $xs: {
+    fontSize: '$4',
+  },
+}))
+
+export const CatalogProductFooter = styled(YStack, styles({
+  width: '100%',
+  p: '$2',
+  borderTopWidth: 1,
+  borderTopColor: '$borderColor',
+  bg: '$background',
+  $xs: {
+    p: '$1.5',
+  },
 }))
 
 export const ProductCardLinkButton = styled(Button, styles({
   unstyled: true,
   width: '100%',
+  flex: 1,
   flexDirection: 'column',
   justifyContent: 'flex-start',
   alignItems: 'stretch',
@@ -700,6 +842,7 @@ export const ProductVisual = styled(YStack, styles({
 
 export const ProductInfo = styled(YStack, styles({
   width: '100%',
+  flex: 1,
   bg: '$background',
 }))
 
@@ -716,13 +859,13 @@ export const ProductCardSection = styled(YStack, styles({
 }))
 
 export const ProductTitleSection = styled(ProductCardSection, styles({
-  height: 62,
+  minHeight: 62,
   justifyContent: 'center',
   $sm: {
-    height: 56,
+    minHeight: 56,
   },
   $xs: {
-    height: 50,
+    minHeight: 50,
   },
 }))
 
@@ -744,16 +887,13 @@ export const ProductTitle = styled(Text, styles({
   textAlign: 'left',
   fontWeight: '600',
   lineHeight: '$5',
-  minHeight: 48,
   $sm: {
     fontSize: '$4',
     lineHeight: '$4',
-    minHeight: 40,
   },
   $xs: {
     fontSize: '$3',
     lineHeight: '$3',
-    minHeight: 32,
   },
 }))
 
@@ -871,7 +1011,12 @@ export const BackLinkButton = styled(Button, styles({
 
 export const ProductDetailLayout = styled(XStack, styles({
   gap: '$4',
-  flexWrap: 'wrap',
+  flexWrap: 'nowrap',
+  alignItems: 'stretch',
+  $md: {
+    flexDirection: 'column',
+    gap: '$3.5',
+  },
   $sm: {
     gap: '$3',
   },
@@ -880,12 +1025,16 @@ export const ProductDetailLayout = styled(XStack, styles({
 export const ProductMediaColumn = styled(YStack, styles({
   theme: 'surface',
   flex: 1,
-  minWidth: 250,
+  minWidth: 320,
   borderRadius: '$8',
   overflow: 'hidden',
   borderWidth: 1,
   borderColor: '$borderColor',
   bg: '$background',
+  $md: {
+    minWidth: 0,
+    width: '100%',
+  },
   $sm: {
     minWidth: 0,
     width: '100%',
@@ -894,8 +1043,13 @@ export const ProductMediaColumn = styled(YStack, styles({
 
 export const ProductInfoColumn = styled(YStack, styles({
   flex: 1,
-  minWidth: 250,
+  minWidth: 320,
   gap: '$3',
+  $md: {
+    minWidth: 0,
+    width: '100%',
+    gap: '$2.5',
+  },
   $sm: {
     minWidth: 0,
     width: '100%',
@@ -905,12 +1059,15 @@ export const ProductInfoColumn = styled(YStack, styles({
 
 export const ProductHeroMedia = styled(YStack, styles({
   width: '100%',
-  height: 400,
+  height: 420,
+  $md: {
+    height: 360,
+  },
   $sm: {
-    height: 280,
+    height: 300,
   },
   $xs: {
-    height: 220,
+    height: 240,
   },
 }))
 

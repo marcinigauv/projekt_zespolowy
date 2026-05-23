@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import { usePathname, useRouter } from 'expo-router'
 import { XStack, YStack, Text, Button, Popover, Separator } from 'tamagui'
+import { Feather } from '@expo/vector-icons'
 import { logoutUserUseCase } from '../auth/useCases'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
@@ -20,7 +21,6 @@ import {
   HeaderPrimaryIconButton,
   PhoneTabBadge,
   PhoneTabButton,
-  PhoneTabLabel,
   PhoneTabsRail,
   PhoneTabsWrap,
   HeaderProfileRow,
@@ -127,33 +127,47 @@ export function Header() {
     : undefined
   const accountPath = isAuthenticated ? '/profile' : '/login'
   const isAccountActive = pathname.startsWith('/profile') || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/admin')
-  const phoneTabs = [
+  const phoneTabs: Array<{
+    key: string
+    icon: React.ComponentProps<typeof Feather>['name']
+    ariaLabel: string
+    path: string
+    active: boolean
+    badge?: number | null
+  }> = [
     {
       key: 'home',
-      label: 'Start',
+      icon: 'home',
+      ariaLabel: 'Strona główna',
       path: '/',
       active: pathname === '/',
     },
     {
       key: 'cart',
-      label: 'Koszyk',
+      icon: 'shopping-bag',
+      ariaLabel: 'Koszyk',
       path: '/cart',
       active: pathname === '/cart',
       badge: cartItems > 0 ? cartItems : null,
     },
     {
-      key: 'orders',
-      label: 'Zamowienia',
-      path: '/orders',
-      active: pathname === '/orders' || pathname.startsWith('/orders/'),
-    },
-    {
       key: 'account',
-      label: 'Konto',
+      icon: isAuthenticated ? 'user' : 'log-in',
+      ariaLabel: isAuthenticated ? 'Konto' : 'Logowanie',
       path: accountPath,
       active: isAccountActive,
     },
   ]
+
+  if (isAuthenticated) {
+    phoneTabs.splice(2, 0, {
+      key: 'orders',
+      icon: 'clipboard',
+      ariaLabel: 'Zamówienia',
+      path: '/orders',
+      active: pathname === '/orders' || pathname.startsWith('/orders/'),
+    })
+  }
 
   useEffect(() => {
     if (isDesktop || isPhone) {
@@ -271,13 +285,18 @@ export function Header() {
             {phoneTabs.map((tab) => (
               <PhoneTabButton
                 key={tab.key}
+                accessibilityLabel={tab.ariaLabel}
                 onPress={() => navigate(tab.path)}
                 bg={tab.active ? '#365e5a' : 'transparent'}
                 hoverStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
                 pressStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
               >
                 <XStack gap="$1" style={{ alignItems: 'center' }}>
-                  <PhoneTabLabel color={tab.active ? '#f5faf7' : '$gray11'}>{tab.label}</PhoneTabLabel>
+                  <Feather
+                    name={tab.icon}
+                    size={16}
+                    color={tab.active ? '#f5faf7' : '#5d6663'}
+                  />
                   {tab.badge ? (
                     <PhoneTabBadge bg={tab.active ? '#f5faf7' : '$backgroundStrong'}>
                       <Text color={tab.active ? '#365e5a' : '$color'} fontSize="$1" fontWeight="800">

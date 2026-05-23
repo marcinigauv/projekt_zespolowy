@@ -1,43 +1,55 @@
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Image } from 'react-native'
 import { Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { StateMessageCard } from '../src/components/StateMessageCard'
 import { useHomeScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
 import { getProductsUseCase, type Product } from '../src/products/useCases'
-import { useCartStore } from '../src/store/cartStore'
 import {
   PageWrapper,
   ProductGrid,
-  BadgeRow,
-  CategoryBadge,
   ProductList,
   ProductListItem,
-  ProductCard,
-  ProductCardAddButton,
-  ProductCardFooter,
-  ProductCardLinkButton,
-  ProductCardSection,
-  ProductTitleSection,
-  ProductInfo,
-  ProductPrice,
-  ProductTitle,
-  ProductVisual,
+  CatalogProductCard,
+  CatalogProductPressable,
+  CatalogProductMedia,
+  CatalogProductMediaFrame,
+  CatalogProductBody,
+  CatalogProductTitle,
+  CatalogProductPriceRow,
+  CatalogProductDescription,
+  CatalogProductPrice,
   Eyebrow,
   Section,
   SectionHeading,
   SectionDescription,
   SectionTitle,
-  ProductMetaRow,
   SearchInput,
   SearchRow,
   SecondaryButton,
 } from '../src/components/styled'
 
+const PRICE_FORMATTER = new Intl.NumberFormat('pl-PL', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+function formatPrice(value: number): string {
+  return `${PRICE_FORMATTER.format(value)} zł`
+}
+
+function normalizeSearchParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return (value[0] ?? '').trim()
+  }
+
+  return (value ?? '').trim()
+}
+
 export default function Index() {
   const router = useRouter()
-  const addItem = useCartStore((s) => s.addItem)
+  const params = useLocalSearchParams<{ search?: string | string[] }>()
   useHomeScreenNotificationsPolling()
   const [products, setProducts] = useState<Product[]>([])
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
@@ -45,6 +57,13 @@ export default function Index() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const normalizedRouteSearch = normalizeSearchParam(params.search)
+
+    setSearchTerm((current) => (current === normalizedRouteSearch ? current : normalizedRouteSearch))
+    setDebouncedSearchTerm((current) => (current === normalizedRouteSearch ? current : normalizedRouteSearch))
+  }, [params.search])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -88,6 +107,15 @@ export default function Index() {
     }
   }, [debouncedSearchTerm])
 
+  const handleClearSearch = () => {
+    setSearchTerm('')
+    setDebouncedSearchTerm('')
+
+    if (normalizeSearchParam(params.search).length > 0) {
+      router.replace('/')
+    }
+  }
+
   return (
     <PageWrapper>
       <Header />
@@ -107,13 +135,13 @@ export default function Index() {
                 flex={1}
                 value={searchTerm}
                 onChangeText={setSearchTerm}
-                placeholder="Szukaj po nazwie lub opisie"
+                placeholder="Szukaj po nazwie, opisie lub tagu"
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="search"
               />
               {searchTerm.length > 0 && (
-                <SecondaryButton size="$4" onPress={() => setSearchTerm('')}>
+                <SecondaryButton size="$4" onPress={handleClearSearch}>
                   Wyczyść
                 </SecondaryButton>
               )}
@@ -130,64 +158,52 @@ export default function Index() {
               />
             ) : (
               <ProductList>
-                {products.map((product) => (
-                  <ProductListItem key={product.id}>
-                    <ProductCard hoverStyle={{ scale: 1.01 }}>
-                      <ProductCardLinkButton
-                        onPress={() => router.push(`/products/${product.id}`)}
-                        height={352}
-                        $md={{ height: 322 }}
-                        $sm={{ height: 288 }}
-                      >
-                        <ProductVisual>
-                          {product.imageUrl && !imageErrors[product.id] ? (
-                            <Image
-                              source={{ uri: product.imageUrl }}
-                              resizeMode="cover"
-                              onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
-                              style={{ width: '100%', height: '100%' }}
-                            />
-                          ) : imageErrors[product.id] ? (
-                            <Text color="$placeholderColor" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
-                              Zdjęcie produktu niedostępne
-                            </Text>
-                          ) : (
-                            <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9" style={{ textAlign: 'center' }}>
-                              {product.name.slice(0, 1).toUpperCase()}
-                            </Text>
-                          )}
-                        </ProductVisual>
-                        <ProductInfo>
-                          <ProductCardSection>
-                            <BadgeRow>
-                              <CategoryBadge>
-                                <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.5}>
-                                  DOSTĘPNE: {product.amount}
-                                </Text>
-                              </CategoryBadge>
-                            </BadgeRow>
-                          </ProductCardSection>
-                          <ProductTitleSection>
-                            <ProductTitle numberOfLines={2}>{product.name}</ProductTitle>
-                          </ProductTitleSection>
-                          <ProductCardSection>
-                            <ProductMetaRow>
-                              <ProductPrice style={{ width: '100%', textAlign: 'right' }}>{product.price.toFixed(2)} zł</ProductPrice>
-                            </ProductMetaRow>
-                          </ProductCardSection>
-                        </ProductInfo>
-                      </ProductCardLinkButton>
-                      <ProductCardFooter>
-                        <ProductCardAddButton
-                          size="$3"
-                          onPress={() => addItem({ id: product.id, name: product.name, price: product.price })}
+                {products.map((product) => {
+                  return (
+                    <ProductListItem key={product.id}>
+                      <CatalogProductCard hoverStyle={{ scale: 1.01 }}>
+                        <CatalogProductPressable
+                          onPress={() => router.push(`/products/${product.id}`)}
                         >
-                          Dodaj
-                        </ProductCardAddButton>
-                      </ProductCardFooter>
-                    </ProductCard>
-                  </ProductListItem>
-                ))}
+                          <CatalogProductMedia>
+                            <CatalogProductMediaFrame>
+                              {product.imageUrl && !imageErrors[product.id] ? (
+                                <Image
+                                  source={{ uri: product.imageUrl }}
+                                  resizeMode="contain"
+                                  onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
+                                  style={{ width: '100%', height: '100%' }}
+                                />
+                              ) : imageErrors[product.id] ? (
+                                <Text color="$placeholderColor" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
+                                  Zdjęcie produktu niedostępne
+                                </Text>
+                              ) : (
+                                <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9" style={{ textAlign: 'center' }}>
+                                  {product.name.slice(0, 1).toUpperCase()}
+                                </Text>
+                              )}
+                            </CatalogProductMediaFrame>
+                          </CatalogProductMedia>
+
+                          <CatalogProductBody>
+                            <CatalogProductTitle numberOfLines={2}>
+                              {product.name}
+                            </CatalogProductTitle>
+
+                            <CatalogProductPriceRow>
+                              <CatalogProductPrice>{formatPrice(product.price)}</CatalogProductPrice>
+                            </CatalogProductPriceRow>
+
+                            <CatalogProductDescription numberOfLines={1}>
+                              DOSTĘPNE: {product.amount} szt.
+                            </CatalogProductDescription>
+                          </CatalogProductBody>
+                        </CatalogProductPressable>
+                      </CatalogProductCard>
+                    </ProductListItem>
+                  )
+                })}
               </ProductList>
             )}
           </Section>

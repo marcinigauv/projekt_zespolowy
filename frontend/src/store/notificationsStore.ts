@@ -64,13 +64,16 @@ export const useNotificationsStore = create<NotificationsState>((set) => ({
       const activeNotifications = notifications
         .filter((notification) => !isExpired(notification))
         .filter((notification) => !dismissedIds.has(notification.id))
+      const nextNotifications = activeNotifications.length > 0
+        ? [activeNotifications[0]]
+        : []
 
-      if (areNotificationsEqual(state.notifications, activeNotifications)) {
+      if (areNotificationsEqual(state.notifications, nextNotifications)) {
         return state
       }
 
       return {
-        notifications: activeNotifications,
+        notifications: nextNotifications,
       }
     })
   },

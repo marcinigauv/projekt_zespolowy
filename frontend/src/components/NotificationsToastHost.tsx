@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, type Href } from 'expo-router'
+import { Feather } from '@expo/vector-icons'
 import { Animated, Easing, Linking, Platform, Pressable, type LayoutChangeEvent } from 'react-native'
-import { YStack, useMedia } from 'tamagui'
+import { XStack, YStack, useMedia } from 'tamagui'
 import {
   ToastCardWrap,
   ToastCardButton,
@@ -13,7 +14,7 @@ import {
 } from './styled'
 import { useNotificationsStore } from '../store/notificationsStore'
 
-const MARQUEE_PIXELS_PER_SECOND = 38
+const MARQUEE_PIXELS_PER_SECOND = 42
 
 function isExternalUrl(url: string): boolean {
   return /^https?:\/\//i.test(url)
@@ -25,27 +26,28 @@ interface NotificationsToastHostProps {
 
 function NotificationMarqueeText({ message, hovered }: { message: string; hovered: boolean }) {
   const translateX = useRef(new Animated.Value(0)).current
+  const [containerWidth, setContainerWidth] = useState(0)
   const [textWidth, setTextWidth] = useState(0)
   const isAnimatingRef = useRef(true)
-  const gap = 60
 
   useEffect(() => {
-    if (textWidth === 0) {
+    if (textWidth === 0 || containerWidth === 0) {
       return
     }
 
     isAnimatingRef.current = true
+    const travelDistance = containerWidth + textWidth
 
     const run = () => {
       if (!isAnimatingRef.current) {
         return
       }
 
-      translateX.setValue(0)
+      translateX.setValue(containerWidth)
 
       Animated.timing(translateX, {
-        toValue: -(textWidth + gap),
-        duration: ((textWidth + gap) / MARQUEE_PIXELS_PER_SECOND) * 1000,
+        toValue: -textWidth,
+        duration: (travelDistance / MARQUEE_PIXELS_PER_SECOND) * 1000,
         easing: Easing.linear,
         useNativeDriver: Platform.OS !== 'web',
       }).start(({ finished }) => {
@@ -61,7 +63,7 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
       isAnimatingRef.current = false
       translateX.stopAnimation()
     }
-  }, [gap, message, textWidth, translateX])
+  }, [containerWidth, message, textWidth, translateX])
 
   const handleTextLayout = (event: LayoutChangeEvent) => {
     const nextWidth = event.nativeEvent.layout.width
@@ -71,29 +73,33 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
   }
 
   return (
-    <YStack width="100%" height={24} alignItems="center" justifyContent="center">
+    <YStack
+      width="100%"
+      minHeight={28}
+      alignItems="stretch"
+      justifyContent="center"
+      onLayout={(event: LayoutChangeEvent) => {
+        const nextWidth = event.nativeEvent.layout.width
+        if (nextWidth > 0) {
+          setContainerWidth(nextWidth)
+        }
+      }}
+    >
       <ToastMarqueeViewport
-        height={24}
-        width={Platform.OS === 'web' ? 620 : '100%'}
+        height={28}
+        width="100%"
         maxWidth="100%"
         alignSelf="center"
+        alignItems="flex-start"
+        justifyContent="center"
       >
         <Animated.View
           style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            flexDirection: 'row',
+            alignSelf: 'flex-start',
             transform: [{ translateX }],
           }}
         >
-          <ToastText hovered={hovered} numberOfLines={1} onLayout={handleTextLayout} style={{ marginRight: gap }}>
-            {message}
-          </ToastText>
-          <ToastText hovered={hovered} numberOfLines={1} style={{ marginRight: gap }}>
-            {message}
-          </ToastText>
-          <ToastText hovered={hovered} numberOfLines={1}>
+          <ToastText hovered={hovered} numberOfLines={1} onLayout={handleTextLayout}>
             {message}
           </ToastText>
         </Animated.View>
@@ -210,9 +216,9 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
           <ToastCardWrap style={{ width: '100%', alignItems: 'stretch' }}>
             <ToastCardButton
               key={renderedNotification.id}
-              flexDirection="column"
-              alignItems="stretch"
-              style={{ paddingHorizontal: 12, paddingVertical: 10, width: '100%' }}
+                flexDirection="row"
+                alignItems="center"
+                style={{ paddingHorizontal: 16, paddingVertical: 8, width: '100%', minHeight: 56 }}
               onPress={() => {
                 dismissNotification(renderedNotification.id)
 
@@ -228,9 +234,27 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
                 router.push(renderedNotification.url as Href)
               }}
             >
-              <YStack gap="$1.5" width="100%" style={{ minWidth: 0, alignSelf: 'stretch' }}>
-                <NotificationMarqueeText message={renderedNotification.message} hovered={isToastHovered} />
-              </YStack>
+              <XStack gap="$2.5" width="100%" style={{ minWidth: 0, alignItems: 'center' }}>
+                <YStack width={20} height={20} alignItems="center" justifyContent="center">
+                  <Feather
+                    name="bell"
+                    size={14}
+                    color={isToastHovered ? '#f4eade' : '#d4e2de'}
+                  />
+                </YStack>
+
+                <YStack flex={1} width="100%" style={{ minWidth: 0, justifyContent: 'center' }}>
+                  <NotificationMarqueeText message={renderedNotification.message} hovered={isToastHovered} />
+                </YStack>
+
+                <YStack width={20} height={20} alignItems="center" justifyContent="center">
+                  <Feather
+                    name={renderedNotification.url ? 'arrow-up-right' : 'info'}
+                    size={14}
+                    color={isToastHovered ? '#f4eade' : '#afc3be'}
+                  />
+                </YStack>
+              </XStack>
             </ToastCardButton>
 
             {Platform.OS === 'web' && hoveredNotificationId === renderedNotification.id ? (
