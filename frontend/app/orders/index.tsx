@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { ScrollView, Text, YStack } from 'tamagui'
+import { useWindowDimensions } from 'react-native'
+import { ScrollView, Text, XStack, YStack } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
 import { StateMessageCard } from '../../src/components/StateMessageCard'
@@ -25,10 +26,12 @@ import {
 
 export default function OrdersScreen() {
   const router = useRouter()
+  const { width: viewportWidth } = useWindowDimensions()
   const { canRender, isAuthenticated } = useRouteAccess()
   const cachedOrders = useOrdersStore((state) => state.orders)
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
+  const isPhone = viewportWidth <= 520
 
   useEffect(() => {
     if (!canRender) {
@@ -75,8 +78,8 @@ export default function OrdersScreen() {
     <PageWrapper>
       <Header />
       <ScrollView>
-        <PageContent>
-          <SectionHeading>
+        <PageContent style={{ maxWidth: 1120 }}>
+          <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Zamówienia</Eyebrow>
             <SectionTitle>Historia zamówień</SectionTitle>
             <SectionDescription>
@@ -93,38 +96,166 @@ export default function OrdersScreen() {
           ) : (
             <YStack gap="$4">
               {cachedOrders.map((order) => (
-                <SurfaceCard key={order.id}>
-                  <YStack gap="$3">
-                    <DataRow>
-                      <Text fontSize="$5" fontWeight="800">Zamówienie #{order.id}</Text>
-                      <Text color="$blue10" fontWeight="700">{formatCurrency(order.totalAmount)}</Text>
-                    </DataRow>
-                    <DataRow>
-                      <Text color="$gray10">Data</Text>
-                      <Text fontWeight="600">{formatDateTime(order.orderDate)}</Text>
-                    </DataRow>
-                    <DataRow>
-                      <Text color="$gray10">Liczba pozycji</Text>
-                      <Text fontWeight="600">{order.items.length}</Text>
-                    </DataRow>
-                    <DataRow>
-                      <Text color="$gray10">Płatność</Text>
-                      <StatusBadge tone={getPaymentTone(order.payment?.status)}>
-                        <StatusBadgeText tone={getPaymentTone(order.payment?.status)}>{getPaymentStatusLabel(order.payment?.status)}</StatusBadgeText>
-                      </StatusBadge>
-                    </DataRow>
-                    <SecondaryButton size="$4" onPress={() => router.push(`/orders/${order.id}`)}>
-                      Zobacz szczegóły
-                    </SecondaryButton>
+                <SurfaceCard key={order.id} style={{ padding: 0, overflow: 'hidden' }}>
+                  <YStack>
+                    <XStack
+                      gap="$3"
+                      px="$4"
+                      py="$4"
+                      justifyContent="space-between"
+                      alignItems={isPhone ? 'flex-start' : 'center'}
+                      flexDirection={isPhone ? 'column' : 'row'}
+                      style={{
+                        backgroundColor: '#f8f2fa',
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#e6e0e9',
+                      }}
+                    >
+                      <YStack gap="$1.5" style={{ minWidth: 0, flex: 1 }}>
+                        <Text color="$placeholderColor" fontSize="$2" fontWeight="700" letterSpacing={0.6} textTransform="uppercase">
+                          Zamówienie
+                        </Text>
+                        <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
+                          #{order.id}
+                        </Text>
+                        <Text color="$placeholderColor" fontSize="$3">
+                          {formatDateTime(order.orderDate)}
+                        </Text>
+                      </YStack>
+
+                      <YStack
+                        alignItems={isPhone ? 'flex-start' : 'flex-end'}
+                        style={{
+                          minWidth: isPhone ? 0 : 180,
+                          width: isPhone ? '100%' : undefined,
+                          borderWidth: 1,
+                          borderColor: '#cbc4d2',
+                          borderRadius: 18,
+                          backgroundColor: '#ffffff',
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                        }}
+                      >
+                        <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                          Łączna kwota
+                        </Text>
+                        <Text color="$blue10" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
+                          {formatCurrency(order.totalAmount)}
+                        </Text>
+                      </YStack>
+                    </XStack>
+
+                    <YStack p="$3.5" gap="$3.5">
+                      <XStack gap="$3" flexWrap="wrap">
+                        <YStack
+                          flexBasis={220}
+                          style={{
+                            minWidth: 0,
+                            flexGrow: 1,
+                            borderWidth: 1,
+                            borderColor: '#cbc4d2',
+                            borderRadius: 18,
+                            backgroundColor: '#ffffff',
+                            paddingHorizontal: 16,
+                            paddingVertical: 14,
+                            gap: 6,
+                          }}
+                        >
+                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                            Data
+                          </Text>
+                          <Text color="$color" fontSize="$4" fontWeight="700">
+                            {formatDateTime(order.orderDate)}
+                          </Text>
+                        </YStack>
+
+                        <YStack
+                          flexBasis={180}
+                          style={{
+                            minWidth: 0,
+                            flexGrow: 1,
+                            borderWidth: 1,
+                            borderColor: '#cbc4d2',
+                            borderRadius: 18,
+                            backgroundColor: '#ffffff',
+                            paddingHorizontal: 16,
+                            paddingVertical: 14,
+                            gap: 6,
+                          }}
+                        >
+                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                            Liczba pozycji
+                          </Text>
+                          <Text color="$color" fontSize="$5" fontWeight="700">
+                            {order.items.length}
+                          </Text>
+                        </YStack>
+
+                        <YStack
+                          flexBasis={220}
+                          style={{
+                            minWidth: 0,
+                            flexGrow: 1,
+                            borderWidth: 1,
+                            borderColor: '#cbc4d2',
+                            borderRadius: 18,
+                            backgroundColor: '#ffffff',
+                            paddingHorizontal: 16,
+                            paddingVertical: 14,
+                            gap: 10,
+                          }}
+                        >
+                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                            Płatność
+                          </Text>
+                          <StatusBadge tone={getPaymentTone(order.payment?.status)}>
+                            <StatusBadgeText tone={getPaymentTone(order.payment?.status)}>
+                              {getPaymentStatusLabel(order.payment?.status)}
+                            </StatusBadgeText>
+                          </StatusBadge>
+                        </YStack>
+                      </XStack>
+
+                      <YStack
+                        alignItems={isPhone ? 'stretch' : 'center'}
+                        style={{
+                          width: '100%',
+                          borderTopWidth: 1,
+                          borderTopColor: '#e6e0e9',
+                          paddingTop: 14,
+                        }}
+                      >
+                        <SecondaryButton
+                          size="$4"
+                          onPress={() => router.push(`/orders/${order.id}`)}
+                          style={{
+                            minHeight: 56,
+                            minWidth: isPhone ? undefined : 240,
+                            width: isPhone ? '100%' : undefined,
+                          }}
+                        >
+                          Zobacz szczegóły
+                        </SecondaryButton>
+                      </YStack>
+                    </YStack>
                   </YStack>
                 </SurfaceCard>
               ))}
             </YStack>
           )}
 
-          <PrimaryButton onPress={() => router.push('/profile')}>
-            Wróć do profilu
-          </PrimaryButton>
+          <YStack alignItems={isPhone ? 'stretch' : 'center'} style={{ width: '100%' }}>
+            <SecondaryButton
+              onPress={() => router.push('/profile')}
+              style={{
+                minHeight: 56,
+                minWidth: isPhone ? undefined : 240,
+                width: isPhone ? '100%' : undefined,
+              }}
+            >
+              Wróć do profilu
+            </SecondaryButton>
+          </YStack>
         </PageContent>
       </ScrollView>
     </PageWrapper>

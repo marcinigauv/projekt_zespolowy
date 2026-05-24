@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Image } from 'react-native'
-import { Text, ScrollView } from 'tamagui'
+import { Image, useWindowDimensions } from 'react-native'
+import { Text, ScrollView, YStack } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { StateMessageCard } from '../src/components/StateMessageCard'
 import { useHomeScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
@@ -49,6 +49,7 @@ function normalizeSearchParam(value: string | string[] | undefined): string {
 
 export default function Index() {
   const router = useRouter()
+  const { width: viewportWidth } = useWindowDimensions()
   const params = useLocalSearchParams<{ search?: string | string[] }>()
   useHomeScreenNotificationsPolling()
   const [products, setProducts] = useState<Product[]>([])
@@ -57,6 +58,21 @@ export default function Index() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const isPhone = viewportWidth <= 520
+  const isNarrowPhone = viewportWidth <= 390
+  const isTablet = viewportWidth > 520 && viewportWidth <= 1024
+  const headingMaxWidth = isPhone ? '100%' : isTablet ? 700 : 620
+  const headingGap = isPhone ? 8 : 6
+  const titleStyle = {
+    fontSize: isNarrowPhone ? 24 : isPhone ? 28 : isTablet ? 30 : 36,
+    lineHeight: isNarrowPhone ? 30 : isPhone ? 34 : isTablet ? 36 : 42,
+    letterSpacing: isNarrowPhone ? -0.45 : isPhone ? -0.6 : -0.7,
+    maxWidth: isPhone ? '100%' : 680,
+  } as const
+  const descriptionStyle = {
+    maxWidth: isPhone ? '100%' : isTablet ? 620 : 560,
+  } as const
+  const searchRowMaxWidth = isPhone ? '100%' : isTablet ? 680 : 620
 
   useEffect(() => {
     const normalizedRouteSearch = normalizeSearchParam(params.search)
@@ -119,18 +135,18 @@ export default function Index() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView>
-        <ProductGrid>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <ProductGrid style={{ maxWidth: 1360 }}>
           <Section>
-            <SectionHeading>
+            <SectionHeading style={{ maxWidth: headingMaxWidth, gap: headingGap }}>
               <Eyebrow>Katalog</Eyebrow>
-              <SectionTitle>Odkryj nasze produkty</SectionTitle>
-              <SectionDescription>
+              <SectionTitle style={titleStyle}>Odkryj nasze produkty</SectionTitle>
+              <SectionDescription style={descriptionStyle}>
                 Przeglądaj nasz szeroki wybór produktów i znajdź coś dla siebie!
               </SectionDescription>
             </SectionHeading>
 
-            <SearchRow>
+            <SearchRow style={{ maxWidth: searchRowMaxWidth }}>
               <SearchInput
                 flex={1}
                 value={searchTerm}
@@ -141,7 +157,7 @@ export default function Index() {
                 returnKeyType="search"
               />
               {searchTerm.length > 0 && (
-                <SecondaryButton size="$4" onPress={handleClearSearch}>
+                <SecondaryButton size="$4" onPress={handleClearSearch} style={{ minWidth: 120 }}>
                   Wyczyść
                 </SecondaryButton>
               )}
@@ -161,7 +177,7 @@ export default function Index() {
                 {products.map((product) => {
                   return (
                     <ProductListItem key={product.id}>
-                      <CatalogProductCard hoverStyle={{ scale: 1.01 }}>
+                      <CatalogProductCard hoverStyle={{ scale: 1.015 }}>
                         <CatalogProductPressable
                           onPress={() => router.push(`/products/${product.id}`)}
                         >
@@ -170,18 +186,22 @@ export default function Index() {
                               {product.imageUrl && !imageErrors[product.id] ? (
                                 <Image
                                   source={{ uri: product.imageUrl }}
-                                  resizeMode="contain"
+                                  resizeMode="cover"
                                   onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
                                   style={{ width: '100%', height: '100%' }}
                                 />
                               ) : imageErrors[product.id] ? (
-                                <Text color="$placeholderColor" fontSize="$3" fontWeight="600" px="$3" style={{ textAlign: 'center' }}>
-                                  Zdjęcie produktu niedostępne
-                                </Text>
+                                <YStack flex={1} width="100%" alignItems="center" justifyContent="center" px="$3">
+                                  <Text color="$placeholderColor" fontSize="$3" fontWeight="600" style={{ textAlign: 'center' }}>
+                                    Zdjęcie produktu niedostępne
+                                  </Text>
+                                </YStack>
                               ) : (
-                                <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9" style={{ textAlign: 'center' }}>
-                                  {product.name.slice(0, 1).toUpperCase()}
-                                </Text>
+                                <YStack flex={1} width="100%" alignItems="center" justifyContent="center">
+                                  <Text fontFamily="$heading" fontWeight="800" color="$blue10" fontSize="$8" lineHeight="$8" style={{ textAlign: 'center' }}>
+                                    {product.name.slice(0, 1).toUpperCase()}
+                                  </Text>
+                                </YStack>
                               )}
                             </CatalogProductMediaFrame>
                           </CatalogProductMedia>

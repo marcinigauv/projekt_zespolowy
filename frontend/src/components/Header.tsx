@@ -17,7 +17,6 @@ import {
   HeaderMenuButton,
   HeaderMenuCard,
   HeaderMenuWrap,
-  HeaderMeta,
   HeaderPrimaryIconButton,
   PhoneTabBadge,
   PhoneTabButton,
@@ -27,7 +26,6 @@ import {
   HeaderProfileSummary,
   HeaderProfileSurface,
   NavBar,
-  NavLink,
   NavTitle,
 } from './styled'
 
@@ -120,10 +118,10 @@ export function Header() {
   const isWideDesktop = viewportWidth > 1024
   const isCompactMobile = viewportWidth <= 390
   const navBarStyle = isWeb && !isPhone
-    ? { position: 'sticky' as const, top: 0, zIndex: 40 }
+    ? { position: 'sticky' as const, top: 0, zIndex: 40, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : undefined
   const phoneHeaderStyle = isWeb && isPhone
-    ? { position: 'sticky' as const, top: 0, zIndex: 40 }
+    ? { position: 'sticky' as const, top: 0, zIndex: 40, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : undefined
   const accountPath = isAuthenticated ? '/profile' : '/login'
   const isAccountActive = pathname.startsWith('/profile') || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/admin')
@@ -158,6 +156,15 @@ export function Header() {
       active: isAccountActive,
     },
   ]
+  const phoneTabsStyle = isWeb
+    ? {
+        position: 'absolute' as const,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 45,
+      }
+    : undefined
 
   if (isAuthenticated) {
     phoneTabs.splice(2, 0, {
@@ -186,17 +193,14 @@ export function Header() {
       <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$color" fontSize="$6" fontWeight="700">SI</Text>
+            <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+              SI
+            </Text>
           </HeaderBrandMark>
           <HeaderBrandCopy>
-            <NavTitle accessibilityLabel="Przejdz do strony glownej" onPress={() => router.push('/')}>
-              Sklep Internetowy
+            <NavTitle aria-label="Przejdz do strony glownej" onPress={() => router.push('/')} numberOfLines={1}>
+              {isWideDesktop ? 'Sklep Internetowy' : 'Sklep'}
             </NavTitle>
-            {isWideDesktop && (
-              <HeaderMeta>
-                Spokojne zakupy online
-              </HeaderMeta>
-            )}
           </HeaderBrandCopy>
         </HeaderBrand>
 
@@ -204,54 +208,45 @@ export function Header() {
 
         <HeaderControls>
           <Button
-            chromeless
+            unstyled
+            aria-label="Koszyk"
             onPress={() => navigate('/cart')}
             pressStyle={{ opacity: 0.75 }}
-            px="$2.5"
-            py="$1"
-            background="$backgroundHover"
-            hoverStyle={{ bg: '$backgroundPress' }}
-            style={{ borderRadius: 14 }}
+            style={{ borderRadius: 999 }}
           >
-            <XStack gap="$2" style={{ alignItems: 'center' }}>
-              <NavLink>Koszyk</NavLink>
+            <HeaderIconButton>
+              <Feather name="shopping-bag" size={18} color="#4f378a" />
               {cartItems > 0 && (
-                <Text
-                  background="$blue10"
-                  color="$background"
-                  fontSize="$2"
-                  fontWeight="700"
-                  px="$2"
-                  py="$0.5"
-                  style={{ borderRadius: 999, minWidth: 20, textAlign: 'center' }}
-                >
-                  {cartItems}
-                </Text>
+                <HeaderBadge>
+                  <Text color="#ffffff" fontSize="$1" fontWeight="800">
+                    {cartItems}
+                  </Text>
+                </HeaderBadge>
               )}
-            </XStack>
+            </HeaderIconButton>
           </Button>
 
           <Popover open={profileOpen} onOpenChange={setProfileOpen} placement="bottom-end">
             <Popover.Trigger>
               <Button
-                chromeless
-                px="$2.5"
-                py="$1"
-                background="$backgroundHover"
-                hoverStyle={{ bg: '$backgroundPress' }}
-                style={{ borderRadius: 14 }}
+                unstyled
+                aria-label="Profil"
+                pressStyle={{ opacity: 0.8 }}
+                style={{ borderRadius: 999 }}
               >
-                <NavLink>Profil</NavLink>
+                <HeaderPrimaryIconButton>
+                  <Feather name={isAuthenticated ? 'user' : 'log-in'} size={17} color="#1d1b20" />
+                </HeaderPrimaryIconButton>
               </Button>
             </Popover.Trigger>
             <Popover.Content
-              bg="$background"
+              bg="#ffffff"
               bordered
               elevate
               p={0}
               shadowRadius={20}
               shadowOffset={{ width: 0, height: 10 }}
-              style={{ minWidth: 250, borderRadius: 18 }}
+              style={{ minWidth: 250, borderRadius: 20 }}
             >
               <ProfileMenu onClose={() => setProfileOpen(false)} />
             </Popover.Content>
@@ -263,53 +258,81 @@ export function Header() {
 
   if (isPhone) {
     return (
-      <YStack style={phoneHeaderStyle}>
-        <NavBar>
-          <HeaderBrand>
-            <HeaderBrandMark>
-              <Text color="$color" fontWeight="700" fontSize="$3">SI</Text>
-            </HeaderBrandMark>
-            <NavTitle
-              accessibilityLabel="Przejdz do strony glownej"
-              onPress={() => navigate('/')}
-              numberOfLines={1}
-              style={{ flexShrink: 1 }}
-            >
-              {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
-            </NavTitle>
-          </HeaderBrand>
-        </NavBar>
+      <>
+        <YStack style={phoneHeaderStyle}>
+          <NavBar>
+            <HeaderBrand>
+              <HeaderBrandMark>
+                <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+                  SI
+                </Text>
+              </HeaderBrandMark>
+              <HeaderBrandCopy>
+                <NavTitle
+                  aria-label="Przejdz do strony glownej"
+                  onPress={() => navigate('/')}
+                  numberOfLines={1}
+                  style={{ flexShrink: 1 }}
+                >
+                  Sklep
+                </NavTitle>
+              </HeaderBrandCopy>
+            </HeaderBrand>
 
-        <PhoneTabsWrap>
+            <HeaderControls>
+              <Button
+                unstyled
+                aria-label="Koszyk"
+                onPress={() => navigate('/cart')}
+                pressStyle={{ opacity: 0.8 }}
+                style={{ borderRadius: 999 }}
+              >
+                <HeaderIconButton>
+                  <Feather name="shopping-bag" size={17} color="#4f378a" />
+                  {cartItems > 0 && (
+                    <HeaderBadge>
+                      <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                    </HeaderBadge>
+                  )}
+                </HeaderIconButton>
+              </Button>
+            </HeaderControls>
+          </NavBar>
+        </YStack>
+
+        <PhoneTabsWrap style={phoneTabsStyle}>
           <PhoneTabsRail>
             {phoneTabs.map((tab) => (
               <PhoneTabButton
                 key={tab.key}
-                accessibilityLabel={tab.ariaLabel}
+                aria-label={tab.ariaLabel}
                 onPress={() => navigate(tab.path)}
-                bg={tab.active ? '#365e5a' : 'transparent'}
-                hoverStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
-                pressStyle={{ bg: tab.active ? '#365e5a' : '$backgroundPress' }}
+                bg={tab.active ? '#4f378a' : 'transparent'}
+                hoverStyle={{ bg: tab.active ? '#4f378a' : '$backgroundPress' }}
+                pressStyle={{ bg: tab.active ? '#4f378a' : '$backgroundPress' }}
               >
-                <XStack gap="$1" style={{ alignItems: 'center' }}>
+                <YStack style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   <Feather
                     name={tab.icon}
                     size={16}
-                    color={tab.active ? '#f5faf7' : '#5d6663'}
+                    color={tab.active ? '#ffffff' : '#494551'}
                   />
                   {tab.badge ? (
-                    <PhoneTabBadge bg={tab.active ? '#f5faf7' : '$backgroundStrong'}>
-                      <Text color={tab.active ? '#365e5a' : '$color'} fontSize="$1" fontWeight="800">
+                    <PhoneTabBadge
+                      bg={tab.active ? '#ffffff' : '$backgroundStrong'}
+                      style={{ position: 'absolute', top: -8, right: -12 }}
+                    >
+                      <Text color={tab.active ? '#4f378a' : '$color'} fontSize="$1" fontWeight="800">
                         {tab.badge}
                       </Text>
                     </PhoneTabBadge>
                   ) : null}
-                </XStack>
+                </YStack>
               </PhoneTabButton>
             ))}
           </PhoneTabsRail>
         </PhoneTabsWrap>
-      </YStack>
+      </>
     )
   }
 
@@ -318,31 +341,35 @@ export function Header() {
       <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$color" fontWeight="700" fontSize="$3">SI</Text>
+            <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+              SI
+            </Text>
           </HeaderBrandMark>
-          <NavTitle
-            accessibilityLabel="Przejdz do strony glownej"
-            onPress={() => navigate('/')}
-            numberOfLines={1}
-            style={{ flexShrink: 1 }}
-          >
-            {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
-          </NavTitle>
+          <HeaderBrandCopy>
+            <NavTitle
+              aria-label="Przejdz do strony glownej"
+              onPress={() => navigate('/')}
+              numberOfLines={1}
+              style={{ flexShrink: 1 }}
+            >
+              {isCompactMobile ? 'Sklep' : 'Sklep Internetowy'}
+            </NavTitle>
+          </HeaderBrandCopy>
         </HeaderBrand>
 
         <HeaderControls>
           <Button
             unstyled
+            aria-label="Koszyk"
             onPress={() => navigate('/cart')}
-            background="$backgroundHover"
             pressStyle={{ opacity: 0.85 }}
-            style={{ borderRadius: 14 }}
+            style={{ borderRadius: 999 }}
           >
             <HeaderIconButton>
-              <Text color="$blue10" fontSize="$6" fontWeight="700">S</Text>
+              <Feather name="shopping-bag" size={17} color="#4f378a" />
               {cartItems > 0 && (
                 <HeaderBadge>
-                  <Text color="$background" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                  <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
                 </HeaderBadge>
               )}
             </HeaderIconButton>
@@ -351,12 +378,12 @@ export function Header() {
           <Button
             unstyled
             onPress={() => setMenuOpen((current) => !current)}
+            aria-label="Menu"
             pressStyle={{ opacity: 0.85 }}
-            background="$backgroundHover"
-            style={{ borderRadius: 14 }}
+            style={{ borderRadius: 999 }}
           >
             <HeaderPrimaryIconButton>
-              <Text color="$color" fontSize="$5" fontWeight="700">Menu</Text>
+              <Feather name="menu" size={18} color="#1d1b20" />
             </HeaderPrimaryIconButton>
           </Button>
         </HeaderControls>

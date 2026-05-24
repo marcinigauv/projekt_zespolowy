@@ -5,16 +5,13 @@ import { Platform } from 'react-native'
 import { TamaguiProvider, YStack } from 'tamagui'
 import { useFonts } from 'expo-font'
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  Manrope_700Bold,
-} from '@expo-google-fonts/manrope'
-import {
-  Newsreader_500Medium,
-  Newsreader_600SemiBold,
-  Newsreader_700Bold,
-} from '@expo-google-fonts/newsreader'
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from '@expo-google-fonts/inter'
+import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { hydrateAuthSessionUseCase } from '../src/auth/useCases'
 import { NotificationsToastHost } from '../src/components/NotificationsToastHost'
@@ -25,13 +22,12 @@ export default function RootLayout() {
   const isAuthResolved = useAuthStore((state) => state.isAuthResolved)
   const [mobileNotificationsInset, setMobileNotificationsInset] = useState(0)
   const [loaded] = useFonts({
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    Newsreader_500Medium,
-    Newsreader_600SemiBold,
-    Newsreader_700Bold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+    JetBrainsMono_500Medium,
   })
 
   useEffect(() => {

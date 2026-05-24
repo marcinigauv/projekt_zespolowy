@@ -44,79 +44,99 @@ export default function Register() {
     <PageWrapper>
       <Header />
       <AuthCenter>
-        <FormCard>
-          <AuthForm>
-            <YStack gap="$2">
+        <FormCard style={{ padding: 0, overflow: 'hidden' }}>
+          <YStack>
+            <YStack
+              gap="$2"
+              px="$4.5"
+              py="$4.5"
+              style={{
+                backgroundColor: '#f8f2fa',
+                borderBottomWidth: 1,
+                borderBottomColor: '#e6e0e9',
+              }}
+            >
               <Eyebrow>Konto</Eyebrow>
               <SectionTitle>Utwórz konto</SectionTitle>
               <SectionDescription>
-                Nie masz jeszcze konta?{'\n'}Podaj swoje dane, aby się zarejestrować i zacząć korzystać z naszej aplikacji - całkowicie za darmo!
+                Nie masz jeszcze konta?{"\n"}Podaj swoje dane, aby się zarejestrować i zacząć korzystać z naszej aplikacji - całkowicie za darmo!
               </SectionDescription>
             </YStack>
 
-            <FormField>
-              <Label htmlFor="name">Imię</Label>
-              <FormInput
-                id="name"
-                placeholder="Jan Kowalski"
-                value={name}
-                onChangeText={setName}
-                autoCorrect={false}
-                textContentType="name"
-                returnKeyType="next"
-                submitBehavior="submit"
-                disabled={isSubmitting}
-                onSubmitEditing={() => emailInputRef.current?.focus()}
-              />
-            </FormField>
-            <FormField>
-              <Label htmlFor="email">Email</Label>
-              <FormInput
-                ref={emailInputRef}
-                id="email"
-                placeholder="twoj@email.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                returnKeyType="next"
-                submitBehavior="submit"
-                disabled={isSubmitting}
-                onSubmitEditing={() => passwordInputRef.current?.focus()}
-              />
-            </FormField>
-            <FormField>
-              <Label htmlFor="password">Hasło</Label>
-              <FormInput
-                ref={passwordInputRef}
-                id="password"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                type="password"
-                autoComplete="new-password"
-                textContentType="newPassword"
-                returnKeyType="done"
-                submitBehavior="submit"
-                disabled={isSubmitting}
-                onSubmitEditing={() => {
-                  void handleRegister()
-                }}
-              />
-            </FormField>
-            {error ? <Text color="$red10">{error}</Text> : null}
-            <PrimaryButton disabled={isSubmitting} onPress={() => { void handleRegister() }}>
-              Zarejestruj się
-            </PrimaryButton>
-            <InlineCenter>
-              <Text color="$gray10">Masz już konto?</Text>
-              <Text color="$blue10" onPress={() => router.replace('/login')}>Zaloguj się</Text>
-            </InlineCenter>
-          </AuthForm>
+            <AuthForm style={{ padding: 20 }}>
+              <YStack gap="$3">
+                <FormField>
+                  <Label htmlFor="name">Imię</Label>
+                  <FormInput
+                    id="name"
+                    placeholder="Jan Kowalski"
+                    value={name}
+                    onChangeText={setName}
+                    autoCorrect={false}
+                    textContentType="name"
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                    disabled={isSubmitting}
+                    onSubmitEditing={() => emailInputRef.current?.focus()}
+                  />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="email">Email</Label>
+                  <FormInput
+                    ref={emailInputRef}
+                    id="email"
+                    placeholder="twoj@email.com"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                    disabled={isSubmitting}
+                    onSubmitEditing={() => passwordInputRef.current?.focus()}
+                  />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="password">Hasło</Label>
+                  <FormInput
+                    ref={passwordInputRef}
+                    id="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    type="password"
+                    autoComplete="new-password"
+                    textContentType="newPassword"
+                    returnKeyType="done"
+                    submitBehavior="submit"
+                    disabled={isSubmitting}
+                    onSubmitEditing={() => {
+                      void handleRegister()
+                    }}
+                  />
+                </FormField>
+              </YStack>
+
+              {error ? <Text color="$red10">{error}</Text> : null}
+
+              <PrimaryButton disabled={isSubmitting} onPress={() => { void handleRegister() }} style={{ minHeight: 56 }}>
+                Zarejestruj się
+              </PrimaryButton>
+
+              <InlineCenter style={{ width: '100%', justifyContent: 'center' }}>
+                <Text color="$gray10">Masz już konto?</Text>
+                <Text color="$blue10" fontWeight="700" onPress={() => router.replace('/login')}>
+                  Zaloguj się
+                </Text>
+              </InlineCenter>
+            </AuthForm>
+          </YStack>
         </FormCard>
       </AuthCenter>
     </PageWrapper>

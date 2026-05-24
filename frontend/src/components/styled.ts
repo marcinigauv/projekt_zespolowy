@@ -8,46 +8,48 @@ export const PageWrapper = styled(YStack, styles({
 }))
 
 export const PageContent = styled(YStack, styles({
-  p: '$6',
-  gap: '$5',
-  maxWidth: 980,
+  p: 20,
+  gap: 24,
+  maxWidth: 1120,
   alignSelf: 'center',
   width: '100%',
   $md: {
-    p: '$5',
-    gap: '$4',
+    p: 20,
+    gap: 20,
   },
   $sm: {
-    p: '$3',
-    gap: '$3',
+    p: 16,
+    gap: 16,
   },
   $xs: {
-    p: '$2.5',
-    gap: '$2.5',
+    p: 16,
+    pb: 104,
+    gap: 14,
   },
 }))
 
 export const ProductGrid = styled(YStack, styles({
-  p: '$6',
-  gap: '$5',
+  p: 20,
+  gap: 24,
   maxWidth: 1320,
   alignSelf: 'center',
   width: '100%',
   $lg: {
-    p: '$5',
-    gap: '$4',
+    p: 20,
+    gap: 20,
   },
   $md: {
-    p: '$4',
-    gap: '$3',
+    p: 20,
+    gap: 18,
   },
   $sm: {
-    p: '$3',
-    gap: '$2.5',
+    p: 16,
+    gap: 16,
   },
   $xs: {
-    p: '$2.5',
-    gap: '$2',
+    p: 16,
+    pb: 104,
+    gap: 14,
   },
 }))
 
@@ -56,25 +58,29 @@ export const Section = styled(YStack, styles({
 }))
 
 export const SectionHeading = styled(YStack, styles({
-  gap: '$2',
-  maxWidth: 700,
+  gap: 8,
+  maxWidth: 760,
+  $xs: {
+    gap: 6,
+  },
 }))
 
 export const Eyebrow = styled(Text, styles({
   color: '$gray11',
+  fontFamily: '$mono',
   fontSize: '$2',
-  fontWeight: '700',
+  fontWeight: '500',
   textTransform: 'uppercase',
-  letterSpacing: 1.4,
+  letterSpacing: 1.2,
 }))
 
 export const SectionTitle = styled(Text, styles({
   color: '$color',
   fontFamily: '$heading',
   fontSize: '$8',
-  fontWeight: '600',
+  fontWeight: '700',
   lineHeight: '$8',
-  letterSpacing: -0.9,
+  letterSpacing: -0.8,
   $md: {
     fontSize: '$7',
     lineHeight: '$7',
@@ -84,23 +90,25 @@ export const SectionTitle = styled(Text, styles({
     lineHeight: '$6',
   },
   $xs: {
-    fontSize: '$5',
-    lineHeight: '$5',
+    fontSize: '$4',
+    lineHeight: '$4',
+    letterSpacing: -0.6,
   },
   $xxs: {
     fontSize: '$4',
     lineHeight: '$4',
+    letterSpacing: -0.5,
   },
 }))
 
 export const SectionDescription = styled(Text, styles({
   color: '$placeholderColor',
-  fontSize: '$3',
-  lineHeight: '$4',
+  fontSize: '$4',
+  lineHeight: '$5',
   maxWidth: 760,
   $sm: {
-    fontSize: '$2',
-    lineHeight: '$3',
+    fontSize: '$3',
+    lineHeight: '$4',
   },
 }))
 
@@ -109,27 +117,27 @@ export const SurfaceCard = styled(YStack, styles({
   bg: '$background',
   borderWidth: 1,
   borderColor: '$borderColor',
-  borderRadius: '$7',
-  p: '$4',
-  gap: '$3',
+  borderRadius: 20,
+  p: 20,
+  gap: 14,
   shadowColor: '$shadowColor',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.08,
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.12,
   shadowRadius: 24,
   elevation: 3,
   $sm: {
-    p: '$3',
-    borderRadius: '$6',
+    p: 16,
+    borderRadius: 18,
   },
   $xs: {
-    p: '$2.5',
-    borderRadius: '$5',
+    p: 14,
+    borderRadius: 16,
   },
 }))
 
 export const ModalBackdrop = styled(YStack, styles({
   flex: 1,
-  bg: 'rgba(23,35,32,0.34)',
+  bg: 'rgba(50,47,53,0.26)',
   px: '$4',
   py: '$5',
   justifyContent: 'center',
@@ -137,10 +145,12 @@ export const ModalBackdrop = styled(YStack, styles({
   $sm: {
     px: '$3',
     py: '$4',
+    justifyContent: 'flex-start',
   },
   $xs: {
     px: '$2.5',
     py: '$3.5',
+    justifyContent: 'flex-start',
   },
 }))
 
@@ -149,6 +159,7 @@ export const ModalCard = styled(SurfaceCard, styles({
   maxWidth: 760,
   maxHeight: '100%',
   gap: '$4',
+  overflow: 'hidden',
 }))
 
 export const ModalHeaderRow = styled(XStack, styles({
@@ -172,27 +183,25 @@ export const ToastViewport = styled(YStack, styles({
 }))
 
 export const ToastCardButton = styled(Button, styles({
-  width: '100%',
-  bg: '#253633',
+  bg: 'rgba(253,247,255,0.96)',
   borderWidth: 1,
-  borderColor: '#3f5752',
-  borderRadius: '$0',
+  borderColor: '#d7cfe1',
+  borderRadius: 20,
   px: '$4',
-  py: '$2.5',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 56,
-  shadowColor: 'rgba(8,14,13,0.32)',
+  minHeight: 60,
+  shadowColor: 'rgba(79, 55, 138, 0.18)',
   shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.18,
+  shadowOpacity: 0.16,
   shadowRadius: 28,
   elevation: 4,
   hoverStyle: {
-    bg: '#2f4340',
-    borderColor: '#4b6661',
+    bg: '#ffffff',
+    borderColor: '#cbc4d2',
   },
   pressStyle: {
-    bg: '#1f2d2b',
+    bg: '#f2ecf4',
   },
   $xs: {
     px: '$3',
@@ -224,36 +233,38 @@ export const ToastTooltip = styled(YStack, styles({
   bottom: '100%',
   mt: '$2',
   maxWidth: 420,
-  bg: '#1f2d2b',
-  borderRadius: '$6',
+  bg: 'rgba(255,255,255,0.98)',
+  borderRadius: 18,
   px: '$4',
   py: '$2.5',
-  shadowColor: 'rgba(8,14,13,0.34)',
+  shadowColor: 'rgba(79, 55, 138, 0.18)',
   shadowOffset: { width: 0, height: 10 },
   shadowOpacity: 0.2,
   shadowRadius: 24,
   elevation: 5,
+  borderWidth: 1,
+  borderColor: '#d7cfe1',
   pointerEvents: 'none',
   zIndex: 20,
 }))
 
 export const ToastText = styled(Text, styles({
-  color: '#f6fbf8',
+  color: '#1d1b20',
   fontSize: '$3',
   fontWeight: '600',
   lineHeight: '$4',
   textAlign: 'left',
   flexShrink: 0,
   hoverStyle: {
-    color: '#f4eade',
+    color: '#4f378a',
   },
   variants: {
     hovered: {
       true: {
-        color: '#f4eade',
+        color: '#4f378a',
       },
       false: {
-        color: '#f6fbf8',
+        color: '#1d1b20',
       },
     },
   } as const,
@@ -264,14 +275,14 @@ export const ToastText = styled(Text, styles({
 }))
 
 export const ToastMetaText = styled(Text, styles({
-  color: '#afc3be',
+  color: '#7a7582',
   fontSize: '$2',
   fontWeight: '600',
   textAlign: 'left',
 }))
 
 export const ToastTooltipText = styled(Text, styles({
-  color: '#e8f1ed',
+  color: '#1d1b20',
   fontSize: '$2',
   fontWeight: '600',
   lineHeight: '$3',
@@ -302,6 +313,7 @@ export const AuthCenter = styled(YStack, styles({
   },
   $xs: {
     p: '$3',
+    pb: 112,
   },
 }))
 
@@ -339,46 +351,63 @@ export const FormField = styled(YStack, styles({
 export const FormInput = styled(Input, styles({
   theme: 'surface',
   size: '$4',
-  bg: '$background',
+  bg: 'transparent',
+  borderWidth: 0,
+  borderBottomWidth: 2,
   borderColor: '$borderColor',
   color: '$color',
-  borderRadius: '$6',
-  px: '$3.5',
+  borderRadius: 0,
+  px: '$0',
+  pt: '$2.5',
+  pb: '$2',
   focusStyle: {
     borderColor: '$outlineColor',
-    bg: '$background',
+    bg: 'transparent',
   },
   $xs: {
     size: '$3',
-    px: '$3',
+    pt: '$2',
+    pb: '$1.5',
   },
 }))
 
 export const SearchInput = styled(FormInput, styles({
   width: '100%',
+  minHeight: 56,
+  bg: 'transparent',
+  borderWidth: 0,
+  borderBottomWidth: 2,
+  borderColor: '$borderColor',
+  borderRadius: 0,
+  px: '$0',
+  py: '$2',
 }))
 
 export const NavBar = styled(XStack, styles({
   theme: 'surface',
-  bg: '$background',
-  minHeight: 72,
+  bg: '$backgroundTransparent',
+  minHeight: 64,
   minWidth: 0,
   ai: 'center',
   jc: 'space-between',
-  px: '$4',
+  px: 20,
   borderBottomWidth: 1,
   borderBottomColor: '$borderColor',
   shadowColor: '$shadowColor',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.08,
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.1,
   shadowRadius: 24,
   elevation: 4,
   $md: {
-    px: '$3.5',
+    px: 18,
   },
   $sm: {
     minHeight: 60,
-    px: '$3',
+    px: 16,
+  },
+  $xs: {
+    minHeight: 56,
+    px: 14,
   },
 }))
 
@@ -386,8 +415,8 @@ export const NavTitle = styled(Text, styles({
   color: '$color',
   fontFamily: '$heading',
   fontSize: '$6',
-  fontWeight: '600',
-  letterSpacing: -0.4,
+  fontWeight: '800',
+  letterSpacing: -0.7,
   cursor: 'pointer',
   hoverStyle: {
     color: '$blue10',
@@ -405,8 +434,11 @@ export const NavTitle = styled(Text, styles({
 
 export const NavLink = styled(Text, styles({
   color: '$gray11',
-  fontSize: '$4',
-  fontWeight: '600',
+  fontFamily: '$mono',
+  fontSize: '$2',
+  fontWeight: '500',
+  textTransform: 'uppercase',
+  letterSpacing: 0.8,
   cursor: 'pointer',
   hoverStyle: {
     color: '$color',
@@ -417,7 +449,7 @@ export const NavLink = styled(Text, styles({
 }))
 
 export const HeaderBrand = styled(XStack, styles({
-  gap: '$3',
+  gap: '$2.5',
   alignItems: 'center',
   flex: 1,
   flexShrink: 1,
@@ -428,17 +460,17 @@ export const HeaderBrand = styled(XStack, styles({
 }))
 
 export const HeaderBrandMark = styled(YStack, styles({
-  width: 40,
-  height: 40,
-  bg: '$backgroundStrong',
-  borderRadius: '$15',
+  width: 36,
+  height: 36,
+  bg: 'rgba(79,55,138,0.08)',
+  borderRadius: 999,
   borderWidth: 1,
-  borderColor: '$borderColor',
+  borderColor: 'rgba(79,55,138,0.14)',
   alignItems: 'center',
   justifyContent: 'center',
   $sm: {
-    width: 30,
-    height: 30,
+    width: 32,
+    height: 32,
   },
 }))
 
@@ -478,30 +510,38 @@ export const HeaderControls = styled(XStack, styles({
 
 export const HeaderIconButton = styled(YStack, styles({
   theme: 'surface',
-  width: 38,
-  height: 38,
-  borderRadius: '$6',
+  width: 44,
+  height: 44,
+  borderRadius: 999,
   borderWidth: 1,
   borderColor: '$borderColor',
-  bg: '$backgroundHover',
+  bg: '#ffffff',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
+  $xs: {
+    width: 40,
+    height: 40,
+  },
 }))
 
 export const HeaderPrimaryIconButton = styled(YStack, styles({
-  width: 38,
-  height: 38,
-  borderRadius: '$6',
+  width: 44,
+  height: 44,
+  borderRadius: 999,
   borderWidth: 1,
   borderColor: '$borderColor',
-  bg: '$backgroundHover',
+  bg: '#ffffff',
   alignItems: 'center',
   justifyContent: 'center',
+  $xs: {
+    width: 40,
+    height: 40,
+  },
 }))
 
 export const HeaderBadge = styled(YStack, styles({
-  bg: '$brand.background',
+  bg: '$blue10',
   px: '$1',
   py: '$0.5',
   position: 'absolute',
@@ -553,39 +593,63 @@ export const HeaderMenuButton = styled(Button, styles({
 
 export const PhoneTabsWrap = styled(YStack, styles({
   theme: 'surface',
-  bg: '$background',
+  bg: '$backgroundTransparent',
+  width: '100%',
+  alignItems: 'center',
   px: '$2.5',
   pb: '$2',
   pt: '$1.5',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
+  borderTopWidth: 1,
+  borderTopColor: '$borderColor',
+  shadowColor: '$shadowColor',
+  shadowOffset: { width: 0, height: -10 },
+  shadowOpacity: 0.1,
+  shadowRadius: 24,
+  elevation: 6,
+  $xs: {
+    px: '$2',
+    pt: '$1',
+    pb: '$1.5',
+  },
 }))
 
 export const PhoneTabsRail = styled(XStack, styles({
   theme: 'surface',
-  bg: '$backgroundHover',
+  bg: '#ffffff',
   borderWidth: 1,
   borderColor: '$borderColor',
-  borderRadius: '$10',
+  borderRadius: 999,
   p: '$1',
   gap: '$1',
   width: '100%',
+  maxWidth: 420,
+  alignSelf: 'center',
+  $xs: {
+    p: '$0.5',
+    gap: '$0.5',
+  },
 }))
 
 export const PhoneTabButton = styled(Button, styles({
   unstyled: true,
   flex: 1,
   minWidth: 0,
+  minHeight: 44,
   alignItems: 'center',
   justifyContent: 'center',
   px: '$2',
   py: '$1.5',
-  borderRadius: '$8',
+  borderRadius: 999,
   hoverStyle: {
     bg: '$backgroundPress',
   },
   pressStyle: {
     bg: '$backgroundPress',
+  },
+  $xs: {
+    minHeight: 40,
+    px: '$1.5',
+    py: '$1.25',
   },
 }))
 
@@ -636,30 +700,30 @@ export const HeaderAvatar = styled(YStack, styles({
 export const ProductList = styled(XStack, styles({
   width: '100%',
   flexWrap: 'wrap',
-  gap: '$3',
+  gap: 16,
   justifyContent: 'flex-start',
   alignContent: 'flex-start',
   alignItems: 'stretch',
   $xs: {
-    gap: '$2',
+    gap: 12,
+  },
+  $xxs: {
+    gap: 10,
   },
 }))
 
 export const ProductListItem = styled(YStack, styles({
   alignSelf: 'stretch',
-  width: '100%',
-  $xs: {
-    width: '100%',
-  },
-  $gtXs: {
-    width: '49%',
-    minWidth: 220,
-  },
-  $gtMd: {
-    width: '32%',
+  width: '48.2%',
+  minWidth: 0,
+  $gtSm: {
+    width: '31.8%',
   },
   $gtLg: {
-    width: '32%',
+    width: '23.6%',
+  },
+  $xxs: {
+    width: '100%',
   },
 }))
 
@@ -683,12 +747,12 @@ export const CatalogProductCard = styled(YStack, styles({
   bg: '$background',
   borderWidth: 1,
   borderColor: '$borderColor',
-  borderRadius: '$8',
+  borderRadius: 16,
   overflow: 'hidden',
   shadowColor: '$shadowColor',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.12,
-  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.11,
+  shadowRadius: 20,
   elevation: 3,
   width: '100%',
 }))
@@ -701,38 +765,38 @@ export const CatalogProductPressable = styled(Button, styles({
   justifyContent: 'flex-start',
   cursor: 'pointer',
   hoverStyle: {
-    opacity: 0.985,
+    opacity: 1,
   },
   pressStyle: {
-    opacity: 0.95,
+    opacity: 0.94,
   },
 }))
 
 export const CatalogProductMedia = styled(YStack, styles({
   width: '100%',
-  height: 188,
+  height: 216,
   bg: '$backgroundHover',
-  p: '$2',
+  p: 12,
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
   $md: {
-    height: 178,
+    height: 204,
   },
   $sm: {
-    height: 168,
+    height: 188,
   },
   $xs: {
-    height: 156,
-    p: '$1.5',
+    height: 164,
+    p: 10,
   },
 }))
 
 export const CatalogProductMediaFrame = styled(YStack, styles({
   width: '100%',
   height: '100%',
-  bg: '$background',
-  borderRadius: '$6',
+  bg: '#ffffff',
+  borderRadius: 14,
   overflow: 'hidden',
   borderWidth: 1,
   borderColor: '$borderColor',
@@ -741,28 +805,34 @@ export const CatalogProductMediaFrame = styled(YStack, styles({
 export const CatalogProductBody = styled(YStack, styles({
   width: '100%',
   bg: '$background',
-  p: '$2.5',
-  gap: '$1.5',
-  minHeight: 98,
+  p: 16,
+  gap: 8,
+  minHeight: 124,
   $sm: {
-    p: '$2',
-    minHeight: 92,
+    p: 14,
+    minHeight: 116,
   },
   $xs: {
-    minHeight: 86,
+    p: 12,
+    minHeight: 104,
   },
 }))
 
 export const CatalogProductTitle = styled(Text, styles({
   color: '$color',
+  fontFamily: '$heading',
   fontSize: '$4',
   lineHeight: '$5',
-  fontWeight: '600',
-  minHeight: 48,
+  fontWeight: '700',
+  minHeight: 60,
+  height: 60,
+  maxHeight: 60,
   $sm: {
     fontSize: '$3',
     lineHeight: '$4',
-    minHeight: 42,
+    minHeight: 48,
+    height: 48,
+    maxHeight: 48,
   },
 }))
 
@@ -774,10 +844,12 @@ export const CatalogProductPriceRow = styled(XStack, styles({
 
 export const CatalogProductDescription = styled(Text, styles({
   color: '$placeholderColor',
+  fontFamily: '$mono',
   fontSize: '$2',
   lineHeight: '$3',
-  fontWeight: '600',
-  letterSpacing: 0.15,
+  fontWeight: '500',
+  textTransform: 'uppercase',
+  letterSpacing: 0.6,
   $xs: {
     fontSize: '$1',
     lineHeight: '$2',
@@ -787,8 +859,8 @@ export const CatalogProductDescription = styled(Text, styles({
 export const CatalogProductPrice = styled(Text, styles({
   color: '$blue10',
   fontSize: '$6',
-  fontWeight: '800',
-  letterSpacing: -0.25,
+  fontWeight: '700',
+  letterSpacing: -0.35,
   $sm: {
     fontSize: '$5',
   },
@@ -935,8 +1007,8 @@ export const DataRow = styled(XStack, styles({
 }))
 
 export const SearchRow = styled(XStack, styles({
-  gap: '$2',
-  alignItems: 'center',
+  gap: 12,
+  alignItems: 'stretch',
   flexWrap: 'wrap',
 }))
 
@@ -962,20 +1034,20 @@ export const StatusBadge = styled(XStack, styles({
   variants: {
     tone: {
       neutral: {
-        bg: '#ecf2ed',
-        borderColor: '#d5e1d7',
+        bg: '#f2ecf4',
+        borderColor: '#cbc4d2',
       },
       warning: {
-        bg: '#f4ede2',
-        borderColor: '#e1d0b4',
+        bg: '#ffdf93',
+        borderColor: '#e7c365',
       },
       success: {
-        bg: '#e6f1e8',
-        borderColor: '#c4d7c8',
+        bg: '#e9ddff',
+        borderColor: '#cfbcff',
       },
       danger: {
-        bg: '#f3e6e8',
-        borderColor: '#e0c2c7',
+        bg: '#ffdad6',
+        borderColor: '#f2b8b5',
       },
     },
   } as const,
@@ -988,16 +1060,16 @@ export const StatusBadgeText = styled(Text, styles({
   variants: {
     tone: {
       neutral: {
-        color: '#4b5d58',
+        color: '#494551',
       },
       warning: {
-        color: '#6b573d',
+        color: '#594400',
       },
       success: {
-        color: '#355a45',
+        color: '#4f378a',
       },
       danger: {
-        color: '#7a3d46',
+        color: '#93000a',
       },
     },
   } as const,
@@ -1157,7 +1229,7 @@ export const AdminFeedbackText = styled(Text, styles({
         color: '$placeholderColor',
       },
       success: {
-        color: '#356c4c',
+        color: '$blue10',
       },
       danger: {
         color: '$red10',
@@ -1213,19 +1285,26 @@ export const PrimaryButton = styled(Button, styles({
   theme: 'brand',
   size: '$4',
   px: '$5',
+  py: '$2',
+  fontFamily: '$mono',
+  fontSize: '$2',
   fontWeight: '700',
-  borderRadius: '$6',
+  letterSpacing: 0.6,
+  borderRadius: 999,
   borderWidth: 1,
   borderColor: '$borderColor',
   shadowColor: '$shadowColor',
   shadowOffset: { width: 0, height: 8 },
   shadowOpacity: 0.12,
   shadowRadius: 20,
+  minHeight: 56,
   pressStyle: {
-    opacity: 0.9,
+    opacity: 1,
+    bg: '$backgroundPress',
   },
   hoverStyle: {
-    opacity: 0.96,
+    opacity: 1,
+    bg: '$backgroundHover',
   },
   $sm: {
     size: '$4',
@@ -1238,24 +1317,30 @@ export const PrimaryButton = styled(Button, styles({
 }))
 
 export const AddToCartButton = styled(Button, styles({
-  theme: 'accent',
+  bg: '#4f378a',
+  color: '#ffffff',
   size: '$4',
-  px: '$3.5',
-  py: '$1.5',
-  fontSize: '$3',
+  px: '$5',
+  py: '$2',
+  fontFamily: '$mono',
+  fontSize: '$2',
   fontWeight: '700',
-  borderRadius: '$6',
+  letterSpacing: 0.6,
+  borderRadius: 999,
   borderWidth: 1,
-  borderColor: '$borderColor',
+  borderColor: '#4f378a',
   shadowColor: '$shadowColor',
   shadowOffset: { width: 0, height: 8 },
   shadowOpacity: 0.1,
   shadowRadius: 20,
+  minHeight: 56,
   pressStyle: {
-    opacity: 0.9,
+    opacity: 1,
+    bg: '#43306f',
   },
   hoverStyle: {
-    opacity: 0.96,
+    opacity: 1,
+    bg: '#6750a4',
   },
   $sm: {
     size: '$3',
@@ -1275,11 +1360,17 @@ export const SecondaryButton = styled(Button, styles({
   theme: 'surface',
   borderWidth: 1,
   size: '$4',
+  px: '$5',
+  py: '$2',
+  fontFamily: '$mono',
+  fontSize: '$2',
   fontWeight: '700',
-  borderRadius: '$6',
+  letterSpacing: 0.6,
+  borderRadius: 999,
   borderColor: '$borderColor',
-  bg: '$background',
+  bg: '#ffffff',
   color: '$color',
+  minHeight: 56,
   hoverStyle: {
     bg: '$backgroundHover',
   },
@@ -1295,5 +1386,5 @@ export const GhostDangerButton = styled(Button, styles({
   chromeless: true,
   color: '$red10',
   fontWeight: '700',
-  borderRadius: '$6',
+  borderRadius: 999,
 }))

@@ -71,7 +71,7 @@ export function ProductDetailsScreen() {
   const isPhone = viewportWidth <= 520
   const isNarrowPhone = viewportWidth <= 390
   const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
-  const ctaMinHeight = isNarrowPhone ? 52 : isPhone ? 50 : 48
+  const ctaMinHeight = isPhone ? 56 : 48
   const params = useLocalSearchParams<{ id?: string | string[] }>()
   const addItem = useCartStore((state) => state.addItem)
   const cartItems = useCartStore((state) => state.items)
@@ -193,30 +193,24 @@ export function ProductDetailsScreen() {
                     style={{ width: viewportWidth <= 900 ? '100%' : undefined, minWidth: 0 }}
                   >
                     {normalizedCategories.length > 0 ? (
-                      <XStack flexWrap="wrap" alignItems="center" gap="$1" style={{ rowGap: 4 }}>
+                      <BadgeRow alignItems="center">
                         <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
                           Tagi:
                         </Text>
                         {normalizedCategories.map((category, index) => (
-                          <XStack key={`${product.id}-${category}-${index}`} alignItems="center" gap="$1">
-                            <Pressable onPress={() => handleTagPress(category)}>
-                              <Text
-                                color="$blue10"
-                                fontSize="$2"
-                                fontWeight="700"
-                                style={{ textDecorationLine: 'underline' }}
-                              >
+                          <Pressable
+                            key={`${product.id}-${category}-${index}`}
+                            onPress={() => handleTagPress(category)}
+                            style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
+                          >
+                            <CategoryBadge>
+                              <Text color="$blue10" fontFamily="$mono" fontSize="$1" fontWeight="600" letterSpacing={0.4}>
                                 {category}
                               </Text>
-                            </Pressable>
-                            {index < normalizedCategories.length - 1 ? (
-                              <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
-                                ,
-                              </Text>
-                            ) : null}
-                          </XStack>
+                            </CategoryBadge>
+                          </Pressable>
                         ))}
-                      </XStack>
+                      </BadgeRow>
                     ) : null}
 
                     <YStack
@@ -274,7 +268,13 @@ export function ProductDetailsScreen() {
                       </CategoryBadge>
                     </BadgeRow>
 
-                    <SurfaceCard style={{ padding: isNarrowPhone ? 12 : isPhone ? 14 : 16 }}>
+                    <SurfaceCard
+                      style={{
+                        padding: isNarrowPhone ? 12 : isPhone ? 14 : 16,
+                        backgroundColor: '#fbf8fc',
+                        borderColor: '#d7cfe1',
+                      }}
+                    >
                       <YStack gap="$2">
                         <ProductMetaText>Cena</ProductMetaText>
                         <Text
@@ -294,7 +294,13 @@ export function ProductDetailsScreen() {
                       </YStack>
                     </SurfaceCard>
 
-                    <SurfaceCard style={{ padding: isNarrowPhone ? 12 : isPhone ? 14 : 18 }}>
+                    <SurfaceCard
+                      style={{
+                        padding: isNarrowPhone ? 12 : isPhone ? 14 : 18,
+                        backgroundColor: '#fbf8fc',
+                        borderColor: '#d7cfe1',
+                      }}
+                    >
                       <YStack gap="$2">
                         <Text fontSize="$5" fontWeight="800" color="$color">Opis</Text>
                         <Text

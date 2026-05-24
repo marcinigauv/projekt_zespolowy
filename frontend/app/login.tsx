@@ -42,9 +42,18 @@ export default function Login() {
     <PageWrapper>
       <Header />
       <AuthCenter>
-        <FormCard>
-          <AuthForm>
-            <YStack gap="$2">
+        <FormCard style={{ padding: 0, overflow: 'hidden' }}>
+          <YStack>
+            <YStack
+              gap="$2"
+              px="$4.5"
+              py="$4.5"
+              style={{
+                backgroundColor: '#f8f2fa',
+                borderBottomWidth: 1,
+                borderBottomColor: '#e6e0e9',
+              }}
+            >
               <Eyebrow>Konto</Eyebrow>
               <SectionTitle>Zaloguj się</SectionTitle>
               <SectionDescription>
@@ -52,53 +61,63 @@ export default function Login() {
               </SectionDescription>
             </YStack>
 
-            <FormField>
-              <Label htmlFor="email">Email</Label>
-              <FormInput
-                id="email"
-                placeholder="twoj@email.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                returnKeyType="next"
-                submitBehavior="submit"
-                disabled={isSubmitting}
-                onSubmitEditing={() => passwordInputRef.current?.focus()}
-              />
-            </FormField>
-            <FormField>
-              <Label htmlFor="password">Hasło</Label>
-              <FormInput
-                ref={passwordInputRef}
-                id="password"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                type="password"
-                autoComplete="current-password"
-                textContentType="password"
-                returnKeyType="done"
-                submitBehavior="submit"
-                disabled={isSubmitting}
-                onSubmitEditing={() => {
-                  void handleLogin()
-                }}
-              />
-            </FormField>
-            {error ? <Text color="$red10">{error}</Text> : null}
-            <PrimaryButton disabled={isSubmitting} onPress={() => { void handleLogin() }}>
-              Zaloguj się
-            </PrimaryButton>
-            <InlineCenter>
-              <Text color="$gray10">Nie masz konta?</Text>
-              <Text color="$blue10" onPress={() => router.replace('/register')}>Zarejestruj się</Text>
-            </InlineCenter>
-          </AuthForm>
+            <AuthForm style={{ padding: 20 }}>
+              <YStack gap="$3">
+                <FormField>
+                  <Label htmlFor="email">Email</Label>
+                  <FormInput
+                    id="email"
+                    placeholder="twoj@email.com"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                    disabled={isSubmitting}
+                    onSubmitEditing={() => passwordInputRef.current?.focus()}
+                  />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="password">Hasło</Label>
+                  <FormInput
+                    ref={passwordInputRef}
+                    id="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    type="password"
+                    autoComplete="current-password"
+                    textContentType="password"
+                    returnKeyType="done"
+                    submitBehavior="submit"
+                    disabled={isSubmitting}
+                    onSubmitEditing={() => {
+                      void handleLogin()
+                    }}
+                  />
+                </FormField>
+              </YStack>
+
+              {error ? <Text color="$red10">{error}</Text> : null}
+
+              <PrimaryButton disabled={isSubmitting} onPress={() => { void handleLogin() }} style={{ minHeight: 56 }}>
+                Zaloguj się
+              </PrimaryButton>
+
+              <InlineCenter style={{ width: '100%', justifyContent: 'center' }}>
+                <Text color="$gray10">Nie masz konta?</Text>
+                <Text color="$blue10" fontWeight="700" onPress={() => router.replace('/register')}>
+                  Zarejestruj się
+                </Text>
+              </InlineCenter>
+            </AuthForm>
+          </YStack>
         </FormCard>
       </AuthCenter>
     </PageWrapper>

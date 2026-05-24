@@ -52,7 +52,12 @@ export default function Cart() {
   const isTablet = viewportWidth > 520 && viewportWidth <= 900
   const isCompact = viewportWidth <= 900
   const isTiny = viewportWidth <= 390
-  const controlSize = isTiny ? 32 : 36
+  const controlSize = isTiny ? 36 : isPhone ? 40 : 40
+  const cardRadius = isPhone ? 18 : 20
+  const itemCardPadding = isPhone ? 14 : isCompact ? 16 : 18
+  const summaryCardPadding = isPhone ? 16 : isCompact ? 18 : 22
+  const mediaFrameSize = isPhone ? 68 : isCompact ? 80 : 92
+  const itemValueCardMinWidth = isPhone ? 0 : isCompact ? 216 : 236
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
   const requestedImageIdsRef = useRef<Record<number, boolean>>({})
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -144,6 +149,13 @@ export default function Cart() {
                   size="$3"
                   onPress={clearCart}
                   alignSelf={isPhone ? 'flex-end' : 'center'}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#f2b8b5',
+                    backgroundColor: '#ffdad6',
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                  }}
                 >
                   Wyczyść koszyk
                 </GhostDangerButton>
@@ -152,21 +164,66 @@ export default function Cart() {
           </SectionHeading>
 
           {items.length === 0 ? (
-            <EmptyStateCard gap="$3">
-              <Text fontSize="$8">🛒</Text>
-              <Text color="$gray10" fontSize="$5">Twój koszyk jest pusty</Text>
+            <EmptyStateCard
+              gap="$4"
+              style={{
+                minHeight: isPhone ? 280 : 320,
+                justifyContent: 'center',
+                paddingHorizontal: isPhone ? 20 : 28,
+                paddingVertical: isPhone ? 32 : 44,
+              }}
+            >
+              <YStack
+                alignItems="center"
+                justifyContent="center"
+                style={{
+                  width: isPhone ? 68 : 76,
+                  height: isPhone ? 68 : 76,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: '#cbc4d2',
+                  backgroundColor: '#f8f2fa',
+                }}
+              >
+                <Text fontSize={isPhone ? '$7' : '$8'} color="$blue10">🛒</Text>
+              </YStack>
+              <Text
+                color="$color"
+                fontFamily="$heading"
+                fontSize={isPhone ? '$6' : '$7'}
+                fontWeight="600"
+                style={{ textAlign: 'center' }}
+              >
+                Twój koszyk jest pusty
+              </Text>
               <SectionDescription style={{ textAlign: 'center' }}>
                 Dodaj produkty z katalogu, aby przejść do finalizacji zamówienia.
               </SectionDescription>
-              <PrimaryButton onPress={() => router.push('/')}>Przejdź do katalogu</PrimaryButton>
+              <PrimaryButton
+                onPress={() => router.push('/')}
+                style={{
+                  minHeight: 56,
+                  width: isPhone ? '100%' : undefined,
+                  minWidth: isPhone ? undefined : 220,
+                }}
+              >
+                Przejdź do katalogu
+              </PrimaryButton>
             </EmptyStateCard>
           ) : (
             isCompact ? (
               <YStack gap="$4" width="100%" style={{ minWidth: 0 }}>
                 <YStack gap="$3.5" width="100%" style={{ minWidth: 0 }}>
                   {items.map((item) => (
-                    <SurfaceCard key={item.id} style={{ width: '100%' }}>
-                      <YStack gap="$2.5" width="100%" style={{ minWidth: 0 }}>
+                    <SurfaceCard
+                      key={item.id}
+                      style={{
+                        width: '100%',
+                        padding: itemCardPadding,
+                        borderRadius: cardRadius,
+                      }}
+                    >
+                      <YStack gap="$3" width="100%" style={{ minWidth: 0 }}>
                         <XStack
                           gap="$2.5"
                           width="100%"
@@ -175,34 +232,51 @@ export default function Cart() {
                         >
                           <XStack gap="$2.5" alignItems="center" flex={1} style={{ minWidth: 0 }}>
                             <YStack
-                              width={isPhone ? 56 : 64}
-                              height={isPhone ? 56 : 64}
-                              borderRadius="$6"
+                              width={mediaFrameSize}
+                              height={mediaFrameSize}
                               borderWidth={1}
                               borderColor="$borderColor"
                               bg="$backgroundHover"
                               overflow="hidden"
                               alignItems="center"
                               justifyContent="center"
-                              style={{ flexShrink: 0 }}
+                              style={{
+                                flexShrink: 0,
+                                borderRadius: 18,
+                                padding: isPhone ? 6 : 8,
+                              }}
                             >
-                              {item.imageUrl && !imageErrors[item.id] ? (
-                                <Image
-                                  source={{ uri: item.imageUrl }}
-                                  resizeMode="cover"
-                                  onError={() => {
-                                    setImageErrors((current) => ({ ...current, [item.id]: true }))
-                                  }}
-                                  style={{ width: '100%', height: '100%' }}
-                                />
-                              ) : (
-                                <Text fontFamily="$heading" fontWeight="700" fontSize={isPhone ? '$5' : '$6'} color="$blue10">
-                                  {item.name.slice(0, 1).toUpperCase()}
-                                </Text>
-                              )}
+                              <YStack
+                                width="100%"
+                                height="100%"
+                                alignItems="center"
+                                justifyContent="center"
+                                style={{
+                                  borderRadius: 14,
+                                  overflow: 'hidden',
+                                  borderWidth: 1,
+                                  borderColor: '#cbc4d2',
+                                  backgroundColor: '#ffffff',
+                                }}
+                              >
+                                {item.imageUrl && !imageErrors[item.id] ? (
+                                  <Image
+                                    source={{ uri: item.imageUrl }}
+                                    resizeMode="cover"
+                                    onError={() => {
+                                      setImageErrors((current) => ({ ...current, [item.id]: true }))
+                                    }}
+                                    style={{ width: '100%', height: '100%' }}
+                                  />
+                                ) : (
+                                  <Text fontFamily="$heading" fontWeight="700" fontSize={isPhone ? '$5' : '$6'} color="$blue10">
+                                    {item.name.slice(0, 1).toUpperCase()}
+                                  </Text>
+                                )}
+                              </YStack>
                             </YStack>
 
-                            <YStack gap="$0.5" flex={1} style={{ minWidth: 0 }}>
+                            <YStack gap="$1" flex={1} style={{ minWidth: 0 }}>
                               <Pressable
                                 onPress={() => router.push(`/products/${item.id}`)}
                                 style={({ pressed }) => ({
@@ -214,52 +288,82 @@ export default function Cart() {
                                   {item.name}
                                 </ProductTitle>
                               </Pressable>
-                              <ProductMetaText>Cena jednostkowa: {formatCurrency(item.price)}</ProductMetaText>
+                              <ProductMetaText fontFamily="$mono" style={{ letterSpacing: 0.5 }}>
+                                Cena jednostkowa: {formatCurrency(item.price)}
+                              </ProductMetaText>
                             </YStack>
                           </XStack>
 
                           <GhostDangerButton
                             size="$2"
                             onPress={() => removeItem(item.id)}
-                            style={{ flexShrink: 0, marginTop: 2 }}
+                            style={{
+                              flexShrink: 0,
+                              marginTop: 2,
+                              borderWidth: 1,
+                              borderColor: '#f2b8b5',
+                              backgroundColor: '#ffdad6',
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                            }}
                           >
                             Usuń
                           </GhostDangerButton>
                         </XStack>
 
-                        <XStack gap="$2.5" width="100%" justifyContent="space-between" alignItems="center">
+                        <XStack
+                          gap="$2.5"
+                          width="100%"
+                          justifyContent="space-between"
+                          alignItems={isPhone ? 'stretch' : 'center'}
+                          flexDirection={isPhone ? 'column' : 'row'}
+                        >
                           <InlineControls
                             borderWidth={1}
                             borderColor="$borderColor"
-                            borderRadius="$6"
                             px="$2"
-                            py="$1"
+                            py="$1.5"
                             bg="$backgroundHover"
                             style={{
-                              minWidth: 150,
+                              minWidth: isPhone ? 0 : 156,
+                              width: isPhone ? '100%' : undefined,
                               justifyContent: 'space-between',
+                              borderRadius: 999,
                             }}
                           >
                             <SecondaryButton
                               size="$3"
                               circular
                               onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                              style={{ width: controlSize, height: controlSize, minWidth: controlSize, paddingHorizontal: 0 }}
+                              style={{
+                                width: controlSize,
+                                height: controlSize,
+                                minHeight: controlSize,
+                                minWidth: controlSize,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                backgroundColor: '#ffffff',
+                                borderWidth: 1,
+                                borderColor: '#cbc4d2',
+                                borderRadius: 999,
+                              }}
                             >
-                              -
+                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
+                                -
+                              </Text>
                             </SecondaryButton>
 
                             <YStack
                               alignItems="center"
                               justifyContent="center"
-                              minWidth={controlSize}
+                              minWidth={controlSize + 8}
                               height={controlSize}
-                              borderRadius="$4"
                               borderWidth={1}
                               borderColor="$borderColor"
                               bg="$background"
+                              style={{ borderRadius: 999 }}
                             >
-                              <Text fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
+                              <Text fontFamily="$mono" fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
                                 {item.quantity}
                               </Text>
                             </YStack>
@@ -268,15 +372,57 @@ export default function Cart() {
                               size="$3"
                               circular
                               onPress={() => updateQuantity(item.id, item.quantity + 1)}
-                              style={{ width: controlSize, height: controlSize, minWidth: controlSize, paddingHorizontal: 0 }}
+                              style={{
+                                width: controlSize,
+                                height: controlSize,
+                                minHeight: controlSize,
+                                minWidth: controlSize,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                backgroundColor: '#ffffff',
+                                borderWidth: 1,
+                                borderColor: '#cbc4d2',
+                                borderRadius: 999,
+                              }}
                             >
-                              +
+                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
+                                +
+                              </Text>
                             </SecondaryButton>
                           </InlineControls>
 
-                          <YStack alignItems="flex-end" style={{ minWidth: 132 }}>
-                            <ProductMetaText>Wartość pozycji</ProductMetaText>
-                            <ProductPrice>{formatCurrency(item.price * item.quantity)}</ProductPrice>
+                          <YStack
+                            alignItems="flex-start"
+                            style={{
+                              minWidth: itemValueCardMinWidth,
+                              width: isPhone ? '100%' : undefined,
+                              flexShrink: 0,
+                              borderWidth: 1,
+                              borderColor: '#d7cfe1',
+                              backgroundColor: '#fbf8fc',
+                              borderRadius: 16,
+                              paddingHorizontal: 14,
+                              paddingVertical: 11,
+                            }}
+                          >
+                            <YStack
+                              gap="$1"
+                              alignItems="center"
+                              style={{ width: '100%' }}
+                            >
+                              <Text fontSize="$3" color="$placeholderColor" fontWeight="600" style={{ textAlign: 'center' }}>
+                                Wartość pozycji
+                              </Text>
+                              <Text
+                                fontFamily="$heading"
+                                fontSize={isPhone ? '$5' : '$6'}
+                                fontWeight="700"
+                                color="$blue10"
+                                style={{ textAlign: 'center' }}
+                              >
+                                {formatCurrency(item.price * item.quantity)}
+                              </Text>
+                            </YStack>
                           </YStack>
                         </XStack>
                       </YStack>
@@ -284,7 +430,7 @@ export default function Cart() {
                   ))}
                 </YStack>
 
-                <SurfaceCard>
+                <SurfaceCard style={{ padding: summaryCardPadding, borderRadius: cardRadius + 2 }}>
                   <YStack gap="$3.5">
                     <Text fontFamily="$heading" fontSize="$6" fontWeight="600">Podsumowanie</Text>
 
@@ -300,19 +446,25 @@ export default function Cart() {
 
                     <YStack
                       gap="$1.5"
-                      borderTopWidth={1}
-                      borderColor="$borderColor"
-                      pt="$3"
+                      style={{
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        borderColor: '#d7cfe1',
+                        paddingHorizontal: 14,
+                        paddingTop: 12,
+                        paddingBottom: 12,
+                        backgroundColor: '#fbf8fc',
+                      }}
                     >
                       <DataRow>
                         <Text fontSize="$3" color="$placeholderColor" fontWeight="600">Do zapłaty</Text>
-                        <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$color">
+                        <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$blue10">
                           {formatCurrency(totalPrice)}
                         </Text>
                       </DataRow>
                     </YStack>
 
-                    <PrimaryButton onPress={() => { void handleCheckout() }} width="100%">
+                    <PrimaryButton onPress={() => { void handleCheckout() }} width="100%" style={{ minHeight: 56 }}>
                       Przejdź do dostawy
                     </PrimaryButton>
 
@@ -326,36 +478,60 @@ export default function Cart() {
               <XStack gap="$4" width="100%" alignItems="flex-start" style={{ minWidth: 0 }}>
                 <YStack flex={1} gap="$3.5" width="100%" style={{ minWidth: 460 }}>
                   {items.map((item) => (
-                    <SurfaceCard key={item.id} style={{ width: '100%' }}>
+                    <SurfaceCard
+                      key={item.id}
+                      style={{
+                        width: '100%',
+                        padding: itemCardPadding,
+                        borderRadius: cardRadius,
+                      }}
+                    >
                       <YStack gap="$3" width="100%" style={{ minWidth: 0 }}>
                         <XStack gap="$3" width="100%" justifyContent="space-between" alignItems={isTablet ? 'flex-start' : 'center'}>
                           <XStack gap="$3" alignItems="center" flex={1} style={{ minWidth: 0 }}>
                             <YStack
-                              width={70}
-                              height={70}
-                              borderRadius="$6"
+                              width={mediaFrameSize}
+                              height={mediaFrameSize}
                               borderWidth={1}
                               borderColor="$borderColor"
                               bg="$backgroundHover"
                               overflow="hidden"
                               alignItems="center"
                               justifyContent="center"
-                              style={{ flexShrink: 0 }}
+                              style={{
+                                flexShrink: 0,
+                                borderRadius: 18,
+                                padding: 8,
+                              }}
                             >
-                              {item.imageUrl && !imageErrors[item.id] ? (
-                                <Image
-                                  source={{ uri: item.imageUrl }}
-                                  resizeMode="cover"
-                                  onError={() => {
-                                    setImageErrors((current) => ({ ...current, [item.id]: true }))
-                                  }}
-                                  style={{ width: '100%', height: '100%' }}
-                                />
-                              ) : (
-                                <Text fontFamily="$heading" fontWeight="700" fontSize="$6" color="$blue10">
-                                  {item.name.slice(0, 1).toUpperCase()}
-                                </Text>
-                              )}
+                              <YStack
+                                width="100%"
+                                height="100%"
+                                alignItems="center"
+                                justifyContent="center"
+                                style={{
+                                  borderRadius: 14,
+                                  overflow: 'hidden',
+                                  borderWidth: 1,
+                                  borderColor: '#cbc4d2',
+                                  backgroundColor: '#ffffff',
+                                }}
+                              >
+                                {item.imageUrl && !imageErrors[item.id] ? (
+                                  <Image
+                                    source={{ uri: item.imageUrl }}
+                                    resizeMode="cover"
+                                    onError={() => {
+                                      setImageErrors((current) => ({ ...current, [item.id]: true }))
+                                    }}
+                                    style={{ width: '100%', height: '100%' }}
+                                  />
+                                ) : (
+                                  <Text fontFamily="$heading" fontWeight="700" fontSize="$6" color="$blue10">
+                                    {item.name.slice(0, 1).toUpperCase()}
+                                  </Text>
+                                )}
+                              </YStack>
                             </YStack>
 
                             <YStack gap="$1" flex={1} style={{ minWidth: 0 }}>
@@ -370,11 +546,24 @@ export default function Cart() {
                                   {item.name}
                                 </ProductTitle>
                               </Pressable>
-                              <ProductMetaText>Cena jednostkowa: {formatCurrency(item.price)}</ProductMetaText>
+                              <ProductMetaText fontFamily="$mono" style={{ letterSpacing: 0.5 }}>
+                                Cena jednostkowa: {formatCurrency(item.price)}
+                              </ProductMetaText>
                             </YStack>
                           </XStack>
 
-                          <GhostDangerButton size="$2" onPress={() => removeItem(item.id)} style={{ flexShrink: 0 }}>
+                          <GhostDangerButton
+                            size="$2"
+                            onPress={() => removeItem(item.id)}
+                            style={{
+                              flexShrink: 0,
+                              borderWidth: 1,
+                              borderColor: '#f2b8b5',
+                              backgroundColor: '#ffdad6',
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                            }}
+                          >
                             Usuń
                           </GhostDangerButton>
                         </XStack>
@@ -383,22 +572,43 @@ export default function Cart() {
                           <InlineControls
                             borderWidth={1}
                             borderColor="$borderColor"
-                            borderRadius="$6"
                             px="$2"
-                            py="$1"
+                            py="$1.5"
                             bg="$backgroundHover"
-                            style={{ minWidth: 160, justifyContent: 'space-between' }}
+                            style={{ minWidth: 172, justifyContent: 'space-between', borderRadius: 999 }}
                           >
                             <SecondaryButton
                               size="$3"
                               circular
                               onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                              style={{ width: 36, height: 36, minWidth: 36, paddingHorizontal: 0 }}
+                              style={{
+                                width: controlSize,
+                                height: controlSize,
+                                minHeight: controlSize,
+                                minWidth: controlSize,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                backgroundColor: '#ffffff',
+                                borderWidth: 1,
+                                borderColor: '#cbc4d2',
+                                borderRadius: 999,
+                              }}
                             >
-                              -
+                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
+                                -
+                              </Text>
                             </SecondaryButton>
-                            <YStack alignItems="center" justifyContent="center" minWidth={36} height={36} borderRadius="$4" borderWidth={1} borderColor="$borderColor" bg="$background">
-                              <Text fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
+                            <YStack
+                              alignItems="center"
+                              justifyContent="center"
+                              minWidth={controlSize + 8}
+                              height={controlSize}
+                              borderWidth={1}
+                              borderColor="$borderColor"
+                              bg="$background"
+                              style={{ borderRadius: 999 }}
+                            >
+                              <Text fontFamily="$mono" fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
                                 {item.quantity}
                               </Text>
                             </YStack>
@@ -406,15 +616,57 @@ export default function Cart() {
                               size="$3"
                               circular
                               onPress={() => updateQuantity(item.id, item.quantity + 1)}
-                              style={{ width: 36, height: 36, minWidth: 36, paddingHorizontal: 0 }}
+                              style={{
+                                width: controlSize,
+                                height: controlSize,
+                                minHeight: controlSize,
+                                minWidth: controlSize,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                backgroundColor: '#ffffff',
+                                borderWidth: 1,
+                                borderColor: '#cbc4d2',
+                                borderRadius: 999,
+                              }}
                             >
-                              +
+                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
+                                +
+                              </Text>
                             </SecondaryButton>
                           </InlineControls>
 
-                          <YStack alignItems="flex-end" style={{ minWidth: 150 }}>
-                            <ProductMetaText>Wartość pozycji</ProductMetaText>
-                            <ProductPrice>{formatCurrency(item.price * item.quantity)}</ProductPrice>
+                          <YStack
+                            alignItems="flex-start"
+                            style={{
+                              minWidth: itemValueCardMinWidth,
+                              width: itemValueCardMinWidth,
+                              flexShrink: 0,
+                              borderWidth: 1,
+                              borderColor: '#d7cfe1',
+                              backgroundColor: '#fbf8fc',
+                              borderRadius: 16,
+                              paddingHorizontal: 16,
+                              paddingVertical: 11,
+                            }}
+                          >
+                            <YStack
+                              gap="$1"
+                              alignItems="center"
+                              style={{ width: '100%' }}
+                            >
+                              <Text fontSize="$3" color="$placeholderColor" fontWeight="600" style={{ textAlign: 'center' }}>
+                                Wartość pozycji
+                              </Text>
+                              <Text
+                                fontFamily="$heading"
+                                fontSize="$6"
+                                fontWeight="700"
+                                color="$blue10"
+                                style={{ textAlign: 'center' }}
+                              >
+                                {formatCurrency(item.price * item.quantity)}
+                              </Text>
+                            </YStack>
                           </YStack>
                         </XStack>
                       </YStack>
@@ -423,7 +675,7 @@ export default function Cart() {
                 </YStack>
 
                 <YStack width={340} gap="$3" style={{ minWidth: 0, flexShrink: 0 }}>
-                  <SurfaceCard>
+                  <SurfaceCard style={{ padding: summaryCardPadding, borderRadius: cardRadius + 2 }}>
                     <YStack gap="$3.5">
                       <Text fontFamily="$heading" fontSize="$6" fontWeight="600">Podsumowanie</Text>
 
@@ -437,16 +689,27 @@ export default function Cart() {
                         <Text fontSize="$4" fontWeight="700">{totalItems}</Text>
                       </DataRow>
 
-                      <YStack gap="$1.5" borderTopWidth={1} borderColor="$borderColor" pt="$3">
+                      <YStack
+                        gap="$1.5"
+                        style={{
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          borderColor: '#d7cfe1',
+                          paddingHorizontal: 14,
+                          paddingTop: 12,
+                          paddingBottom: 12,
+                          backgroundColor: '#fbf8fc',
+                        }}
+                      >
                         <DataRow>
                           <Text fontSize="$3" color="$placeholderColor" fontWeight="600">Do zapłaty</Text>
-                          <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$color">
+                          <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$blue10">
                             {formatCurrency(totalPrice)}
                           </Text>
                         </DataRow>
                       </YStack>
 
-                      <PrimaryButton onPress={() => { void handleCheckout() }} width="100%">
+                      <PrimaryButton onPress={() => { void handleCheckout() }} width="100%" style={{ minHeight: 56 }}>
                         Przejdź do dostawy
                       </PrimaryButton>
 

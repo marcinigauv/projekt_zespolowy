@@ -119,12 +119,20 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
   const translateY = useRef(new Animated.Value(10)).current
   const activeNotification = useMemo(() => notifications[0] ?? null, [notifications])
   const shouldUseNativeDriver = Platform.OS !== 'web'
+  const isWeb = Platform.OS === 'web'
+  const isWebPhone = isWeb && media.xs
+  const isWebNarrowPhone = isWeb && media.xxs
+  const isWebTablet = isWeb && !media.xs && media.md
+  const mobileBottomNavInset = isWebPhone ? (isWebNarrowPhone ? 78 : 88) : 0
+  const desktopBottomInset = isWebTablet ? 20 : isWeb ? 16 : 0
 
   const toastViewportStyle = {
-    bottom: 0,
+    bottom: isWebPhone ? mobileBottomNavInset : desktopBottomInset,
     left: 0,
     right: 0,
-    alignItems: 'stretch' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: isWebPhone ? 12 : isWebTablet ? 18 : 20,
+    paddingBottom: isWebPhone ? 12 : isWeb ? 0 : 18,
   }
 
   useEffect(() => {
@@ -189,6 +197,10 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
     ]).start()
   }, [activeNotification, opacity, shouldUseNativeDriver, translateY])
 
+  if (isWebPhone) {
+    return null
+  }
+
   if (!renderedNotification) {
     return null
   }
@@ -206,7 +218,13 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
           const reservedInset = event.nativeEvent.layout.height + (media.xxs ? 16 : 24)
           onMobileInsetChange?.(reservedInset)
         }}
-        style={{ opacity, transform: [{ translateY }], width: '100%' }}
+        style={{
+          opacity,
+          transform: [{ translateY }],
+          width: '100%',
+          maxWidth: isWebPhone ? undefined : isWebTablet ? 720 : 1040,
+          alignSelf: 'center',
+        }}
       >
         <Pressable
           onHoverIn={Platform.OS === 'web' ? () => setHoveredNotificationId(renderedNotification.id) : undefined}
@@ -239,7 +257,7 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
                   <Feather
                     name="bell"
                     size={14}
-                    color={isToastHovered ? '#f4eade' : '#d4e2de'}
+                    color={isToastHovered ? '#6750a4' : '#4f378a'}
                   />
                 </YStack>
 
@@ -251,7 +269,7 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
                   <Feather
                     name={renderedNotification.url ? 'arrow-up-right' : 'info'}
                     size={14}
-                    color={isToastHovered ? '#f4eade' : '#afc3be'}
+                    color={isToastHovered ? '#6750a4' : '#7a7582'}
                   />
                 </YStack>
               </XStack>

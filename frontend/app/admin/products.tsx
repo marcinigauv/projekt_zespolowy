@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { Modal } from 'react-native'
-import { Label, ScrollView, Text, YStack, H1, Paragraph } from 'tamagui'
+import { Modal, useWindowDimensions } from 'react-native'
+import { Label, ScrollView, Text, XStack, YStack, H1, Paragraph } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
 import {
@@ -90,6 +90,7 @@ function parseCategories(value: string): string[] {
 
 export default function AdminProductsScreen() {
   const router = useRouter()
+  const { width: viewportWidth } = useWindowDimensions()
   const { canRender } = useRouteAccess({ requireAdmin: true })
   const nameInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const descriptionInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
@@ -311,6 +312,19 @@ export default function AdminProductsScreen() {
 
     return `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
   }, [selectedProduct])
+  const isPhone = viewportWidth <= 520
+
+  const detailCardStyle = {
+    minWidth: 0,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: '#cbc4d2',
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 6,
+  } as const
 
   if (!canRender) {
     return null
@@ -320,132 +334,258 @@ export default function AdminProductsScreen() {
     <PageWrapper>
       <Header />
       <ScrollView>
-        <PageContent>
-          <SectionHeading>
+        <PageContent style={{ maxWidth: 1180 }}>
+          <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Panel Admina</Eyebrow>
             <SectionTitle>Zarządzanie Przedmiotami</SectionTitle>
             <SectionDescription>
               Dodawaj nowe produkty bezpośrednio do bazy danych sklepu.
             </SectionDescription>
             <ActionButtonRow>
-              <PrimaryButton onPress={openCreateModal}>
+              <PrimaryButton
+                onPress={openCreateModal}
+                style={{ minHeight: 56, minWidth: isPhone ? undefined : 240, width: isPhone ? '100%' : undefined }}
+              >
                 Dodaj nowy produkt
               </PrimaryButton>
             </ActionButtonRow>
           </SectionHeading>
 
-          <AdminSectionCard>
-            <AdminSectionHeader>
+          <AdminSectionCard style={{ padding: 0, overflow: 'hidden' }}>
+            <YStack
+              gap="$1.5"
+              px="$4"
+              py="$4"
+              style={{
+                backgroundColor: '#f8f2fa',
+                borderBottomWidth: 1,
+                borderBottomColor: '#e6e0e9',
+              }}
+            >
               <AdminSectionTitle>Znajdź produkt do edycji</AdminSectionTitle>
               <AdminHelperText>
                 Wpisz ID produktu lub kilka fraz (np. Lego, komputer)
               </AdminHelperText>
-            </AdminSectionHeader>
+            </YStack>
 
-            <SearchRow>
-              <SearchInput
-                flex={1}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Np. 15 laptop promocja"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="search"
-                onSubmitEditing={() => { void handleSearch() }}
-              />
-              <PrimaryButton disabled={isSearching} onPress={() => { void handleSearch() }}>
-                Szukaj
-              </PrimaryButton>
-              <SecondaryButton
-                disabled={isSearching}
-                onPress={() => {
-                  setSearchQuery('')
-                  setSearchResults([])
-                  setSearchError('')
-                  setSearchMessage(emptySearchMessage)
-                  handleClearSelection()
+            <YStack p="$3.5" gap="$3.5">
+              <SearchRow style={{ flexDirection: isPhone ? 'column' : 'row', alignItems: 'stretch' }}>
+                <SearchInput
+                  flex={isPhone ? undefined : 1}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Np. 15 laptop promocja"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  style={{ minHeight: 56, width: '100%' }}
+                  onSubmitEditing={() => { void handleSearch() }}
+                />
+                <PrimaryButton
+                  disabled={isSearching}
+                  onPress={() => { void handleSearch() }}
+                  style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                >
+                  Szukaj
+                </PrimaryButton>
+                <SecondaryButton
+                  disabled={isSearching}
+                  onPress={() => {
+                    setSearchQuery('')
+                    setSearchResults([])
+                    setSearchError('')
+                    setSearchMessage(emptySearchMessage)
+                    handleClearSelection()
+                  }}
+                  style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                >
+                  Wyczyść
+                </SecondaryButton>
+              </SearchRow>
+
+              <YStack
+                style={{
+                  borderWidth: 1,
+                  borderColor: searchError ? '#f2b8b5' : '#cbc4d2',
+                  borderRadius: 18,
+                  backgroundColor: searchError ? '#ffdad6' : '#f8f2fa',
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
                 }}
               >
-                Wyczyść
-              </SecondaryButton>
-            </SearchRow>
+                {searchError ? <AdminFeedbackText tone="danger">{searchError}</AdminFeedbackText> : null}
+                {!searchError ? <AdminFeedbackText tone="neutral">{isSearching ? 'Trwa wyszukiwanie...' : searchMessage}</AdminFeedbackText> : null}
+              </YStack>
 
-            {searchError ? <AdminFeedbackText tone="danger">{searchError}</AdminFeedbackText> : null}
-            {!searchError ? <AdminFeedbackText tone="neutral">{isSearching ? 'Trwa wyszukiwanie...' : searchMessage}</AdminFeedbackText> : null}
+              {searchResults.length > 0 ? (
+                <AdminResultsList>
+                  {searchResults.map((product) => (
+                    <AdminResultCard key={product.id} style={{ padding: 0, overflow: 'hidden' }}>
+                      <YStack>
+                        <XStack
+                          gap="$3"
+                          px="$4"
+                          py="$4"
+                          justifyContent="space-between"
+                          alignItems={isPhone ? 'flex-start' : 'center'}
+                          flexDirection={isPhone ? 'column' : 'row'}
+                        >
+                          <AdminResultSummary style={{ minWidth: 0, flex: 1 }}>
+                            <AdminResultTitle>{product.name}</AdminResultTitle>
+                            <AdminResultMeta numberOfLines={2}>{product.description}</AdminResultMeta>
+                          </AdminResultSummary>
 
-            {searchResults.length > 0 ? (
-              <AdminResultsList>
-                {searchResults.map((product) => (
-                  <AdminResultCard key={product.id}>
-                    <DataRow>
-                      <AdminResultSummary>
-                        <AdminResultTitle>{product.name}</AdminResultTitle>
-                        <AdminResultMeta numberOfLines={2}>{product.description}</AdminResultMeta>
-                      </AdminResultSummary>
-                      <ProductPrice>{product.price.toFixed(2)} zł</ProductPrice>
-                    </DataRow>
+                          <YStack
+                            alignItems={isPhone ? 'flex-start' : 'flex-end'}
+                            style={{
+                              minWidth: isPhone ? 0 : 170,
+                              width: isPhone ? '100%' : undefined,
+                              borderWidth: 1,
+                                borderColor: '#cbc4d2',
+                              borderRadius: 18,
+                                backgroundColor: '#f8f2fa',
+                              paddingHorizontal: 16,
+                              paddingVertical: 12,
+                            }}
+                          >
+                            <ProductPrice color="$blue10">{product.price.toFixed(2)} zł</ProductPrice>
+                          </YStack>
+                        </XStack>
 
-                    <DataRow>
-                      <AdminResultMeta>ID</AdminResultMeta>
-                      <AdminResultValue>{product.id}</AdminResultValue>
-                    </DataRow>
+                        <XStack gap="$3" flexWrap="wrap" px="$4" pb="$4">
+                          <YStack flexBasis={120} style={detailCardStyle}>
+                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                              ID
+                            </Text>
+                            <Text color="$color" fontSize="$5" fontWeight="700">{product.id}</Text>
+                          </YStack>
 
-                    <DataRow>
-                      <AdminResultMeta>Stan magazynowy</AdminResultMeta>
-                      <AdminResultValue>{product.amount}</AdminResultValue>
-                    </DataRow>
+                          <YStack flexBasis={160} style={detailCardStyle}>
+                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                              Stan magazynowy
+                            </Text>
+                            <Text color="$color" fontSize="$5" fontWeight="700">{product.amount}</Text>
+                          </YStack>
 
-                    <DataRow>
-                      <AdminResultMeta>Kategorie</AdminResultMeta>
-                      <AdminResultValueRight>{product.categories.join(', ')}</AdminResultValueRight>
-                    </DataRow>
+                          <YStack flexBasis={260} style={detailCardStyle}>
+                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                              Kategorie
+                            </Text>
+                            <Text color="$color" fontSize="$4" fontWeight="700">{product.categories.join(', ')}</Text>
+                          </YStack>
+                        </XStack>
 
-                    <ActionButtonRow>
-                      <SecondaryButton onPress={() => handleSelectProduct(product)}>Edytuj</SecondaryButton>
-                    </ActionButtonRow>
-                  </AdminResultCard>
-                ))}
-              </AdminResultsList>
-            ) : null}
+                        <YStack
+                          alignItems={isPhone ? 'stretch' : 'center'}
+                          style={{
+                            borderTopWidth: 1,
+                            borderTopColor: '#e6e0e9',
+                            paddingHorizontal: 16,
+                            paddingTop: 14,
+                            paddingBottom: 16,
+                          }}
+                        >
+                          <SecondaryButton
+                            onPress={() => handleSelectProduct(product)}
+                            style={{ minHeight: 56, minWidth: isPhone ? undefined : 220, width: isPhone ? '100%' : undefined }}
+                          >
+                            Edytuj
+                          </SecondaryButton>
+                        </YStack>
+                      </YStack>
+                    </AdminResultCard>
+                  ))}
+                </AdminResultsList>
+              ) : null}
+            </YStack>
           </AdminSectionCard>
 
-          <AdminSectionCard>
-            <AdminSectionHeader>
+          <AdminSectionCard style={{ padding: 0, overflow: 'hidden' }}>
+            <YStack
+              gap="$1.5"
+              px="$4"
+              py="$4"
+              style={{
+                backgroundColor: '#f8f2fa',
+                borderBottomWidth: 1,
+                borderBottomColor: '#e6e0e9',
+              }}
+            >
               <AdminSectionTitle>Wybrany produkt</AdminSectionTitle>
               <AdminHelperText>{selectedProductSummary}</AdminHelperText>
-            </AdminSectionHeader>
+            </YStack>
 
             {selectedProduct ? (
-              <WideFormCard>
-                <YStack gap="$4">
-                  <DataRow>
-                    <AdminResultMeta>ID</AdminResultMeta>
-                    <AdminResultValue>{selectedProduct.id}</AdminResultValue>
-                  </DataRow>
-                  <DataRow>
-                    <AdminResultMeta>Nazwa</AdminResultMeta>
-                    <AdminResultValue>{selectedProduct.name}</AdminResultValue>
-                  </DataRow>
-                  <DataRow>
-                    <AdminResultMeta>Stan magazynowy</AdminResultMeta>
-                    <AdminResultValue>{selectedProduct.amount}</AdminResultValue>
-                  </DataRow>
-                  <DataRow>
-                    <AdminResultMeta>Kategorie</AdminResultMeta>
-                    <AdminResultValueRight>{selectedProductCategories}</AdminResultValueRight>
-                  </DataRow>
-                  <ActionButtonRow>
-                    <PrimaryButton onPress={() => setModalMode('edit')}>
-                      Otwórz edycję
-                    </PrimaryButton>
-                    <SecondaryButton onPress={handleClearSelection}>
-                      Wyczyść wybór
-                    </SecondaryButton>
-                  </ActionButtonRow>
+              <WideFormCard style={{ padding: 0, overflow: 'hidden' }}>
+                <YStack p="$3.5" gap="$3.5">
+                  <XStack gap="$3" flexWrap="wrap" p="$3.5">
+                    <YStack flexBasis={240} style={detailCardStyle}>
+                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        Nazwa
+                      </Text>
+                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.name}</Text>
+                    </YStack>
+
+                    <YStack flexBasis={180} style={detailCardStyle}>
+                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        ID
+                      </Text>
+                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.id}</Text>
+                    </YStack>
+
+                    <YStack flexBasis={200} style={detailCardStyle}>
+                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        Stan magazynowy
+                      </Text>
+                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.amount}</Text>
+                    </YStack>
+
+                    <YStack flexBasis={300} style={detailCardStyle}>
+                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        Kategorie
+                      </Text>
+                      <Text color="$color" fontSize="$4" fontWeight="700">{selectedProductCategories}</Text>
+                    </YStack>
+                  </XStack>
+
+                  <YStack
+                    alignItems={isPhone ? 'stretch' : 'center'}
+                    style={{
+                      borderTopWidth: 1,
+                      borderTopColor: '#e6e0e9',
+                      paddingTop: 14,
+                    }}
+                  >
+                    <ActionButtonRow style={{ justifyContent: isPhone ? 'stretch' : 'center', width: '100%' }}>
+                      <PrimaryButton
+                        onPress={() => setModalMode('edit')}
+                        style={{ minHeight: 56, minWidth: isPhone ? undefined : 220, width: isPhone ? '100%' : undefined }}
+                      >
+                        Otwórz edycję
+                      </PrimaryButton>
+                      <SecondaryButton
+                        onPress={handleClearSelection}
+                        style={{ minHeight: 56, minWidth: isPhone ? undefined : 220, width: isPhone ? '100%' : undefined }}
+                      >
+                        Wyczyść wybór
+                      </SecondaryButton>
+                    </ActionButtonRow>
+                  </YStack>
                 </YStack>
               </WideFormCard>
             ) : (
-              <EmptyStateCard gap="$3">
+              <EmptyStateCard
+                gap="$3"
+                style={{
+                  margin: 16,
+                  borderWidth: 1,
+                  borderColor: '#cbc4d2',
+                  borderRadius: 22,
+                  backgroundColor: '#f8f2fa',
+                  paddingHorizontal: 24,
+                  paddingVertical: 40,
+                }}
+              >
                 <Text fontSize="$8">⌕</Text>
                 <AdminHelperText>Brak wybranego produktu do edycji.</AdminHelperText>
               </EmptyStateCard>
@@ -456,16 +596,28 @@ export default function AdminProductsScreen() {
 
       <Modal transparent visible={isModalOpen} animationType="fade" onRequestClose={closeModal}>
         <ModalBackdrop>
-          <ModalCard>
-            <ModalHeaderRow>
-              <AdminSectionHeader flex={1}>
-                <H1 size="$8" fontWeight="400">{modalTitle}</H1>
-                <Paragraph size="$4" color="$gray11">{modalDescription}</Paragraph>
-              </AdminSectionHeader>
-              <SecondaryButton onPress={closeModal}>
-                Zamknij
-              </SecondaryButton>
-            </ModalHeaderRow>
+          <ModalCard style={{ width: '100%', maxWidth: 860 }}>
+            {isPhone ? (
+              <YStack gap="$3.5">
+                <AdminSectionHeader>
+                  <H1 size="$7" fontWeight="700">{modalTitle}</H1>
+                  <Paragraph size="$4" color="$gray11">{modalDescription}</Paragraph>
+                </AdminSectionHeader>
+                <SecondaryButton onPress={closeModal} style={{ minHeight: 56, width: '100%' }}>
+                  Zamknij
+                </SecondaryButton>
+              </YStack>
+            ) : (
+              <ModalHeaderRow style={{ gap: 16 }}>
+                <AdminSectionHeader flex={1}>
+                  <H1 size="$8" fontWeight="700">{modalTitle}</H1>
+                  <Paragraph size="$4" color="$gray11">{modalDescription}</Paragraph>
+                </AdminSectionHeader>
+                <SecondaryButton onPress={closeModal} style={{ minHeight: 56 }}>
+                  Zamknij
+                </SecondaryButton>
+              </ModalHeaderRow>
+            )}
 
             <ModalBodyScroll showsVerticalScrollIndicator={false}>
               {canRenderEditForm ? (
@@ -564,9 +716,10 @@ export default function AdminProductsScreen() {
                   {activeError ? <AdminFeedbackText tone="danger">{activeError}</AdminFeedbackText> : null}
                   {activeSuccessMessage ? <AdminFeedbackText tone="success">{activeSuccessMessage}</AdminFeedbackText> : null}
 
-                  <ActionButtonRow>
+                  <ActionButtonRow style={{ justifyContent: isPhone ? 'stretch' : 'flex-start' }}>
                     <PrimaryButton
                       disabled={isSubmitting || isDeleting}
+                      style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
                       onPress={() => {
                         if (isEditMode) {
                           void handleUpdateProduct()
@@ -579,6 +732,7 @@ export default function AdminProductsScreen() {
                     </PrimaryButton>
                     <SecondaryButton
                       disabled={isSubmitting || isDeleting}
+                      style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
                       onPress={() => {
                         if (isEditMode) {
                           if (selectedProduct) {
@@ -594,12 +748,20 @@ export default function AdminProductsScreen() {
                       {modalSecondaryActionLabel}
                     </SecondaryButton>
                     {isEditMode ? (
-                      <SecondaryButton disabled={isSubmitting || isDeleting} onPress={handleClearSelection}>
+                      <SecondaryButton
+                        disabled={isSubmitting || isDeleting}
+                        onPress={handleClearSelection}
+                        style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                      >
                         Wyczyść wybór
                       </SecondaryButton>
                     ) : null}
                     {isEditMode ? (
-                      <GhostDangerButton disabled={isSubmitting || isDeleting} onPress={() => { void handleDelete() }}>
+                      <GhostDangerButton
+                        disabled={isSubmitting || isDeleting}
+                        onPress={() => { void handleDelete() }}
+                        style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                      >
                         Usuń produkt
                       </GhostDangerButton>
                     ) : null}
