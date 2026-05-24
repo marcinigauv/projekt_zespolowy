@@ -1,34 +1,577 @@
 [
-  {
-    "name": "LEGO City Woz Strazacki",
-    "description": "Zestaw LEGO City z wozem strazackim, drabina i figurkami ratownikow.",
-    "price": 249.99,
-    "amount": 18,
-    "categories": ["LEGO", "City"],
-    "image_url": "https://picsum.photos/id/0/200/300"
-  },
-  {
-    "name": "LEGO Technic Samochod Rajdowy",
-    "description": "Model LEGO Technic dla starszych budowniczych z ruchomymi elementami i realistycznym napedem.",
-    "price": 399.99,
-    "amount": 12,
-    "categories": ["LEGO", "Technic", "Motoryzacja / sport motorowy"],
-    "image_url": "https://picsum.photos/id/1/200/300"
-  },
-  {
-    "name": "Raspberry Pi 5 Starter Kit",
-    "description": "Zestaw startowy z Raspberry Pi, zasilaczem, obudowa i karta pamieci do projektow IoT.",
-    "price": 549.0,
-    "amount": 25,
-    "categories": ["Elektronika", "Raspberry Pi", "IoT"],
-    "image_url": "https://picsum.photos/id/2/200/300"
-  },
-  {
-    "name": "Kamera sportowa 4K Action Pro",
-    "description": "Kompaktowa kamera akcji 4K z wodoodporna obudowa i stabilizacja obrazu.",
-    "price": 699.0,
-    "amount": 9,
-    "categories": ["Elektronika", "Kamera akcji", "Video"],
-    "image_url": "https://picsum.photos/id/3/200/300"
-  }
+    {
+        "name":  "LEGO City Woz Strazacki",
+        "description":  "Zestaw LEGO City z wozem strazackim, drabina i figurkami ratownikow.",
+        "price":  249.99,
+        "amount":  18,
+        "categories":  [
+                           "LEGO",
+                           "City"
+                       ],
+        "image_url":  "https://picsum.photos/id/0/200/300"
+    },
+    {
+        "name":  "LEGO Technic Samochod Rajdowy",
+        "description":  "Model LEGO Technic dla starszych budowniczych z ruchomymi elementami i realistycznym napedem.",
+        "price":  399.99,
+        "amount":  12,
+        "categories":  [
+                           "LEGO",
+                           "Technic",
+                           "Motoryzacja / sport motorowy"
+                       ],
+        "image_url":  "https://picsum.photos/id/1/200/300"
+    },
+    {
+        "name":  "Raspberry Pi 5 Starter Kit",
+        "description":  "Zestaw startowy z Raspberry Pi, zasilaczem, obudowa i karta pamieci do projektow IoT.",
+        "price":  549.0,
+        "amount":  25,
+        "categories":  [
+                           "Elektronika",
+                           "Raspberry Pi",
+                           "IoT"
+                       ],
+        "image_url":  "https://picsum.photos/id/2/200/300"
+    },
+    {
+        "name":  "Kamera sportowa 4K Action Pro",
+        "description":  "Kompaktowa kamera akcji 4K z wodoodporna obudowa i stabilizacja obrazu.",
+        "price":  699.0,
+        "amount":  9,
+        "categories":  [
+                           "Elektronika",
+                           "Kamera akcji",
+                           "Video"
+                       ],
+        "image_url":  "https://picsum.photos/id/3/200/300"
+    },
+    {
+        "name":  "LEGO Technic Porsche 911 RSR",
+        "description":  "Model do składania Porsche 911 RSR w skali 1:8 – ponad 1580 elementów",
+        "price":  179.99,
+        "amount":  42,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Technic",
+                           "Samochody"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/237_2468145859_66d1c901c2_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Star Wars Millennium Falcon UCS",
+        "description":  "Największa wersja Sokoła Millennium – 7541 klocków",
+        "price":  849,
+        "amount":  8,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Gwiezdne Wojny",
+                           "Kolekcjonerskie"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/5042_5323149997_e8832e41c4_n_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Creator Expert Taj Mahal",
+        "description":  "Ikoniczny model Taj Mahal – 2022 elementy",
+        "price":  459.99,
+        "amount":  11,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Creator",
+                           "Architektura"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/4181_33638489983_e9111a0274_n_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO City Policyjny radiowóz pościgowy",
+        "description":  "Zestaw z pościgiem i światłami – 358 elementów",
+        "price":  129.9,
+        "amount":  67,
+        "categories":  [
+                           "Klocki LEGO",
+                           "City",
+                           "Pojazdy"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/3942_15735086276_c629b5fff8_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Friends Dom na plaży",
+        "description":  "Nowoczesny domek wakacyjny – 792 elementy",
+        "price":  219,
+        "amount":  34,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Friends",
+                           "Dla dziewczynek"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/7166_6651192509_c84ffd2c42_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Icons Kolekcja kwiatów – Róże",
+        "description":  "Elegancki zestaw do dekoracji – 822 elementów",
+        "price":  299.9,
+        "amount":  29,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Icons",
+                           "Dekoracje"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Speed Champions Ferrari 296 GTB",
+        "description":  "Szybki model Ferrari z detalami wnętrza",
+        "price":  89.99,
+        "amount":  78,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Speed Champions",
+                           "Samochody"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_50078516312_91960f08f9_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Harry Potter Hogwart Ekspres Kolejowy",
+        "description":  "Pociąg z przedziałami i figurkami – 801 elementów",
+        "price":  499,
+        "amount":  17,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Harry Potter",
+                           "Pociągi"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_52363349446_fac7a9407e_z_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Ninjago Smoczy Zamek",
+        "description":  "Duży zamek z 5 smokami – 1912 elementów",
+        "price":  899,
+        "amount":  9,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Ninjago",
+                           "Fantasy"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_40753061221_ed0bcbfa22_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Architecture Statua Wolności",
+        "description":  "Model Statuy Wolności – 1685 elementów",
+        "price":  499,
+        "amount":  15,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Architektura",
+                           "Kolekcjonerskie"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Marvel Spider-Man: Symbiotyczna walka",
+        "description":  "Duży zestaw z Venomem i Carnage – 1412 elementów",
+        "price":  649,
+        "amount":  22,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Marvel",
+                           "Superbohaterowie"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/1919_31552855578_7297e69bce_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Disney Zamkowe Święto w Disneyu",
+        "description":  "Zestaw z wieloma postaciami Disney – 1440 elementów",
+        "price":  799,
+        "amount":  18,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Disney",
+                           "Dla dziewczynek"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/5566_15011451408_8d21e1002f_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Creator Expert Kolekcja Samochodów Retro",
+        "description":  "Trzy klasyczne auta w jednym pudełku",
+        "price":  599,
+        "amount":  16,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Creator",
+                           "Samochody"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Technic Mercedes-AMG W14",
+        "description":  "Model bolidu F1 – 1641 elementów",
+        "price":  799,
+        "amount":  7,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Technic",
+                           "Sport motorowy"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Icons Kolekcja motyli",
+        "description":  "Piękne motyle do powieszenia – 1254 elementy",
+        "price":  399,
+        "amount":  33,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Icons",
+                           "Dekoracje"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO City Stacja kosmiczna",
+        "description":  "Duży zestaw kosmiczny – 1045 elementów",
+        "price":  449,
+        "amount":  19,
+        "categories":  [
+                           "Klocki LEGO",
+                           "City",
+                           "Kosmos"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Harry Potter Diagon Alley",
+        "description":  "Ulica z wieloma sklepami – 5544 elementy",
+        "price":  1999,
+        "amount":  5,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Harry Potter",
+                           "Kolekcjonerskie"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Technic Lamborghini Sián FKP 37",
+        "description":  "Hybrydowy supersamochód – 3696 elementów",
+        "price":  1699,
+        "amount":  6,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Technic",
+                           "Samochody"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/7289_8714320895_4d72c9e341_n_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "LEGO Friends Skate Park",
+        "description":  "Park rozrywki z rampami – 1187 elementów",
+        "price":  499,
+        "amount":  27,
+        "categories":  [
+                           "Klocki LEGO",
+                           "Friends",
+                           "Sport"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Raspberry Pi 5 8GB",
+        "description":  "Najnowsza wersja popularnego minikomputera",
+        "price":  349,
+        "amount":  89,
+        "categories":  [
+                           "Elektronika",
+                           "Komputery jednopłytkowe",
+                           "Raspberry Pi"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Arduino Uno R4 WiFi",
+        "description":  "Klasyczna płytka z modułem WiFi i Bluetooth",
+        "price":  189,
+        "amount":  56,
+        "categories":  [
+                           "Elektronika",
+                           "Arduino",
+                           "IoT"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/360_18778595429_a289aaba39_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "DJI Mini 4 Pro Fly More Combo",
+        "description":  "Kompaktowy dron 4K z 3 bateriami i torbą",
+        "price":  3899,
+        "amount":  14,
+        "categories":  [
+                           "Drony",
+                           "Fotografia",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Logitech MX Master 3S",
+        "description":  "Zaawansowana mysz biurowa z cichymi przyciskami",
+        "price":  529,
+        "amount":  112,
+        "categories":  [
+                           "Akcesoria",
+                           "Mysz",
+                           "Praca"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Sony WH-1000XM5 Czarne",
+        "description":  "Najlepsze słuchawki z redukcją szumów 2025",
+        "price":  1499,
+        "amount":  38,
+        "categories":  [
+                           "Audio",
+                           "Słuchawki",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_49400462927_2457c09e5a_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "NVIDIA RTX 4070 Ti Super 16GB",
+        "description":  "Karta graficzna do gier i AI – 16 GB GDDR6X",
+        "price":  3499,
+        "amount":  19,
+        "categories":  [
+                           "Elektronika",
+                           "Karta graficzna",
+                           "Gaming"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Samsung Galaxy Tab S9 FE+ 12.4\" 128GB",
+        "description":  "Duży tablet z rysikiem w zestawie",
+        "price":  2199,
+        "amount":  23,
+        "categories":  [
+                           "Elektronika",
+                           "Tablet",
+                           "Samsung"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/4088_5170719499_0a15599754_z_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Anker PowerCore 26800mAh",
+        "description":  "Mocny powerbank z szybkim ładowaniem PD",
+        "price":  249,
+        "amount":  145,
+        "categories":  [
+                           "Akcesoria",
+                           "Powerbank",
+                           "Podróże"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Philips Hue White \u0026 Color Ambiance Starter Kit",
+        "description":  "Zestaw 3 żarówek + mostek – sterowanie aplikacją",
+        "price":  699,
+        "amount":  41,
+        "categories":  [
+                           "Inteligentny dom",
+                           "Oświetlenie",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Intel Core i7-14700K",
+        "description":  "Procesor 20-rdzeniowy 14. generacji",
+        "price":  2199,
+        "amount":  26,
+        "categories":  [
+                           "Elektronika",
+                           "Procesor",
+                           "Gaming"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_54592934060_4fdb5295e6_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "GoPro HERO13 Black",
+        "description":  "Kamera akcji 5.3K + stabilizacja HyperSmooth 6.0",
+        "price":  2199,
+        "amount":  31,
+        "categories":  [
+                           "Kamera akcji",
+                           "Sport",
+                           "Fotografia"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Xiaomi Robot Vacuum X20+",
+        "description":  "Odkurzacz automatyczny z mopem i stacją",
+        "price":  1899,
+        "amount":  44,
+        "categories":  [
+                           "Inteligentny dom",
+                           "Robot odkurzający",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Corsair Vengeance RGB 32GB DDR5 6000MHz",
+        "description":  "Pamięć RAM z podświetleniem RGB",
+        "price":  699,
+        "amount":  63,
+        "categories":  [
+                           "Elektronika",
+                           "Pamięć RAM",
+                           "Gaming"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Apple AirPods Pro 2 USB-C",
+        "description":  "Słuchawki z aktywną redukcją szumów – 2025",
+        "price":  1199,
+        "amount":  72,
+        "categories":  [
+                           "Audio",
+                           "Słuchawki",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/5308_5849411456_5c6c2e3329_n_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "TP-Link Tapo C425 Kit",
+        "description":  "Zestaw 2 kamer zewnętrznych na baterie 2K",
+        "price":  899,
+        "amount":  51,
+        "categories":  [
+                           "Kamera bezpieczeństwa",
+                           "Inteligentny dom",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "AMD Ryzen 9 9950X",
+        "description":  "Najmocniejszy procesor Zen 5 – 16 rdzeni",
+        "price":  3699,
+        "amount":  12,
+        "categories":  [
+                           "Elektronika",
+                           "Procesor",
+                           "Gaming"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_54592934060_4fdb5295e6_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Samsung 990 PRO 4TB PCIe 4.0",
+        "description":  "Najszybszy SSD NVMe 2025 – 7450 MB/s",
+        "price":  1799,
+        "amount":  37,
+        "categories":  [
+                           "Elektronika",
+                           "SSD",
+                           "Pamięć masowa"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "JBL Flip 6 Czarny",
+        "description":  "Mobilny głośnik Bluetooth z dobrym basem",
+        "price":  499,
+        "amount":  88,
+        "categories":  [
+                           "Audio",
+                           "Głośnik przenośny",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Logitech G Pro X Superlight 2",
+        "description":  "Ultra lekka mysz gamingowa 60g",
+        "price":  699,
+        "amount":  54,
+        "categories":  [
+                           "Gaming",
+                           "Mysz",
+                           "Akcesoria"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/8469_28422458773_2c1c47ce3f_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "DJI Osmo Mobile 7",
+        "description":  "Gimbal do smartfona z AI tracking",
+        "price":  899,
+        "amount":  46,
+        "categories":  [
+                           "Fotografia",
+                           "Gimbal",
+                           "Wideo"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/65535_48717457473_28967b5ba8_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "HyperX Cloud III Wireless",
+        "description":  "Słuchawki gamingowe z długim czasem pracy",
+        "price":  799,
+        "amount":  62,
+        "categories":  [
+                           "Gaming",
+                           "Słuchawki",
+                           "Audio"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/6211_6853584780_e0a7f0ebfe_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Netatmo Smart Indoor Camera",
+        "description":  "Kamera do domu z rozpoznawaniem twarzy",
+        "price":  799,
+        "amount":  29,
+        "categories":  [
+                           "Kamera bezpieczeństwa",
+                           "Inteligentny dom",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "Eufy Security SoloCam S340",
+        "description":  "Kamera solarna z zoomem i śledzeniem",
+        "price":  1099,
+        "amount":  38,
+        "categories":  [
+                           "Kamera bezpieczeństwa",
+                           "Inteligentny dom",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "BenQ PD3225U 32\" 4K Designer",
+        "description":  "Monitor 4K dla grafików i programistów",
+        "price":  3899,
+        "amount":  14,
+        "categories":  [
+                           "Monitor",
+                           "Praca",
+                           "Elektronika"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/7517_16160850238_dfc4bbfbb7_320_240_nofilter.jpg"
+    },
+    {
+        "name":  "SteelSeries Arctis Nova 7P",
+        "description":  "Słuchawki bezprzewodowe do PS5/PC",
+        "price":  899,
+        "amount":  48,
+        "categories":  [
+                           "Gaming",
+                           "Słuchawki",
+                           "Audio"
+                       ],
+        "image_url":  "https://loremflickr.com/cache/resized/6056_6853534228_4676716f83_320_240_nofilter.jpg"
+    }
 ]
