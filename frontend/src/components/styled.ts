@@ -183,25 +183,25 @@ export const ToastViewport = styled(YStack, styles({
 }))
 
 export const ToastCardButton = styled(Button, styles({
-  bg: 'rgba(253,247,255,0.96)',
+  bg: 'rgba(245,239,255,0.98)',
   borderWidth: 1,
-  borderColor: '#d7cfe1',
+  borderColor: 'rgba(103,80,164,0.24)',
   borderRadius: 20,
   px: '$4',
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: 60,
-  shadowColor: 'rgba(79, 55, 138, 0.18)',
+  shadowColor: 'rgba(79, 55, 138, 0.24)',
   shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.16,
-  shadowRadius: 28,
+  shadowOpacity: 0.18,
+  shadowRadius: 24,
   elevation: 4,
   hoverStyle: {
-    bg: '#ffffff',
-    borderColor: '#cbc4d2',
+    bg: '#f9f4ff',
+    borderColor: 'rgba(103,80,164,0.42)',
   },
   pressStyle: {
-    bg: '#f2ecf4',
+    bg: '#efe7fb',
   },
   $xs: {
     px: '$3',
@@ -233,38 +233,38 @@ export const ToastTooltip = styled(YStack, styles({
   bottom: '100%',
   mt: '$2',
   maxWidth: 420,
-  bg: 'rgba(255,255,255,0.98)',
+  bg: 'rgba(245,239,255,0.98)',
   borderRadius: 18,
   px: '$4',
   py: '$2.5',
-  shadowColor: 'rgba(79, 55, 138, 0.18)',
+  shadowColor: 'rgba(79, 55, 138, 0.24)',
   shadowOffset: { width: 0, height: 10 },
   shadowOpacity: 0.2,
   shadowRadius: 24,
   elevation: 5,
   borderWidth: 1,
-  borderColor: '#d7cfe1',
+  borderColor: 'rgba(103,80,164,0.24)',
   pointerEvents: 'none',
   zIndex: 20,
 }))
 
 export const ToastText = styled(Text, styles({
-  color: '#1d1b20',
+  color: '#4f378a',
   fontSize: '$3',
-  fontWeight: '600',
+  fontWeight: '700',
   lineHeight: '$4',
   textAlign: 'left',
   flexShrink: 0,
   hoverStyle: {
-    color: '#4f378a',
+    color: '#6750a4',
   },
   variants: {
     hovered: {
       true: {
-        color: '#4f378a',
+        color: '#6750a4',
       },
       false: {
-        color: '#1d1b20',
+        color: '#4f378a',
       },
     },
   } as const,
@@ -275,16 +275,16 @@ export const ToastText = styled(Text, styles({
 }))
 
 export const ToastMetaText = styled(Text, styles({
-  color: '#7a7582',
+  color: '#6750a4',
   fontSize: '$2',
   fontWeight: '600',
   textAlign: 'left',
 }))
 
 export const ToastTooltipText = styled(Text, styles({
-  color: '#1d1b20',
+  color: '#4f378a',
   fontSize: '$2',
-  fontWeight: '600',
+  fontWeight: '700',
   lineHeight: '$3',
   textAlign: 'left',
 }))
@@ -1278,6 +1278,20 @@ export const InlineCenter = styled(XStack, styles({
   gap: '$2',
   justifyContent: 'center',
   flexWrap: 'wrap',
+}))
+
+export const AuthInlineLink = styled(Text, styles({
+  color: '$blue10',
+  fontWeight: '700',
+  cursor: 'pointer',
+  textDecorationLine: 'underline',
+  hoverStyle: {
+    color: '#6750a4',
+    opacity: 0.88,
+  },
+  pressStyle: {
+    opacity: 0.74,
+  },
 }))
 
 export const InlineControls = styled(XStack, styles({

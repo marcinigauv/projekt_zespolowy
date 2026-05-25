@@ -39,6 +39,7 @@ export default function OrdersScreen() {
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
   const isPhone = viewportWidth <= 520
+  const mobileBottomRailInset = isPhone ? 88 : 0
 
   useEffect(() => {
     if (!canRender) {
@@ -84,7 +85,7 @@ export default function OrdersScreen() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView>
+      <ScrollView style={{ flex: 1, marginBottom: mobileBottomRailInset }}>
         <PageContent style={{ maxWidth: 1120 }}>
           <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Zamówienia</Eyebrow>
@@ -112,16 +113,18 @@ export default function OrdersScreen() {
                         alignItems={isPhone ? 'flex-start' : 'center'}
                         flexDirection={isPhone ? 'column' : 'row'}
                       >
-                        <YStack gap="$1.5" style={{ minWidth: 0, flex: 1 }}>
+                        <YStack gap="$1.5" style={{ minWidth: 0, flex: isPhone ? undefined : 1, width: isPhone ? '100%' : undefined }}>
                           <InfoTileLabel>
                           Zamówienie
                           </InfoTileLabel>
                           <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
                           #{order.id}
                           </Text>
-                          <InfoTileMeta>
-                          {formatDateTime(order.orderDate)}
-                          </InfoTileMeta>
+                          {!isPhone ? (
+                            <InfoTileMeta>
+                            {formatDateTime(order.orderDate)}
+                            </InfoTileMeta>
+                          ) : null}
                         </YStack>
 
                         <MetricTile
@@ -143,8 +146,13 @@ export default function OrdersScreen() {
                     </CardHeaderStrip>
 
                     <YStack p="$3.5" gap="$3.5">
-                      <XStack gap="$3" flexWrap="wrap">
-                        <InfoTile flexBasis={220}>
+                      <XStack
+                        gap="$3"
+                        flexWrap={isPhone ? 'nowrap' : 'wrap'}
+                        flexDirection={isPhone ? 'column' : 'row'}
+                        alignItems="stretch"
+                      >
+                        <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 220 }}>
                           <InfoTileLabel>
                             Data
                           </InfoTileLabel>
@@ -153,7 +161,7 @@ export default function OrdersScreen() {
                           </InfoTileValue>
                         </InfoTile>
 
-                        <InfoTile flexBasis={180}>
+                        <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 180 }}>
                           <InfoTileLabel>
                             Liczba pozycji
                           </InfoTileLabel>
@@ -162,7 +170,7 @@ export default function OrdersScreen() {
                           </InfoTileValue>
                         </InfoTile>
 
-                        <MetricTile flexBasis={220} gap="$2.5">
+                        <MetricTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 220 }} gap="$2.5">
                           <InfoTileLabel>
                             Płatność
                           </InfoTileLabel>

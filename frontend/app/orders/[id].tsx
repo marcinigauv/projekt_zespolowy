@@ -264,11 +264,12 @@ export default function OrderDetailsScreen() {
   const showPaymentRefresh = shouldShowPaymentRefresh(paymentStatus)
   const showPaymentSection = paymentActionLabel !== null || showPaymentRefresh
   const isPhone = viewportWidth <= 520
+  const mobileBottomRailInset = isPhone ? 88 : 0
 
   return (
     <PageWrapper>
       <Header />
-      <ScrollView>
+      <ScrollView style={{ flex: 1, marginBottom: mobileBottomRailInset }}>
         <PageContent style={{ maxWidth: 1120 }}>
           <BackLinkButton onPress={() => router.push('/orders')}>
             <Text color="$blue10" fontSize="$4" fontWeight="700">Powrót do historii zamówień</Text>
@@ -327,8 +328,13 @@ export default function OrderDetailsScreen() {
                     </XStack>
                   </CardHeaderStrip>
 
-                  <XStack gap="$3" flexWrap="wrap" p="$3.5">
-                    <InfoTile flexBasis={200}>
+                  <XStack
+                    gap="$3"
+                    flexWrap={isPhone ? 'nowrap' : 'wrap'}
+                    flexDirection={isPhone ? 'column' : 'row'}
+                    p="$3.5"
+                  >
+                    <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 200 }}>
                       <InfoTileLabel>
                         Numer zamówienia
                       </InfoTileLabel>
@@ -337,7 +343,7 @@ export default function OrderDetailsScreen() {
                       </InfoTileValue>
                     </InfoTile>
 
-                    <MetricTile flexBasis={260} gap="$2.5">
+                    <MetricTile gap="$2.5" style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 260 }}>
                       <InfoTileLabel>
                         Płatność
                       </InfoTileLabel>
@@ -362,7 +368,14 @@ export default function OrderDetailsScreen() {
                     </CardHeaderStrip>
 
                     <YStack p="$3.5">
-                      <ActionButtonRow style={{ justifyContent: isPhone ? 'stretch' : 'center', width: '100%' }}>
+                      <ActionButtonRow
+                        style={{
+                          justifyContent: isPhone ? 'stretch' : 'center',
+                          alignItems: isPhone ? 'stretch' : 'center',
+                          flexDirection: isPhone ? 'column' : 'row',
+                          width: '100%',
+                        }}
+                      >
                       {paymentActionLabel ? (
                         <PrimaryButton
                           disabled={isPaymentLoading}
@@ -418,15 +431,21 @@ export default function OrderDetailsScreen() {
                       </MetricTile>
                     </XStack>
 
-                    <XStack gap="$3" flexWrap="wrap" px="$4" pb="$4">
-                      <InfoTile flexBasis={180}>
+                    <XStack
+                      gap="$3"
+                      flexWrap={isPhone ? 'nowrap' : 'wrap'}
+                      flexDirection={isPhone ? 'column' : 'row'}
+                      px="$4"
+                      pb="$4"
+                    >
+                      <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 180 }}>
                         <InfoTileLabel>
                           Ilość
                         </InfoTileLabel>
                         <InfoTileValue>{item.quantity}</InfoTileValue>
                       </InfoTile>
 
-                      <InfoTile flexBasis={200}>
+                      <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 200 }}>
                         <InfoTileLabel>
                           Cena jednostkowa
                         </InfoTileLabel>

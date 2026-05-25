@@ -4,6 +4,7 @@ import { YStack, Text, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { loginUserUseCase } from '../src/auth/useCases'
 import {
+  AuthInlineLink,
   PageWrapper,
   AuthCenter,
   AuthForm,
@@ -112,9 +113,9 @@ export default function Login() {
 
               <InlineCenter style={{ width: '100%', justifyContent: 'center' }}>
                 <Text color="$gray10">Nie masz konta?</Text>
-                <Text color="$blue10" fontWeight="700" onPress={() => router.replace('/register')}>
+                <AuthInlineLink onPress={() => router.replace('/register')}>
                   Zarejestruj się
-                </Text>
+                </AuthInlineLink>
               </InlineCenter>
             </AuthForm>
           </YStack>

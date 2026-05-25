@@ -280,7 +280,18 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
               }}
             >
               <XStack gap="$2.5" width="100%" style={{ minWidth: 0, alignItems: 'center' }}>
-                <YStack width={20} height={20} alignItems="center" justifyContent="center">
+                <YStack
+                  width={24}
+                  height={24}
+                  alignItems="center"
+                  justifyContent="center"
+                  style={{
+                    borderRadius: 999,
+                    backgroundColor: isToastHovered ? 'rgba(103,80,164,0.2)' : 'rgba(103,80,164,0.14)',
+                    borderWidth: 1,
+                    borderColor: isToastHovered ? 'rgba(103,80,164,0.32)' : 'rgba(103,80,164,0.18)',
+                  }}
+                >
                   <Feather
                     name="bell"
                     size={14}
@@ -292,11 +303,20 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
                   <NotificationMarqueeText message={renderedNotification.message} hovered={isToastHovered} />
                 </YStack>
 
-                <YStack width={20} height={20} alignItems="center" justifyContent="center">
+                <YStack
+                  width={24}
+                  height={24}
+                  alignItems="center"
+                  justifyContent="center"
+                  style={{
+                    borderRadius: 999,
+                    backgroundColor: isToastHovered ? 'rgba(103,80,164,0.14)' : 'rgba(103,80,164,0.1)',
+                  }}
+                >
                   <Feather
                     name={renderedNotification.url ? 'arrow-up-right' : 'info'}
                     size={14}
-                    color={isToastHovered ? '#6750a4' : '#7a7582'}
+                    color={isToastHovered ? '#6750a4' : '#7b61b8'}
                   />
                 </YStack>
               </XStack>
