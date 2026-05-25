@@ -4,7 +4,7 @@ import { useWindowDimensions } from 'react-native'
 import { YStack, XStack, Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useRouteAccess } from '../src/auth/useRouteAccess'
-import { logoutUserUseCase } from '../src/auth/useCases'
+import { logoutUserUseCase, updateUserThemePreferenceUseCase } from '../src/auth/useCases'
 import {
   CardHeaderStrip,
   PageWrapper,
@@ -22,12 +22,36 @@ import {
   SectionTitle,
   SurfaceCard,
 } from '../src/components/styled'
+import { THEME_OPTIONS, resolveThemePreference } from '../src/theme/options'
 
 export default function Profile() {
   const router = useRouter()
   const { canRender, user } = useRouteAccess()
   const { width: viewportWidth } = useWindowDimensions()
   const isPhone = viewportWidth <= 520
+  const [themeError, setThemeError] = React.useState('')
+  const [isSavingTheme, setIsSavingTheme] = React.useState(false)
+
+  const selectedTheme = resolveThemePreference(user?.userPreferences.theme)
+
+  const handleThemeChange = (theme: (typeof THEME_OPTIONS)[number]['value']) => {
+    if (theme === selectedTheme || isSavingTheme) {
+      return
+    }
+
+    setThemeError('')
+    setIsSavingTheme(true)
+
+    void (async () => {
+      try {
+        await updateUserThemePreferenceUseCase(theme)
+      } catch (error) {
+        setThemeError(error instanceof Error ? error.message : 'Nie udało się zapisać ustawień motywu')
+      } finally {
+        setIsSavingTheme(false)
+      }
+    })()
+  }
 
   if (!canRender) {
     return null
@@ -92,6 +116,47 @@ export default function Profile() {
 
                 <YStack
                   gap="$2.5"
+                  pt="$1"
+                >
+                  <Text color="$placeholderColor" fontSize="$2" fontWeight="700" letterSpacing={0.6} textTransform="uppercase">
+                    Ustawienia
+                  </Text>
+
+                  <InfoTile>
+                    <InfoTileLabel>
+                      Motyw interfejsu
+                    </InfoTileLabel>
+                    <YStack gap="$2.5">
+                      <XStack gap="$2" flexWrap="wrap">
+                        {THEME_OPTIONS.map((themeOption) => {
+                          const isActive = selectedTheme === themeOption.value
+
+                          return (
+                            <SecondaryButton
+                              key={themeOption.value}
+                              onPress={() => handleThemeChange(themeOption.value)}
+                              disabled={isSavingTheme && !isActive}
+                              borderColor={isActive ? '$stitchPrimary' : '$borderColor'}
+                              bg={isActive ? '$stitchPrimaryContainer' : '$background'}
+                              style={{
+                                minHeight: 44,
+                                opacity: isSavingTheme && !isActive ? 0.6 : 1,
+                              }}
+                            >
+                              {themeOption.label}
+                            </SecondaryButton>
+                          )
+                        })}
+                      </XStack>
+
+
+                      {themeError ? <Text color="$red10">{themeError}</Text> : null}
+                    </YStack>
+                  </InfoTile>
+                </YStack>
+
+                <YStack
+                  gap="$2.5"
                   pt="$3"
                   borderTopWidth={1}
                   borderColor="$borderColor"
@@ -120,8 +185,6 @@ export default function Profile() {
                           minHeight: 56,
                           minWidth: isPhone ? undefined : 210,
                           width: isPhone ? '100%' : undefined,
-                          backgroundColor: '#ffffff',
-                          borderColor: '#cbc4d2',
                         }}
                       >
                         Historia zamówień

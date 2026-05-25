@@ -198,7 +198,7 @@ export default function Index() {
                                 </YStack>
                               ) : (
                                 <YStack flex={1} width="100%" alignItems="center" justifyContent="center">
-                                  <Text fontFamily="$heading" fontWeight="800" color="$blue10" fontSize="$8" lineHeight="$8" style={{ textAlign: 'center' }}>
+                                  <Text fontFamily="$heading" fontWeight="800" color="$stitchPrimary" fontSize="$8" lineHeight="$8" style={{ textAlign: 'center' }}>
                                     {product.name.slice(0, 1).toUpperCase()}
                                   </Text>
                                 </YStack>

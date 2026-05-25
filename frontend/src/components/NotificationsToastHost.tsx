@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { usePathname, useRouter, type Href } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
-import { Animated, Easing, Linking, Platform, Pressable, type LayoutChangeEvent } from 'react-native'
-import { XStack, YStack, useMedia } from 'tamagui'
+import { Animated, Easing, Linking, Platform, Pressable, type LayoutChangeEvent, type ViewStyle } from 'react-native'
+import { XStack, YStack, getVariableValue, useMedia, useTheme } from 'tamagui'
 import {
   ToastCardWrap,
   ToastCardButton,
@@ -25,7 +25,17 @@ interface NotificationsToastHostProps {
   placement?: 'inline' | 'overlay'
 }
 
-function NotificationMarqueeText({ message, hovered }: { message: string; hovered: boolean }) {
+function NotificationMarqueeText({
+  message,
+  hovered,
+  defaultColor,
+  hoverColor,
+}: {
+  message: string
+  hovered: boolean
+  defaultColor: string
+  hoverColor: string
+}) {
   const translateX = useRef(new Animated.Value(0)).current
   const [containerWidth, setContainerWidth] = useState(0)
   const [textWidth, setTextWidth] = useState(0)
@@ -76,23 +86,18 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
   return (
     <YStack
       width="100%"
-      minHeight={28}
-      alignItems="stretch"
-      justifyContent="center"
       onLayout={(event: LayoutChangeEvent) => {
         const nextWidth = event.nativeEvent.layout.width
         if (nextWidth > 0) {
           setContainerWidth(nextWidth)
         }
       }}
+      style={{ minHeight: 28, alignItems: 'stretch', justifyContent: 'center' }}
     >
       <ToastMarqueeViewport
         height={28}
         width="100%"
-        maxWidth="100%"
-        alignSelf="center"
-        alignItems="flex-start"
-        justifyContent="center"
+        style={{ maxWidth: '100%', alignSelf: 'center', alignItems: 'flex-start', justifyContent: 'center' }}
       >
         <Animated.View
           style={{
@@ -100,7 +105,7 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
             transform: [{ translateX }],
           }}
         >
-          <ToastText hovered={hovered} numberOfLines={1} onLayout={handleTextLayout}>
+          <ToastText style={{ color: hovered ? hoverColor : defaultColor }} numberOfLines={1} onLayout={handleTextLayout}>
             {message}
           </ToastText>
         </Animated.View>
@@ -112,6 +117,7 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
 export function NotificationsToastHost({ onMobileInsetChange, placement = 'overlay' }: NotificationsToastHostProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const theme = useTheme()
   const media = useMedia()
   const notifications = useNotificationsStore((state) => state.notifications)
   const dismissNotification = useNotificationsStore((state) => state.dismissNotification)
@@ -133,16 +139,21 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
   const overlayToastMinHeight = isWebOverlayToast ? 38 : 56
   const overlayToastPaddingVertical = isWebOverlayToast ? 2 : 8
   const nativeBottomInset = 18
+  const primaryColor = getVariableValue(theme.stitchPrimary)
+  const accentColor = getVariableValue(theme.stitchAccent)
+  const primaryContainerColor = getVariableValue(theme.stitchPrimaryContainer)
+  const borderAccentColor = getVariableValue(theme.stitchBorder)
+  const backgroundHoverColor = getVariableValue(theme.backgroundHover)
 
-  const toastViewportStyle = {
-    position: (isInlinePhoneToast ? 'relative' : 'absolute') as const,
+  const toastViewportStyle: ViewStyle = {
+    position: isInlinePhoneToast ? 'relative' : 'absolute',
     top: isWebOverlayToast ? webOverlayTopInset : undefined,
     bottom: isWeb ? undefined : nativeBottomInset,
     left: 0,
     right: 0,
-    width: '100%' as const,
-    alignSelf: 'stretch' as const,
-    alignItems: (isWebPhone ? 'stretch' : isWebTablet ? 'center' : isWeb ? 'flex-end' : 'center') as const,
+    width: '100%',
+    alignSelf: 'stretch',
+    alignItems: isWebPhone ? 'stretch' : isWebTablet ? 'center' : isWeb ? 'flex-end' : 'center',
     paddingHorizontal: isWebPhone ? 12 : isWebTablet ? 18 : isWeb ? 24 : 20,
     paddingTop: isInlinePhoneToast ? 12 : 0,
     paddingBottom: isInlinePhoneToast ? 8 : isWeb ? 0 : 18,
@@ -256,13 +267,13 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
             <ToastCardButton
               key={renderedNotification.id}
                 flexDirection="row"
-                alignItems="center"
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: overlayToastPaddingVertical,
                   width: '100%',
                   height: overlayToastHeight,
                   minHeight: overlayToastMinHeight,
+                  alignItems: 'center',
                 }}
               onPress={() => {
                 dismissNotification(renderedNotification.id)
@@ -283,40 +294,45 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
                 <YStack
                   width={24}
                   height={24}
-                  alignItems="center"
-                  justifyContent="center"
                   style={{
                     borderRadius: 999,
-                    backgroundColor: isToastHovered ? 'rgba(103,80,164,0.2)' : 'rgba(103,80,164,0.14)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isToastHovered ? primaryContainerColor : backgroundHoverColor,
                     borderWidth: 1,
-                    borderColor: isToastHovered ? 'rgba(103,80,164,0.32)' : 'rgba(103,80,164,0.18)',
+                    borderColor: isToastHovered ? accentColor : borderAccentColor,
                   }}
                 >
                   <Feather
                     name="bell"
                     size={14}
-                    color={isToastHovered ? '#6750a4' : '#4f378a'}
+                    color={isToastHovered ? accentColor : primaryColor}
                   />
                 </YStack>
 
                 <YStack flex={1} width="100%" style={{ minWidth: 0, justifyContent: 'center' }}>
-                  <NotificationMarqueeText message={renderedNotification.message} hovered={isToastHovered} />
+                  <NotificationMarqueeText
+                    message={renderedNotification.message}
+                    hovered={isToastHovered}
+                    defaultColor={primaryColor}
+                    hoverColor={accentColor}
+                  />
                 </YStack>
 
                 <YStack
                   width={24}
                   height={24}
-                  alignItems="center"
-                  justifyContent="center"
                   style={{
                     borderRadius: 999,
-                    backgroundColor: isToastHovered ? 'rgba(103,80,164,0.14)' : 'rgba(103,80,164,0.1)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isToastHovered ? primaryContainerColor : backgroundHoverColor,
                   }}
                 >
                   <Feather
                     name={renderedNotification.url ? 'arrow-up-right' : 'info'}
                     size={14}
-                    color={isToastHovered ? '#6750a4' : '#7b61b8'}
+                    color={isToastHovered ? accentColor : primaryColor}
                   />
                 </YStack>
               </XStack>

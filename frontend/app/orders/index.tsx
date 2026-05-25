@@ -184,10 +184,10 @@ export default function OrdersScreen() {
 
                       <YStack
                         alignItems={isPhone ? 'stretch' : 'center'}
+                        width="100%"
+                        borderTopWidth={1}
+                        borderTopColor="$borderColor"
                         style={{
-                          width: '100%',
-                          borderTopWidth: 1,
-                          borderTopColor: '#e6e0e9',
                           paddingTop: 14,
                         }}
                       >

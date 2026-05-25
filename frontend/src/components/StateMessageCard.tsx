@@ -14,12 +14,12 @@ export function StateMessageCard({ icon, message, tone = 'muted' }: StateMessage
   return (
     <EmptyStateCard
       gap="$3"
+      borderWidth={1}
+      borderColor={isDanger ? '#f2b8b5' : '$borderColor'}
+      bg={isDanger ? '#ffdad6' : '$backgroundHover'}
       style={{
         width: '100%',
-        borderWidth: 1,
-        borderColor: isDanger ? '#f2b8b5' : '#cbc4d2',
         borderRadius: 24,
-        backgroundColor: isDanger ? '#ffdad6' : '#f8f2fa',
         paddingHorizontal: 24,
         paddingVertical: 36,
       }}
@@ -27,16 +27,16 @@ export function StateMessageCard({ icon, message, tone = 'muted' }: StateMessage
       <YStack
         alignItems="center"
         justifyContent="center"
+        borderWidth={1}
+        borderColor={isDanger ? '#f2b8b5' : '$borderColor'}
+        bg="$background"
         style={{
           width: 64,
           height: 64,
           borderRadius: 32,
-          borderWidth: 1,
-          borderColor: isDanger ? '#f2b8b5' : '#cbc4d2',
-          backgroundColor: '#ffffff',
         }}
       >
-        <Text color={isDanger ? '$red10' : '$blue10'} fontFamily="$heading" fontSize="$8" lineHeight="$8">
+        <Text color={isDanger ? '$red10' : '$stitchPrimary'} fontFamily="$heading" fontSize="$8" lineHeight="$8">
           {icon}
         </Text>
       </YStack>

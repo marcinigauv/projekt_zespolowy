@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Image, Pressable, useWindowDimensions } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
-import { XStack, YStack, Text, ScrollView } from 'tamagui'
+import { XStack, YStack, Text, ScrollView, getVariableValue, useTheme } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { formatCurrency } from '../src/lib/formatters'
 import { useScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
@@ -48,6 +48,7 @@ function getProductNoun(value: number): string {
 
 export default function Cart() {
   const router = useRouter()
+  const theme = useTheme()
   const { width: viewportWidth } = useWindowDimensions()
   const isPhone = viewportWidth <= 520
   const isTablet = viewportWidth > 520 && viewportWidth <= 900
@@ -59,7 +60,14 @@ export default function Cart() {
   const summaryCardPadding = isPhone ? 16 : isCompact ? 18 : 22
   const mediaFrameSize = isPhone ? 68 : isCompact ? 80 : 92
   const itemValueCardMinWidth = isPhone ? 0 : isCompact ? 216 : 236
+  const primaryColor = getVariableValue(theme.stitchPrimary)
+  const surfaceColor = getVariableValue(theme.backgroundHover)
+  const borderToneColor = getVariableValue(theme.stitchBorder)
+  const baseSurfaceColor = getVariableValue(theme.background)
+  const primaryContainerColor = getVariableValue(theme.stitchPrimaryContainer)
+  const textColor = getVariableValue(theme.color)
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
+  const [checkoutError, setCheckoutError] = useState('')
   const requestedImageIdsRef = useRef<Record<number, boolean>>({})
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   useScreenNotificationsPolling()
@@ -79,9 +87,14 @@ export default function Cart() {
       return
     }
 
-    const order = await createOrderUseCase(createOrderCommandFromCart(items))
-    clearCart()
-    router.replace(`/orders/${order.id}`)
+    try {
+      setCheckoutError('')
+      const order = await createOrderUseCase(createOrderCommandFromCart(items))
+      clearCart()
+      router.replace(`/orders/${order.id}`)
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'Nie udało się złożyć zamówienia')
+    }
   }
 
   useEffect(() => {
@@ -133,9 +146,8 @@ export default function Cart() {
             <XStack
               width="100%"
               gap="$3"
-              justifyContent="space-between"
-              alignItems={isPhone ? 'flex-start' : 'center'}
               flexDirection={isPhone ? 'column' : 'row'}
+              style={{ justifyContent: 'space-between', alignItems: isPhone ? 'flex-start' : 'center' }}
             >
               <YStack gap="$1.5" style={{ minWidth: 0, flex: 1 }}>
                 <Eyebrow>Koszyk</Eyebrow>
@@ -143,14 +155,15 @@ export default function Cart() {
                 <SectionDescription>
                   Zarządzaj liczbą produktów, następnie przejdź do finalizacji zamówienia.
                 </SectionDescription>
+                {checkoutError ? <Text color="$red10">{checkoutError}</Text> : null}
               </YStack>
 
               {items.length > 0 ? (
                 <GhostDangerButton
                   size="$3"
                   onPress={clearCart}
-                  alignSelf={isPhone ? 'flex-end' : 'center'}
                   style={{
+                    alignSelf: isPhone ? 'flex-end' : 'center',
                     borderWidth: 1,
                     borderColor: '#f2b8b5',
                     backgroundColor: '#ffdad6',
@@ -175,18 +188,18 @@ export default function Cart() {
               }}
             >
               <YStack
-                alignItems="center"
-                justifyContent="center"
                 style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   width: isPhone ? 68 : 76,
                   height: isPhone ? 68 : 76,
                   borderRadius: 999,
                   borderWidth: 1,
-                  borderColor: '#cbc4d2',
-                  backgroundColor: '#f8f2fa',
+                  borderColor: borderToneColor,
+                  backgroundColor: primaryContainerColor,
                 }}
               >
-                <MaterialIcons name="shopping-cart" size={isPhone ? 30 : 34} color="#4f378a" />
+                <MaterialIcons name="shopping-cart" size={isPhone ? 30 : 34} color={primaryColor} />
               </YStack>
               <Text
                 color="$color"
@@ -228,10 +241,9 @@ export default function Cart() {
                         <XStack
                           gap="$2.5"
                           width="100%"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
+                          style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
                         >
-                          <XStack gap="$2.5" alignItems="center" flex={1} style={{ minWidth: 0 }}>
+                          <XStack gap="$2.5" flex={1} style={{ minWidth: 0, alignItems: 'center' }}>
                             <YStack
                               width={mediaFrameSize}
                               height={mediaFrameSize}
@@ -239,9 +251,9 @@ export default function Cart() {
                               borderColor="$borderColor"
                               bg="$backgroundHover"
                               overflow="hidden"
-                              alignItems="center"
-                              justifyContent="center"
                               style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 flexShrink: 0,
                                 borderRadius: 18,
                                 padding: isPhone ? 6 : 8,
@@ -250,14 +262,14 @@ export default function Cart() {
                               <YStack
                                 width="100%"
                                 height="100%"
-                                alignItems="center"
-                                justifyContent="center"
                                 style={{
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                   borderRadius: 14,
                                   overflow: 'hidden',
                                   borderWidth: 1,
-                                  borderColor: '#cbc4d2',
-                                  backgroundColor: '#ffffff',
+                                  borderColor: borderToneColor,
+                                  backgroundColor: baseSurfaceColor,
                                 }}
                               >
                                 {item.imageUrl && !imageErrors[item.id] ? (
@@ -270,7 +282,7 @@ export default function Cart() {
                                     style={{ width: '100%', height: '100%' }}
                                   />
                                 ) : (
-                                  <Text fontFamily="$heading" fontWeight="700" fontSize={isPhone ? '$5' : '$6'} color="$blue10">
+                                  <Text fontFamily="$heading" fontWeight="700" fontSize={isPhone ? '$5' : '$6'} color={primaryColor}>
                                     {item.name.slice(0, 1).toUpperCase()}
                                   </Text>
                                 )}
@@ -315,9 +327,8 @@ export default function Cart() {
                         <XStack
                           gap="$2.5"
                           width="100%"
-                          justifyContent="space-between"
-                          alignItems={isPhone ? 'stretch' : 'center'}
                           flexDirection={isPhone ? 'column' : 'row'}
+                          style={{ justifyContent: 'space-between', alignItems: isPhone ? 'stretch' : 'center' }}
                         >
                           <InlineControls
                             borderWidth={1}
@@ -343,24 +354,21 @@ export default function Cart() {
                                 minWidth: controlSize,
                                 paddingHorizontal: 0,
                                 paddingVertical: 0,
-                                backgroundColor: '#ffffff',
+                                backgroundColor: baseSurfaceColor,
                                 borderWidth: 1,
-                                borderColor: '#cbc4d2',
+                                borderColor: borderToneColor,
                                 borderRadius: 999,
                               }}
                             >
-                              <MaterialIcons name="remove" size={18} color="#1d1b20" />
+                              <MaterialIcons name="remove" size={18} color={textColor} />
                             </SecondaryButton>
 
                             <YStack
-                              alignItems="center"
-                              justifyContent="center"
-                              minWidth={controlSize + 8}
                               height={controlSize}
                               borderWidth={1}
                               borderColor="$borderColor"
                               bg="$background"
-                              style={{ borderRadius: 999 }}
+                              style={{ minWidth: controlSize + 8, borderRadius: 999, alignItems: 'center', justifyContent: 'center' }}
                             >
                               <Text fontFamily="$mono" fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
                                 {item.quantity}
@@ -378,25 +386,25 @@ export default function Cart() {
                                 minWidth: controlSize,
                                 paddingHorizontal: 0,
                                 paddingVertical: 0,
-                                backgroundColor: '#ffffff',
+                                backgroundColor: baseSurfaceColor,
                                 borderWidth: 1,
-                                borderColor: '#cbc4d2',
+                                borderColor: borderToneColor,
                                 borderRadius: 999,
                               }}
                             >
-                              <MaterialIcons name="add" size={18} color="#1d1b20" />
+                              <MaterialIcons name="add" size={18} color={textColor} />
                             </SecondaryButton>
                           </InlineControls>
 
                           <YStack
-                            alignItems="flex-start"
                             style={{
+                              alignItems: 'flex-start',
                               minWidth: itemValueCardMinWidth,
                               width: isPhone ? '100%' : undefined,
                               flexShrink: 0,
                               borderWidth: 1,
-                              borderColor: '#d7cfe1',
-                              backgroundColor: '#fbf8fc',
+                              borderColor: borderToneColor,
+                              backgroundColor: surfaceColor,
                               borderRadius: 16,
                               paddingHorizontal: 14,
                               paddingVertical: 11,
@@ -404,8 +412,7 @@ export default function Cart() {
                           >
                             <YStack
                               gap="$1"
-                              alignItems="center"
-                              style={{ width: '100%' }}
+                              style={{ width: '100%', alignItems: 'center' }}
                             >
                               <Text fontSize="$3" color="$placeholderColor" fontWeight="600" style={{ textAlign: 'center' }}>
                                 Wartość pozycji
@@ -414,7 +421,7 @@ export default function Cart() {
                                 fontFamily="$heading"
                                 fontSize={isPhone ? '$5' : '$6'}
                                 fontWeight="700"
-                                color="$blue10"
+                                color={primaryColor}
                                 style={{ textAlign: 'center' }}
                               >
                                 {formatCurrency(item.price * item.quantity)}
@@ -446,16 +453,16 @@ export default function Cart() {
                       style={{
                         borderRadius: 16,
                         borderWidth: 1,
-                        borderColor: '#d7cfe1',
+                        borderColor: borderToneColor,
                         paddingHorizontal: 14,
                         paddingTop: 12,
                         paddingBottom: 12,
-                        backgroundColor: '#fbf8fc',
+                        backgroundColor: surfaceColor,
                       }}
                     >
                       <DataRow>
                         <Text fontSize="$3" color="$placeholderColor" fontWeight="600">Do zapłaty</Text>
-                        <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$blue10">
+                        <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color={primaryColor}>
                           {formatCurrency(totalPrice)}
                         </Text>
                       </DataRow>
@@ -472,7 +479,7 @@ export default function Cart() {
                 </SurfaceCard>
               </YStack>
             ) : (
-              <XStack gap="$4" width="100%" alignItems="flex-start" style={{ minWidth: 0 }}>
+              <XStack gap="$4" width="100%" style={{ minWidth: 0, alignItems: 'flex-start' }}>
                 <YStack flex={1} gap="$3.5" width="100%" style={{ minWidth: 460 }}>
                   {items.map((item) => (
                     <SurfaceCard
@@ -484,8 +491,8 @@ export default function Cart() {
                       }}
                     >
                       <YStack gap="$3" width="100%" style={{ minWidth: 0 }}>
-                        <XStack gap="$3" width="100%" justifyContent="space-between" alignItems={isTablet ? 'flex-start' : 'center'}>
-                          <XStack gap="$3" alignItems="center" flex={1} style={{ minWidth: 0 }}>
+                        <XStack gap="$3" width="100%" style={{ justifyContent: 'space-between', alignItems: isTablet ? 'flex-start' : 'center' }}>
+                          <XStack gap="$3" flex={1} style={{ minWidth: 0, alignItems: 'center' }}>
                             <YStack
                               width={mediaFrameSize}
                               height={mediaFrameSize}
@@ -493,9 +500,9 @@ export default function Cart() {
                               borderColor="$borderColor"
                               bg="$backgroundHover"
                               overflow="hidden"
-                              alignItems="center"
-                              justifyContent="center"
                               style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 flexShrink: 0,
                                 borderRadius: 18,
                                 padding: 8,
@@ -504,14 +511,14 @@ export default function Cart() {
                               <YStack
                                 width="100%"
                                 height="100%"
-                                alignItems="center"
-                                justifyContent="center"
                                 style={{
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                   borderRadius: 14,
                                   overflow: 'hidden',
                                   borderWidth: 1,
-                                  borderColor: '#cbc4d2',
-                                  backgroundColor: '#ffffff',
+                                  borderColor: borderToneColor,
+                                  backgroundColor: baseSurfaceColor,
                                 }}
                               >
                                 {item.imageUrl && !imageErrors[item.id] ? (
@@ -524,7 +531,7 @@ export default function Cart() {
                                     style={{ width: '100%', height: '100%' }}
                                   />
                                 ) : (
-                                  <Text fontFamily="$heading" fontWeight="700" fontSize="$6" color="$blue10">
+                                  <Text fontFamily="$heading" fontWeight="700" fontSize="$6" color={primaryColor}>
                                     {item.name.slice(0, 1).toUpperCase()}
                                   </Text>
                                 )}
@@ -565,7 +572,7 @@ export default function Cart() {
                           </GhostDangerButton>
                         </XStack>
 
-                        <XStack gap="$3" width="100%" justifyContent="space-between" alignItems="center">
+                        <XStack gap="$3" width="100%" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                           <InlineControls
                             borderWidth={1}
                             borderColor="$borderColor"
@@ -585,9 +592,9 @@ export default function Cart() {
                                 minWidth: controlSize,
                                 paddingHorizontal: 0,
                                 paddingVertical: 0,
-                                backgroundColor: '#ffffff',
+                                backgroundColor: baseSurfaceColor,
                                 borderWidth: 1,
-                                borderColor: '#cbc4d2',
+                                borderColor: borderToneColor,
                                 borderRadius: 999,
                               }}
                             >
@@ -596,14 +603,11 @@ export default function Cart() {
                               </Text>
                             </SecondaryButton>
                             <YStack
-                              alignItems="center"
-                              justifyContent="center"
-                              minWidth={controlSize + 8}
                               height={controlSize}
                               borderWidth={1}
                               borderColor="$borderColor"
                               bg="$background"
-                              style={{ borderRadius: 999 }}
+                              style={{ minWidth: controlSize + 8, borderRadius: 999, alignItems: 'center', justifyContent: 'center' }}
                             >
                               <Text fontFamily="$mono" fontSize="$5" fontWeight="700" style={{ minWidth: 24, textAlign: 'center' }}>
                                 {item.quantity}
@@ -620,9 +624,9 @@ export default function Cart() {
                                 minWidth: controlSize,
                                 paddingHorizontal: 0,
                                 paddingVertical: 0,
-                                backgroundColor: '#ffffff',
+                                backgroundColor: baseSurfaceColor,
                                 borderWidth: 1,
-                                borderColor: '#cbc4d2',
+                                borderColor: borderToneColor,
                                 borderRadius: 999,
                               }}
                             >
@@ -633,14 +637,14 @@ export default function Cart() {
                           </InlineControls>
 
                           <YStack
-                            alignItems="flex-start"
                             style={{
+                              alignItems: 'flex-start',
                               minWidth: itemValueCardMinWidth,
                               width: itemValueCardMinWidth,
                               flexShrink: 0,
                               borderWidth: 1,
-                              borderColor: '#d7cfe1',
-                              backgroundColor: '#fbf8fc',
+                              borderColor: borderToneColor,
+                              backgroundColor: surfaceColor,
                               borderRadius: 16,
                               paddingHorizontal: 16,
                               paddingVertical: 11,
@@ -648,8 +652,7 @@ export default function Cart() {
                           >
                             <YStack
                               gap="$1"
-                              alignItems="center"
-                              style={{ width: '100%' }}
+                              style={{ width: '100%', alignItems: 'center' }}
                             >
                               <Text fontSize="$3" color="$placeholderColor" fontWeight="600" style={{ textAlign: 'center' }}>
                                 Wartość pozycji
@@ -658,7 +661,7 @@ export default function Cart() {
                                 fontFamily="$heading"
                                 fontSize="$6"
                                 fontWeight="700"
-                                color="$blue10"
+                                color={primaryColor}
                                 style={{ textAlign: 'center' }}
                               >
                                 {formatCurrency(item.price * item.quantity)}
@@ -691,16 +694,16 @@ export default function Cart() {
                         style={{
                           borderRadius: 16,
                           borderWidth: 1,
-                          borderColor: '#d7cfe1',
+                          borderColor: borderToneColor,
                           paddingHorizontal: 14,
                           paddingTop: 12,
                           paddingBottom: 12,
-                          backgroundColor: '#fbf8fc',
+                          backgroundColor: surfaceColor,
                         }}
                       >
                         <DataRow>
                           <Text fontSize="$3" color="$placeholderColor" fontWeight="600">Do zapłaty</Text>
-                          <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color="$blue10">
+                          <Text fontFamily="$heading" fontSize="$7" fontWeight="700" color={primaryColor}>
                             {formatCurrency(totalPrice)}
                           </Text>
                         </DataRow>

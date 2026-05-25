@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import { usePathname, useRouter } from 'expo-router'
-import { XStack, YStack, Text, Button, Popover, Separator } from 'tamagui'
+import { XStack, YStack, Text, Button, Popover, Separator, getVariableValue, useTheme } from 'tamagui'
 import { MaterialIcons } from '@expo/vector-icons'
 import { logoutUserUseCase } from '../auth/useCases'
 import { NotificationsToastHost } from './NotificationsToastHost'
@@ -54,7 +54,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         <HeaderProfileSummary>
           <HeaderProfileRow>
             <HeaderAvatar>
-              <Text color="$blue10" fontWeight="700" fontSize="$5">
+              <Text color="$stitchPrimary" fontWeight="700" fontSize="$5">
                 {user.name?.[0] || '?'}
               </Text>
             </HeaderAvatar>
@@ -108,6 +108,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 export function Header() {
   const router = useRouter()
   const pathname = usePathname()
+  const theme = useTheme()
   const { width: viewportWidth } = useWindowDimensions()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
@@ -119,6 +120,9 @@ export function Header() {
   const isPhone = viewportWidth <= 520
   const isWideDesktop = viewportWidth > 1024
   const isCompactMobile = viewportWidth <= 390
+  const primaryColor = getVariableValue(theme.stitchPrimary)
+  const textColor = getVariableValue(theme.color)
+  const mutedColor = getVariableValue(theme.placeholderColor)
   const navBarStyle = isWeb && !isPhone
     ? { position: 'sticky' as const, top: 0, zIndex: 40, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : undefined
@@ -211,7 +215,7 @@ export function Header() {
       <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+            <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
               SI
             </Text>
           </HeaderBrandMark>
@@ -233,7 +237,7 @@ export function Header() {
             style={iconTriggerStyle}
           >
             <HeaderIconButton>
-              <MaterialIcons name="shopping-cart" size={20} color="#4f378a" />
+              <MaterialIcons name="shopping-cart" size={20} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
                   <Text color="#ffffff" fontSize="$1" fontWeight="800">
@@ -253,12 +257,12 @@ export function Header() {
                 style={iconTriggerStyle}
               >
                 <HeaderPrimaryIconButton>
-                  <MaterialIcons name={isAuthenticated ? 'person' : 'login'} size={20} color="#1d1b20" />
+                  <MaterialIcons name={isAuthenticated ? 'person' : 'login'} size={20} color={textColor} />
                 </HeaderPrimaryIconButton>
               </Button>
             </Popover.Trigger>
             <Popover.Content
-              bg="#ffffff"
+              bg="$background"
               bordered
               elevate
               p={0}
@@ -281,7 +285,7 @@ export function Header() {
           <NavBar>
             <HeaderBrand>
               <HeaderBrandMark>
-                <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+                <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
                   SI
                 </Text>
               </HeaderBrandMark>
@@ -306,7 +310,7 @@ export function Header() {
                 style={iconTriggerStyle}
               >
                 <HeaderIconButton>
-                  <MaterialIcons name="shopping-cart" size={19} color="#4f378a" />
+                  <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
                   {cartItems > 0 && (
                     <HeaderBadge>
                       <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
@@ -327,22 +331,22 @@ export function Header() {
                 key={tab.key}
                 aria-label={tab.ariaLabel}
                 onPress={() => navigate(tab.path)}
-                bg={tab.active ? '#4f378a' : 'transparent'}
-                hoverStyle={{ bg: tab.active ? '#4f378a' : '$backgroundPress' }}
-                pressStyle={{ bg: tab.active ? '#4f378a' : '$backgroundPress' }}
+                bg={tab.active ? '$stitchPrimary' : 'transparent'}
+                hoverStyle={{ bg: tab.active ? '$stitchPrimary' : '$backgroundPress' }}
+                pressStyle={{ bg: tab.active ? '$stitchPrimary' : '$backgroundPress' }}
               >
                 <YStack style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   <MaterialIcons
                     name={tab.icon}
                     size={18}
-                    color={tab.active ? '#ffffff' : '#494551'}
+                    color={tab.active ? '#ffffff' : mutedColor}
                   />
                   {tab.badge ? (
                     <PhoneTabBadge
-                      bg={tab.active ? '#ffffff' : '$backgroundStrong'}
+                      bg={tab.active ? '$background' : '$backgroundStrong'}
                       style={{ position: 'absolute', top: -8, right: -12 }}
                     >
-                      <Text color={tab.active ? '#4f378a' : '$color'} fontSize="$1" fontWeight="800">
+                      <Text color={tab.active ? '$stitchPrimary' : '$color'} fontSize="$1" fontWeight="800">
                         {tab.badge}
                       </Text>
                     </PhoneTabBadge>
@@ -361,7 +365,7 @@ export function Header() {
       <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$blue10" fontFamily="$mono" fontSize="$2" fontWeight="700">
+            <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
               SI
             </Text>
           </HeaderBrandMark>
@@ -386,7 +390,7 @@ export function Header() {
             style={iconTriggerStyle}
           >
             <HeaderIconButton>
-              <MaterialIcons name="shopping-cart" size={19} color="#4f378a" />
+              <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
                   <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
@@ -403,7 +407,7 @@ export function Header() {
             style={iconTriggerStyle}
           >
             <HeaderPrimaryIconButton>
-              <MaterialIcons name="menu" size={20} color="#1d1b20" />
+              <MaterialIcons name="menu" size={20} color={textColor} />
             </HeaderPrimaryIconButton>
           </Button>
         </HeaderControls>

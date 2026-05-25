@@ -44,7 +44,7 @@ function ProductImage({ product }: { product: Product }) {
 
   return (
     <ProductImagePlaceholder>
-      <Text color="$blue10" fontSize="$10" fontWeight="700" fontFamily="$heading">
+      <Text color="$stitchPrimary" fontSize="$10" fontWeight="700" fontFamily="$heading">
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>
@@ -201,7 +201,7 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
                         <BadgeRow>
                           {visibleCategories.map((category) => (
                             <CategoryBadge key={`${item.id}-${category}`}>
-                              <Text fontSize="$1" color="$blue10" fontWeight="600" letterSpacing={0.4}>
+                              <Text fontSize="$1" color="$stitchPrimary" fontWeight="600" letterSpacing={0.4}>
                                 {category}
                               </Text>
                             </CategoryBadge>

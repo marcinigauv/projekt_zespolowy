@@ -58,7 +58,7 @@ function ProductHeroImage({ product }: { product: Product }) {
 
   return (
     <ProductImagePlaceholder>
-      <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize="$9" lineHeight="$9">
+      <Text fontFamily="$heading" fontWeight="700" color="$stitchPrimary" fontSize="$9" lineHeight="$9">
         {product.name.slice(0, 1).toUpperCase()}
       </Text>
     </ProductImagePlaceholder>
@@ -176,7 +176,7 @@ export function ProductDetailsScreen() {
         <ProductGrid style={{ maxWidth: 1280 }}>
           <Section>
             <BackLinkButton onPress={() => router.push('/')}>
-              <Text color="$blue10" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
+              <Text color="$stitchPrimary" fontSize="$4" fontWeight="700">Powrót do katalogu</Text>
             </BackLinkButton>
 
             {isProductLoading ? (
@@ -208,7 +208,7 @@ export function ProductDetailsScreen() {
                             style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
                           >
                             <CategoryBadge>
-                              <Text color="$blue10" fontFamily="$mono" fontSize="$1" fontWeight="600" letterSpacing={0.4}>
+                              <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$1" fontWeight="600" letterSpacing={0.4}>
                                 {category}
                               </Text>
                             </CategoryBadge>
@@ -273,10 +273,10 @@ export function ProductDetailsScreen() {
                     </BadgeRow>
 
                     <SurfaceCard
+                      bg="$backgroundHover"
+                      borderColor="$stitchBorder"
                       style={{
                         padding: isNarrowPhone ? 12 : isPhone ? 14 : 16,
-                        backgroundColor: '#fbf8fc',
-                        borderColor: '#d7cfe1',
                       }}
                     >
                       <YStack gap="$2">
@@ -299,10 +299,10 @@ export function ProductDetailsScreen() {
                     </SurfaceCard>
 
                     <SurfaceCard
+                      bg="$backgroundHover"
+                      borderColor="$stitchBorder"
                       style={{
                         padding: isNarrowPhone ? 12 : isPhone ? 14 : 18,
-                        backgroundColor: '#fbf8fc',
-                        borderColor: '#d7cfe1',
                       }}
                     >
                       <YStack gap="$2">
@@ -317,7 +317,7 @@ export function ProductDetailsScreen() {
                         </Text>
                         {shouldCollapseDescription ? (
                           <Pressable onPress={() => setIsDescriptionExpanded((current) => !current)}>
-                            <Text color="$blue10" fontSize="$2" fontWeight="700">
+                            <Text color="$stitchPrimary" fontSize="$2" fontWeight="700">
                               {isDescriptionExpanded ? 'Pokaż mniej' : 'Pokaż więcej'}
                             </Text>
                           </Pressable>

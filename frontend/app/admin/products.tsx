@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Modal, useWindowDimensions } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
-import { Label, ScrollView, Text, XStack, YStack, H1, Paragraph } from 'tamagui'
+import { Label, ScrollView, Text, XStack, YStack, H1, Paragraph, getVariableValue, useTheme } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
 import {
@@ -97,8 +97,13 @@ function parseCategories(value: string): string[] {
 
 export default function AdminProductsScreen() {
   const router = useRouter()
+  const theme = useTheme()
   const { width: viewportWidth } = useWindowDimensions()
   const { canRender } = useRouteAccess({ requireAdmin: true })
+  const primaryColor = getVariableValue(theme.stitchPrimary)
+  const surfaceColor = getVariableValue(theme.backgroundHover)
+  const borderColor = getVariableValue(theme.stitchBorder)
+  const baseSurfaceColor = getVariableValue(theme.background)
   const nameInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const descriptionInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
   const priceInputRef = useRef<React.ElementRef<typeof FormInput>>(null)
@@ -392,9 +397,9 @@ export default function AdminProductsScreen() {
               <YStack
                 style={{
                   borderWidth: 1,
-                  borderColor: searchError ? '#f2b8b5' : '#cbc4d2',
+                  borderColor: searchError ? '#f2b8b5' : borderColor,
                   borderRadius: 18,
-                  backgroundColor: searchError ? '#ffdad6' : '#f8f2fa',
+                  backgroundColor: searchError ? '#ffdad6' : surfaceColor,
                   paddingHorizontal: 16,
                   paddingVertical: 14,
                 }}
@@ -429,7 +434,7 @@ export default function AdminProductsScreen() {
                               paddingVertical: 12,
                             }}
                           >
-                            <ProductPrice color="$blue10">{product.price.toFixed(2)} zł</ProductPrice>
+                            <ProductPrice color="$stitchPrimary">{product.price.toFixed(2)} zł</ProductPrice>
                           </MetricTile>
                         </XStack>
 
@@ -460,7 +465,7 @@ export default function AdminProductsScreen() {
                           alignItems={isPhone ? 'stretch' : 'center'}
                           style={{
                             borderTopWidth: 1,
-                            borderTopColor: '#e6e0e9',
+                            borderTopColor: borderColor,
                             paddingHorizontal: 16,
                             paddingTop: 14,
                             paddingBottom: 16,
@@ -524,7 +529,7 @@ export default function AdminProductsScreen() {
                     alignItems={isPhone ? 'stretch' : 'center'}
                     style={{
                       borderTopWidth: 1,
-                      borderTopColor: '#e6e0e9',
+                      borderTopColor: borderColor,
                       paddingTop: 14,
                     }}
                   >
@@ -551,9 +556,9 @@ export default function AdminProductsScreen() {
                 style={{
                   margin: 16,
                   borderWidth: 1,
-                  borderColor: '#cbc4d2',
+                  borderColor,
                   borderRadius: 22,
-                  backgroundColor: '#f8f2fa',
+                  backgroundColor: surfaceColor,
                   paddingHorizontal: 24,
                   paddingVertical: 40,
                 }}
@@ -566,11 +571,11 @@ export default function AdminProductsScreen() {
                   justifyContent="center"
                   style={{
                     borderWidth: 1,
-                    borderColor: 'rgba(203,196,210,0.88)',
-                    backgroundColor: 'rgba(255,255,255,0.82)',
+                    borderColor,
+                    backgroundColor: baseSurfaceColor,
                   }}
                 >
-                  <MaterialIcons name="search" size={30} color="#4f378a" />
+                  <MaterialIcons name="search" size={30} color={primaryColor} />
                 </YStack>
                 <AdminHelperText>Brak wybranego produktu do edycji.</AdminHelperText>
               </EmptyStateCard>
@@ -762,11 +767,11 @@ export default function AdminProductsScreen() {
                     justifyContent="center"
                     style={{
                       borderWidth: 1,
-                      borderColor: 'rgba(203,196,210,0.88)',
-                      backgroundColor: 'rgba(255,255,255,0.82)',
+                      borderColor,
+                      backgroundColor: baseSurfaceColor,
                     }}
                   >
-                    <MaterialIcons name="search" size={30} color="#4f378a" />
+                    <MaterialIcons name="search" size={30} color={primaryColor} />
                   </YStack>
                   <AdminHelperText>Najpierw wybierz produkt do edycji.</AdminHelperText>
                 </EmptyStateCard>

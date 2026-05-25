@@ -546,6 +546,43 @@ const stitchThemes = {
   }),
 }
 
+type StitchResolvedTheme = ReturnType<typeof createStitchTheme>
+
+const createStitchDangerTheme = (theme: StitchResolvedTheme): StitchResolvedTheme => ({
+  ...theme,
+  blue10: theme.red10,
+  background: withAlpha(theme.red10, 0.14),
+  backgroundHover: withAlpha(theme.red10, 0.18),
+  backgroundPress: withAlpha(theme.red10, 0.24),
+  backgroundFocus: withAlpha(theme.red10, 0.18),
+  backgroundStrong: withAlpha(theme.red10, 0.32),
+  color: '#ffffff',
+  colorHover: '#ffffff',
+  colorPress: '#ffffff',
+  colorFocus: '#ffffff',
+  colorTransparent: 'rgba(255,255,255,0.76)',
+  borderColor: theme.red10,
+  borderColorHover: theme.red10,
+  borderColorFocus: theme.red10,
+  borderColorPress: theme.red10,
+  placeholderColor: withAlpha(theme.red10, 0.88),
+  outlineColor: theme.red10,
+  shadowColor: withAlpha(theme.red10, 0.18),
+  shadowColorHover: withAlpha(theme.red10, 0.24),
+  stitchPrimary: theme.red10,
+  stitchAccent: theme.red10,
+  stitchOutline: theme.red10,
+  stitchError: theme.red10,
+})
+
+const stitchSurfaceThemes = Object.fromEntries(
+  Object.entries(stitchThemes).map(([name, theme]) => [`${name}_surface`, theme]),
+)
+
+const stitchDangerThemes = Object.fromEntries(
+  Object.entries(stitchThemes).map(([name, theme]) => [`${name}_danger`, createStitchDangerTheme(theme)]),
+)
+
 const config = createTamagui({
   ...defaultConfig,
   defaultFont: 'body',
@@ -671,6 +708,8 @@ const config = createTamagui({
       shadowColor: 'rgba(79, 55, 138, 0.1)',
     },
     ...stitchThemes,
+    ...stitchSurfaceThemes,
+    ...stitchDangerThemes,
   },
   settings: {
     ...defaultConfig.settings,

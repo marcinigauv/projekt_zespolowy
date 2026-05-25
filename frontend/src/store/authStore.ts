@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useCartStore } from './cartStore'
 import { useOrdersStore } from './ordersStore'
+import { type UserPreferences } from '../theme/options'
 
 export interface User {
   id: string
@@ -8,6 +9,7 @@ export interface User {
   name: string
   surname: string
   isAdmin: boolean
+  userPreferences: UserPreferences
 }
 
 interface AuthState {
@@ -16,6 +18,7 @@ interface AuthState {
   isAuthResolved: boolean
   setSession: (user: User) => void
   hydrateSession: (user: User | null) => void
+  updateUserPreferences: (preferences: UserPreferences) => void
   clearSession: () => void
   logout: () => void
 }
@@ -49,6 +52,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       user,
       isAuthenticated: user !== null,
       isAuthResolved: true,
+    })
+  },
+
+  updateUserPreferences: (userPreferences: UserPreferences) => {
+    set((state) => {
+      if (!state.user) {
+        return state
+      }
+
+      return {
+        user: {
+          ...state.user,
+          userPreferences,
+        },
+      }
     })
   },
 

@@ -53,6 +53,16 @@ export interface CreateOrderCommand {
   }>
 }
 
+type OrderApiErrorDetail = {
+  detail?: string
+  code?: string
+  context?: {
+    product_id?: number
+    requested_quantity?: number
+    available_quantity?: number
+  }
+}
+
 const DEFAULT_ORDERS_PAGE = 1
 const DEFAULT_ORDERS_PAGE_SIZE = 10
 
@@ -115,6 +125,18 @@ function mapOrdersError(error: unknown, orderId?: number): Error {
   }
 
   if (error instanceof ApiError) {
+    const errorDetail = (typeof error.detail === 'object' && error.detail !== null
+      ? error.detail
+      : null) as OrderApiErrorDetail | null
+
+    if (error.status === 409 && errorDetail?.code === 'INSUFFICIENT_STOCK') {
+      return new OrderValidationError(
+        typeof error.message === 'string' && error.message.length > 0
+          ? error.message
+          : 'Nie można złożyć zamówienia, ponieważ stan magazynowy produktu został przekroczony.',
+      )
+    }
+
     if (error.status === 401 || error.status === 403) {
       return new OrdersUnauthorizedError()
     }

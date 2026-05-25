@@ -1,10 +1,12 @@
 import { ApiError, NetworkError } from '../lib/api'
 import { useAuthStore, type User } from '../store/authStore'
+import { createDefaultUserPreferences, resolveThemePreference, type ThemePreference } from '../theme/options'
 import {
   fetchCurrentUserApi,
   loginUserApi,
   logoutUserApi,
   registerUserApi,
+  updateUserPreferencesApi,
   type AuthUserDto,
 } from './api'
 
@@ -61,6 +63,10 @@ function toAuthUser(user: AuthUserDto): User {
     name: user.name,
     surname: user.surname,
     isAdmin: user.isAdmin,
+    userPreferences: {
+      ...createDefaultUserPreferences(),
+      theme: resolveThemePreference(user.userPreferences?.theme),
+    },
   }
 }
 
@@ -164,5 +170,24 @@ export async function logoutUserUseCase(): Promise<void> {
     await logoutUserApi()
   } finally {
     useAuthStore.getState().logout()
+  }
+}
+
+export async function updateUserThemePreferenceUseCase(theme: ThemePreference): Promise<User> {
+  try {
+    const user = await updateUserPreferencesApi({ theme })
+    const mappedUser = toAuthUser(user)
+    useAuthStore.getState().setSession(mappedUser)
+    return mappedUser
+  } catch (error) {
+    if (error instanceof NetworkError) {
+      throw new AuthOfflineError()
+    }
+
+    if (error instanceof ApiError) {
+      throw new AuthServiceUnavailableError()
+    }
+
+    throw error instanceof Error ? error : new AuthServiceUnavailableError()
   }
 }

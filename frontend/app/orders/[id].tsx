@@ -272,7 +272,7 @@ export default function OrderDetailsScreen() {
       <ScrollView style={{ flex: 1, marginBottom: mobileBottomRailInset }}>
         <PageContent style={{ maxWidth: 1120 }}>
           <BackLinkButton onPress={() => router.push('/orders')}>
-            <Text color="$blue10" fontSize="$4" fontWeight="700">Powrót do historii zamówień</Text>
+            <Text color="$stitchPrimary" fontSize="$4" fontWeight="700">Powrót do historii zamówień</Text>
           </BackLinkButton>
 
           <SectionHeading style={{ maxWidth: 760 }}>
@@ -427,7 +427,7 @@ export default function OrderDetailsScreen() {
                         <InfoTileLabel>
                           Wartość pozycji
                         </InfoTileLabel>
-                        <ProductPrice color="$blue10">{formatCurrency(item.unitPrice * item.quantity)}</ProductPrice>
+                        <ProductPrice color="$stitchPrimary">{formatCurrency(item.unitPrice * item.quantity)}</ProductPrice>
                       </MetricTile>
                     </XStack>
 
@@ -468,7 +468,7 @@ export default function OrderDetailsScreen() {
                       <Text fontSize="$6" fontWeight="800" color="$color">Suma zamówienia</Text>
                       <InfoTileMeta>Łączna wartość wszystkich pozycji w zamówieniu.</InfoTileMeta>
                     </YStack>
-                    <ProductPrice color="$blue10">{formatCurrency(order.totalAmount)}</ProductPrice>
+                    <ProductPrice color="$stitchPrimary">{formatCurrency(order.totalAmount)}</ProductPrice>
                   </XStack>
                 </CardHeaderStrip>
               </SurfaceCard>

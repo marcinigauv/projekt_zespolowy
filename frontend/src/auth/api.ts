@@ -1,4 +1,5 @@
 import { apiRequest } from '../lib/api'
+import type { ThemePreference } from '../theme/options'
 
 export interface AuthUserDto {
   id: number
@@ -6,6 +7,9 @@ export interface AuthUserDto {
   name: string
   surname: string
   isAdmin: boolean
+  userPreferences?: {
+    theme?: ThemePreference | string
+  }
 }
 
 interface LoginPayload {
@@ -18,6 +22,10 @@ interface RegisterPayload {
   surname: string
   email: string
   password: string
+}
+
+interface UpdateUserPreferencesPayload {
+  theme: ThemePreference
 }
 
 export async function loginUserApi(payload: LoginPayload): Promise<AuthUserDto> {
@@ -43,5 +51,12 @@ export async function registerUserApi(payload: RegisterPayload): Promise<AuthUse
 export async function logoutUserApi(): Promise<boolean> {
   return apiRequest<boolean>('/users/logout', {
     method: 'POST',
+  })
+}
+
+export async function updateUserPreferencesApi(payload: UpdateUserPreferencesPayload): Promise<AuthUserDto> {
+  return apiRequest<AuthUserDto>('/users/me/preferences', {
+    method: 'PATCH',
+    body: payload,
   })
 }
