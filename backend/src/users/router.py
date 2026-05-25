@@ -1,8 +1,8 @@
 from src.sql.models import User
 from fastapi import APIRouter, Request, Depends
 from src.sql.db import DBSession
-from src.users.models import UserCreate, UserLogin, UserResponse
-from src.users.use_cases import create_new_user, verify_user_credentials
+from src.users.models import UserCreate, UserLogin, UserResponse, UpdateUserPreferencesRequest
+from src.users.use_cases import create_new_user, verify_user_credentials, update_user_preferences
 from src.users.exceptions import InvalidCredentialsException
 from src.users.dependecies import set_session_user, require_authentication
 
@@ -31,6 +31,13 @@ async def post_login_user(user_login: UserLogin, session: DBSession, request: Re
 async def get_me_user(request: Request, user: User = Depends(require_authentication)) -> UserResponse:
     """Endpoint to retrieve the current authenticated user's information."""
     return UserResponse.model_validate(user)
+
+
+@users_router.patch("/me/preferences", response_model=UserResponse)
+async def patch_me_preferences(preferences_request: UpdateUserPreferencesRequest, session: DBSession, user: User = Depends(require_authentication)) -> UserResponse:
+    """Endpoint to update the current authenticated user's preferences."""
+    updated_user = await update_user_preferences(user.get_user_id(), preferences_request.theme, session)
+    return UserResponse.model_validate(updated_user)
 
 
 @users_router.post("/logout", response_model=bool)

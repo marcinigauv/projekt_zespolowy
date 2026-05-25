@@ -21,9 +21,18 @@ class UserCreate(BaseModel):
         description="The password of the user", min_length=1)
 
 
+class UserPreferences(BaseModel):
+    theme: str = Field(default="stitchLuxeLight", min_length=1)
+
+
+class UpdateUserPreferencesRequest(BaseModel):
+    theme: str = Field(description="The selected theme key", min_length=1)
+
+
 class UserResponse(BaseResponseModel):
     id: int = Field(description="The unique identifier of the user")
     name: str = Field(description="The name of the user")
     surname: str = Field(description="The surname of the user")
     email: EmailStr = Field(description="The email of the user")
     is_admin: bool = Field(description="Whether the user has admin privileges")
+    user_preferences: UserPreferences = Field(default_factory=UserPreferences)

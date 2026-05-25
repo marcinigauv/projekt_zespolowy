@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy import select, text
 
 from src.products.models import ProductCreateRequest
@@ -28,6 +28,8 @@ class SeedUser(BaseModel):
     email: EmailStr
     password: str
     is_admin: bool
+    user_preferences: dict[str, str] = Field(
+        default_factory=lambda: {"theme": "stitchLuxeLight"})
 
 
 def load_json(path: Path) -> Any:
@@ -80,6 +82,43 @@ async def ensure_init_status_rows(session) -> None:
             ),
             {"name": event_name},
         )
+    await session.commit()
+
+
+async def ensure_user_preferences_schema(session) -> None:
+    await session.execute(
+        text(
+            """
+            ALTER TABLE \"user\"
+            ADD COLUMN IF NOT EXISTS user_preferences JSON
+            """
+        )
+    )
+    await session.execute(
+        text(
+            """
+            ALTER TABLE \"user\"
+            ALTER COLUMN user_preferences SET DEFAULT '{\"theme\": \"stitchLuxeLight\"}'::json
+            """
+        )
+    )
+    await session.execute(
+        text(
+            """
+            UPDATE \"user\"
+            SET user_preferences = '{\"theme\": \"stitchLuxeLight\"}'::json
+            WHERE user_preferences IS NULL
+            """
+        )
+    )
+    await session.execute(
+        text(
+            """
+            ALTER TABLE \"user\"
+            ALTER COLUMN user_preferences SET NOT NULL
+            """
+        )
+    )
     await session.commit()
 
 
@@ -228,6 +267,7 @@ async def apply_users(session, seed_users: list[SeedUser]) -> dict[str, Any]:
                 email=email,
                 password=hash_password(seed_user.password),
                 is_admin=seed_user.is_admin,
+                user_preferences=seed_user.user_preferences,
             )
         )
         existing_user_emails.add(email)
@@ -292,6 +332,7 @@ async def main_async(mode: str) -> int:
 
         try:
             if mode == "apply":
+                await ensure_user_preferences_schema(session)
                 await ensure_init_status_table(session)
                 await ensure_init_status_rows(session)
 

@@ -1,9 +1,23 @@
 from src.sql.models import User
 from src.users.models import UserCreate
 from src.sql.db import DBSession
-from src.users.utils import create_new_user_in_db, verify_user_credentials_in_db
+from src.users.utils import create_new_user_in_db, verify_user_credentials_in_db, update_user_preferences_in_db
 from src.users.helpers import hash_password, verify_password
 from typing import Optional
+
+
+ALLOWED_THEME_PREFERENCES = {
+    "stitchLuxeLight",
+    "stitchLuxeDark",
+    "stitchInception",
+    "stitchCyberpunk",
+    "stitchMatrix",
+    "stitchStarWars",
+    "stitchHarryPotter",
+    "stitchLotr",
+    "stitchNoir",
+    "stitchSynthwave",
+}
 
 
 async def create_new_user(user_create: UserCreate, db: DBSession) -> User:
@@ -19,8 +33,21 @@ async def create_new_user(user_create: UserCreate, db: DBSession) -> User:
 async def verify_user_credentials(email: str, password: str, db: DBSession) -> Optional[User]:
     """Verifies user credentials and returns the user if valid."""
     user = await verify_user_credentials_in_db(email, password, db)
-    pass
     if not user or not verify_password(password, user.password):
         return None
 
     return user
+
+
+async def update_user_preferences(user_id: int, theme: str, db: DBSession) -> User:
+    """Updates persisted user preferences for a specific user."""
+    normalized_theme = theme.strip()
+
+    if normalized_theme not in ALLOWED_THEME_PREFERENCES:
+        raise ValueError("Invalid theme preference.")
+
+    return await update_user_preferences_in_db(
+        user_id,
+        {"theme": normalized_theme},
+        db,
+    )

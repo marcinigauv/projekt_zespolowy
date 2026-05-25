@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy import String, Column
+from sqlalchemy import String, Column, JSON, text
 from typing import List, Optional
 from datetime import datetime
 from decimal import Decimal
@@ -28,6 +28,15 @@ class User(BaseTableModel, table=True):
         description="The hash of password of the user", min_length=1, exclude=True)
     is_admin: bool = Field(
         default=False, description="Whether the user has admin privileges")
+    user_preferences: dict[str, str] = Field(
+        default_factory=lambda: {"theme": "stitchLuxeLight"},
+        sa_column=Column(
+            JSON,
+            nullable=False,
+            server_default=text("'{\"theme\": \"stitchLuxeLight\"}'::json"),
+        ),
+        description="The persisted user preferences",
+    )
 
     def get_user_id(self) -> int:
         """Utility method to get the user's ID."""

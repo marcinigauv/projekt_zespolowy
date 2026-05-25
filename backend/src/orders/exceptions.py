@@ -5,18 +5,28 @@ from fastapi import Request
 class CustomOrderException(Exception):
     """Base class for order-related exceptions."""
 
-    def __init__(self, message: str, status_code: int = 400, *args: object) -> None:
+    def __init__(self, message: str, status_code: int = 400, error_code: str | None = None, context: dict[str, int] | None = None, *args: object) -> None:
         self.message = message
         self.status_code = status_code
+        self.error_code = error_code
+        self.context = context
         super().__init__(message, *args)
 
 
 async def handle_custom_order_exception(request: Request, exc: Exception) -> JSONResponse:
     """Handles custom order exceptions and returns appropriate HTTP responses."""
     if isinstance(exc, CustomOrderException):
+        content: dict[str, object] = {"detail": exc.message}
+
+        if exc.error_code is not None:
+            content["code"] = exc.error_code
+
+        if exc.context is not None:
+            content["context"] = exc.context
+
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": exc.message},
+            content=content,
         )
     raise RuntimeError("Unhandled exception type") from exc
 
@@ -44,11 +54,20 @@ class InsufficientStockException(CustomOrderException):
 
     def __init__(self, product_id: int, requested_quantity: int, available_quantity: int):
         self.message = (
-            f"Insufficient stock for product with id '{product_id}'. "
-            f"Requested quantity: {requested_quantity}, available quantity: {available_quantity}."
+            f"Produkt o id '{product_id}' ma niewystarczający stan magazynowy. "
+            f"Próbowano zamówić {requested_quantity} szt., dostępne: {available_quantity}."
         )
-        self.status_code = 400
-        super().__init__(self.message, self.status_code)
+        self.status_code = 409
+        super().__init__(
+            self.message,
+            self.status_code,
+            error_code="INSUFFICIENT_STOCK",
+            context={
+                "product_id": product_id,
+                "requested_quantity": requested_quantity,
+                "available_quantity": available_quantity,
+            },
+        )
 
 
 class BadCreateOrderRequestException(CustomOrderException):

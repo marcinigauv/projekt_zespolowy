@@ -40,3 +40,17 @@ async def get_user_details_from_db_by_id(user_id: int, db: DBSession) -> Optiona
         return user.scalar_one_or_none()
     except Exception as _exc:
         return None
+
+
+async def update_user_preferences_in_db(user_id: int, preferences: dict[str, str], db: DBSession) -> User:
+    """Persists the provided user preferences for a specific user."""
+    user = await get_user_details_from_db_by_id(user_id, db)
+
+    if user is None:
+        raise RuntimeError(f"User with id '{user_id}' not found.")
+
+    user.user_preferences = preferences
+    db.add(user)
+    await db.flush()
+    await db.refresh(user)
+    return user

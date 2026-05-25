@@ -51,11 +51,9 @@ export default function Register() {
               gap="$2"
               px="$4.5"
               py="$4.5"
-              style={{
-                backgroundColor: '#f8f2fa',
-                borderBottomWidth: 1,
-                borderBottomColor: '#e6e0e9',
-              }}
+              bg="$stitchSurfaceVariant"
+              borderBottomWidth={1}
+              borderBottomColor="$borderColor"
             >
               <Eyebrow>Konto</Eyebrow>
               <SectionTitle>Utwórz konto</SectionTitle>

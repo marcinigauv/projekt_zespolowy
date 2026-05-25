@@ -121,6 +121,7 @@ export function Header() {
   const isWideDesktop = viewportWidth > 1024
   const isCompactMobile = viewportWidth <= 390
   const primaryColor = getVariableValue(theme.stitchPrimary)
+  const onPrimaryColor = getVariableValue(theme.stitchOnPrimary)
   const textColor = getVariableValue(theme.color)
   const mutedColor = getVariableValue(theme.placeholderColor)
   const navBarStyle = isWeb && !isPhone
@@ -240,7 +241,7 @@ export function Header() {
               <MaterialIcons name="shopping-cart" size={20} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
-                  <Text color="#ffffff" fontSize="$1" fontWeight="800">
+                  <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">
                     {cartItems}
                   </Text>
                 </HeaderBadge>
@@ -313,7 +314,7 @@ export function Header() {
                   <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
                   {cartItems > 0 && (
                     <HeaderBadge>
-                      <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                      <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">{cartItems}</Text>
                     </HeaderBadge>
                   )}
                 </HeaderIconButton>
@@ -339,7 +340,7 @@ export function Header() {
                   <MaterialIcons
                     name={tab.icon}
                     size={18}
-                    color={tab.active ? '#ffffff' : mutedColor}
+                    color={tab.active ? onPrimaryColor : mutedColor}
                   />
                   {tab.badge ? (
                     <PhoneTabBadge
@@ -393,7 +394,7 @@ export function Header() {
               <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
-                  <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                  <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">{cartItems}</Text>
                 </HeaderBadge>
               )}
             </HeaderIconButton>

@@ -2,6 +2,7 @@ from src.sql.models import *
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Self, Annotated
 from fastapi import Depends
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession as SQLModelAsyncSession
@@ -90,6 +91,31 @@ class SqlDatabase:
 
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
+            await conn.execute(text(
+                """
+                ALTER TABLE \"user\"
+                ADD COLUMN IF NOT EXISTS user_preferences JSON
+                """
+            ))
+            await conn.execute(text(
+                """
+                ALTER TABLE \"user\"
+                ALTER COLUMN user_preferences SET DEFAULT '{\"theme\": \"stitchLuxeLight\"}'::json
+                """
+            ))
+            await conn.execute(text(
+                """
+                UPDATE \"user\"
+                SET user_preferences = '{\"theme\": \"stitchLuxeLight\"}'::json
+                WHERE user_preferences IS NULL
+                """
+            ))
+            await conn.execute(text(
+                """
+                ALTER TABLE \"user\"
+                ALTER COLUMN user_preferences SET NOT NULL
+                """
+            ))
 
     @asynccontextmanager
     async def lifespan(self):

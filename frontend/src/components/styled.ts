@@ -1368,7 +1368,7 @@ export const AdminResultValueRight = styled(Text, styles({
 
 export const PrimaryButton = styled(Button, styles({
   bg: '$blue10',
-  color: '#ffffff',
+  color: '$stitchOnPrimary',
   size: '$4',
   px: '$5',
   py: '$2',
@@ -1385,9 +1385,13 @@ export const PrimaryButton = styled(Button, styles({
   shadowRadius: 24,
   minHeight: 56,
   pressStyle: {
+    bg: '$blue10',
+    borderColor: '$blue10',
     opacity: 0.88,
   },
   hoverStyle: {
+    bg: '$blue10',
+    borderColor: '$blue10',
     opacity: 0.94,
     scale: 1.01,
   },
@@ -1403,7 +1407,7 @@ export const PrimaryButton = styled(Button, styles({
 
 export const AddToCartButton = styled(Button, styles({
   bg: '$blue10',
-  color: '#ffffff',
+  color: '$stitchOnPrimary',
   size: '$4',
   px: '$5',
   py: '$2',
@@ -1420,9 +1424,13 @@ export const AddToCartButton = styled(Button, styles({
   shadowRadius: 20,
   minHeight: 56,
   pressStyle: {
+    bg: '$blue10',
+    borderColor: '$blue10',
     opacity: 0.88,
   },
   hoverStyle: {
+    bg: '$blue10',
+    borderColor: '$blue10',
     opacity: 0.94,
     scale: 1.01,
   },
