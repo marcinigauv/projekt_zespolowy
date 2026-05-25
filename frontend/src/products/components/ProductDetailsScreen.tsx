@@ -72,6 +72,10 @@ export function ProductDetailsScreen() {
   const isNarrowPhone = viewportWidth <= 390
   const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
   const ctaMinHeight = isPhone ? 56 : 48
+  const detailsTitleFontSize = isNarrowPhone ? '$5' : isPhone ? '$6' : isTabletRange ? '$7' : '$8'
+  const detailsTitleLineHeight = isNarrowPhone ? '$5' : isPhone ? '$6' : isTabletRange ? '$7' : '$8'
+  const detailsPriceFontSize = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
+  const detailsPriceLineHeight = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
   const params = useLocalSearchParams<{ id?: string | string[] }>()
   const addItem = useCartStore((state) => state.addItem)
   const cartItems = useCartStore((state) => state.items)
@@ -250,9 +254,9 @@ export function ProductDetailsScreen() {
                       <Text
                         color="$color"
                         fontFamily="$heading"
-                        fontSize={isNarrowPhone ? '$6' : isPhone ? '$7' : '$8'}
+                        fontSize={detailsTitleFontSize}
                         fontWeight="600"
-                        lineHeight={isNarrowPhone ? '$6' : isPhone ? '$7' : '$8'}
+                        lineHeight={detailsTitleLineHeight}
                         letterSpacing={isNarrowPhone ? -0.45 : -0.6}
                         style={{ width: '100%' }}
                       >
@@ -280,9 +284,9 @@ export function ProductDetailsScreen() {
                         <Text
                           color="$color"
                           fontFamily="$heading"
-                          fontSize={isNarrowPhone ? '$7' : isPhone ? '$8' : '$9'}
+                          fontSize={detailsPriceFontSize}
                           fontWeight="700"
-                          lineHeight={isNarrowPhone ? '$7' : isPhone ? '$8' : '$9'}
+                          lineHeight={detailsPriceLineHeight}
                         >
                           {formatCurrency(product.price)}
                         </Text>

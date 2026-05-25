@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Image, Pressable, useWindowDimensions } from 'react-native'
+import { MaterialIcons } from '@expo/vector-icons'
 import { XStack, YStack, Text, ScrollView } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { formatCurrency } from '../src/lib/formatters'
@@ -185,7 +186,7 @@ export default function Cart() {
                   backgroundColor: '#f8f2fa',
                 }}
               >
-                <Text fontSize={isPhone ? '$7' : '$8'} color="$blue10">🛒</Text>
+                <MaterialIcons name="shopping-cart" size={isPhone ? 30 : 34} color="#4f378a" />
               </YStack>
               <Text
                 color="$color"
@@ -348,9 +349,7 @@ export default function Cart() {
                                 borderRadius: 999,
                               }}
                             >
-                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
-                                -
-                              </Text>
+                              <MaterialIcons name="remove" size={18} color="#1d1b20" />
                             </SecondaryButton>
 
                             <YStack
@@ -385,9 +384,7 @@ export default function Cart() {
                                 borderRadius: 999,
                               }}
                             >
-                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
-                                +
-                              </Text>
+                              <MaterialIcons name="add" size={18} color="#1d1b20" />
                             </SecondaryButton>
                           </InlineControls>
 

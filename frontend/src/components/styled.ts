@@ -77,26 +77,26 @@ export const Eyebrow = styled(Text, styles({
 export const SectionTitle = styled(Text, styles({
   color: '$color',
   fontFamily: '$heading',
-  fontSize: '$8',
+  fontSize: '$7',
   fontWeight: '700',
-  lineHeight: '$8',
-  letterSpacing: -0.8,
+  lineHeight: '$7',
+  letterSpacing: -0.65,
   $md: {
     fontSize: '$7',
     lineHeight: '$7',
   },
   $sm: {
-    fontSize: '$6',
-    lineHeight: '$6',
+    fontSize: '$7',
+    lineHeight: '$7',
   },
   $xs: {
-    fontSize: '$4',
-    lineHeight: '$4',
+    fontSize: '$6',
+    lineHeight: '$6',
     letterSpacing: -0.6,
   },
   $xxs: {
-    fontSize: '$4',
-    lineHeight: '$4',
+    fontSize: '$6',
+    lineHeight: '$6',
     letterSpacing: -0.5,
   },
 }))
@@ -114,17 +114,17 @@ export const SectionDescription = styled(Text, styles({
 
 export const SurfaceCard = styled(YStack, styles({
   theme: 'surface',
-  bg: '$background',
+  bg: 'rgba(255,252,255,0.9)',
   borderWidth: 1,
-  borderColor: '$borderColor',
+  borderColor: 'rgba(203,196,210,0.86)',
   borderRadius: 20,
   p: 20,
   gap: 14,
-  shadowColor: '$shadowColor',
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.12,
-  shadowRadius: 24,
-  elevation: 3,
+  shadowColor: 'rgba(79,55,138,0.16)',
+  shadowOffset: { width: 0, height: 14 },
+  shadowOpacity: 0.1,
+  shadowRadius: 28,
+  elevation: 4,
   $sm: {
     p: 16,
     borderRadius: 18,
@@ -385,17 +385,17 @@ export const SearchInput = styled(FormInput, styles({
 
 export const NavBar = styled(XStack, styles({
   theme: 'surface',
-  bg: '$backgroundTransparent',
+  bg: 'rgba(253,247,255,0.78)',
   minHeight: 64,
   minWidth: 0,
   ai: 'center',
   jc: 'space-between',
   px: 20,
   borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
-  shadowColor: '$shadowColor',
+  borderBottomColor: 'rgba(203,196,210,0.74)',
+  shadowColor: 'rgba(79,55,138,0.14)',
   shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.1,
+  shadowOpacity: 0.08,
   shadowRadius: 24,
   elevation: 4,
   $md: {
@@ -462,12 +462,16 @@ export const HeaderBrand = styled(XStack, styles({
 export const HeaderBrandMark = styled(YStack, styles({
   width: 36,
   height: 36,
-  bg: 'rgba(79,55,138,0.08)',
+  bg: 'rgba(103,80,164,0.14)',
   borderRadius: 999,
   borderWidth: 1,
-  borderColor: 'rgba(79,55,138,0.14)',
+  borderColor: 'rgba(103,80,164,0.2)',
   alignItems: 'center',
   justifyContent: 'center',
+  shadowColor: 'rgba(79,55,138,0.16)',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.08,
+  shadowRadius: 16,
   $sm: {
     width: 32,
     height: 32,
@@ -510,15 +514,19 @@ export const HeaderControls = styled(XStack, styles({
 
 export const HeaderIconButton = styled(YStack, styles({
   theme: 'surface',
-  width: 44,
-  height: 44,
+  width: 42,
+  height: 42,
   borderRadius: 999,
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  bg: '#ffffff',
+  borderWidth: 0,
+  borderColor: 'transparent',
+  bg: 'transparent',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
+  shadowColor: 'rgba(79,55,138,0.0)',
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: 0,
+  shadowRadius: 0,
   $xs: {
     width: 40,
     height: 40,
@@ -526,14 +534,18 @@ export const HeaderIconButton = styled(YStack, styles({
 }))
 
 export const HeaderPrimaryIconButton = styled(YStack, styles({
-  width: 44,
-  height: 44,
+  width: 42,
+  height: 42,
   borderRadius: 999,
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  bg: '#ffffff',
+  borderWidth: 0,
+  borderColor: 'transparent',
+  bg: 'transparent',
   alignItems: 'center',
   justifyContent: 'center',
+  shadowColor: 'rgba(79,55,138,0.0)',
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: 0,
+  shadowRadius: 0,
   $xs: {
     width: 40,
     height: 40,
@@ -545,14 +557,18 @@ export const HeaderBadge = styled(YStack, styles({
   px: '$1',
   py: '$0.5',
   position: 'absolute',
-  top: -5,
-  right: -3,
+  top: 1,
+  right: 1,
   borderRadius: 999,
   minWidth: 18,
+  minHeight: 18,
   alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.88)',
   $xxs: {
-    top: -3,
-    right: -1,
+    top: 0,
+    right: 0,
     minWidth: 16,
     px: '$0.5',
   },
@@ -593,17 +609,17 @@ export const HeaderMenuButton = styled(Button, styles({
 
 export const PhoneTabsWrap = styled(YStack, styles({
   theme: 'surface',
-  bg: '$backgroundTransparent',
+  bg: 'rgba(253,247,255,0.84)',
   width: '100%',
   alignItems: 'center',
   px: '$2.5',
   pb: '$2',
   pt: '$1.5',
   borderTopWidth: 1,
-  borderTopColor: '$borderColor',
-  shadowColor: '$shadowColor',
+  borderTopColor: 'rgba(203,196,210,0.7)',
+  shadowColor: 'rgba(79,55,138,0.16)',
   shadowOffset: { width: 0, height: -10 },
-  shadowOpacity: 0.1,
+  shadowOpacity: 0.08,
   shadowRadius: 24,
   elevation: 6,
   $xs: {
@@ -615,15 +631,19 @@ export const PhoneTabsWrap = styled(YStack, styles({
 
 export const PhoneTabsRail = styled(XStack, styles({
   theme: 'surface',
-  bg: '#ffffff',
+  bg: 'rgba(255,255,255,0.86)',
   borderWidth: 1,
-  borderColor: '$borderColor',
+  borderColor: 'rgba(203,196,210,0.78)',
   borderRadius: 999,
   p: '$1',
   gap: '$1',
   width: '100%',
   maxWidth: 420,
   alignSelf: 'center',
+  shadowColor: 'rgba(79,55,138,0.14)',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.08,
+  shadowRadius: 18,
   $xs: {
     p: '$0.5',
     gap: '$0.5',
@@ -672,7 +692,7 @@ export const PhoneTabBadge = styled(YStack, styles({
 
 export const HeaderProfileSurface = styled(YStack, styles({
   theme: 'surface',
-  bg: '$background',
+  bg: 'rgba(255,252,255,0.94)',
 }))
 
 export const HeaderProfileSummary = styled(YStack, styles({
@@ -1025,29 +1045,34 @@ export const BadgeRow = styled(XStack, styles({
 }))
 
 export const StatusBadge = styled(XStack, styles({
-  px: '$2.5',
-  py: '$1',
+  px: '$3',
+  py: '$1.5',
   borderRadius: '$10',
   borderWidth: 1,
   alignItems: 'center',
   alignSelf: 'flex-start',
+  minHeight: 34,
+  shadowColor: 'rgba(79,55,138,0.12)',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
   variants: {
     tone: {
       neutral: {
-        bg: '#f2ecf4',
-        borderColor: '#cbc4d2',
+        bg: 'rgba(242,236,244,0.92)',
+        borderColor: 'rgba(203,196,210,0.9)',
       },
       warning: {
-        bg: '#ffdf93',
-        borderColor: '#e7c365',
+        bg: 'rgba(255,223,147,0.82)',
+        borderColor: 'rgba(231,195,101,0.94)',
       },
       success: {
-        bg: '#e9ddff',
-        borderColor: '#cfbcff',
+        bg: 'rgba(233,221,255,0.92)',
+        borderColor: 'rgba(207,188,255,0.98)',
       },
       danger: {
-        bg: '#ffdad6',
-        borderColor: '#f2b8b5',
+        bg: 'rgba(255,218,214,0.92)',
+        borderColor: 'rgba(242,184,181,0.98)',
       },
     },
   } as const,
@@ -1056,7 +1081,8 @@ export const StatusBadge = styled(XStack, styles({
 export const StatusBadgeText = styled(Text, styles({
   fontSize: '$2',
   fontWeight: '700',
-  letterSpacing: 0.4,
+  fontFamily: '$mono',
+  letterSpacing: 0.45,
   variants: {
     tone: {
       neutral: {
@@ -1073,6 +1099,78 @@ export const StatusBadgeText = styled(Text, styles({
       },
     },
   } as const,
+}))
+
+export const CardHeaderStrip = styled(YStack, styles({
+  gap: '$1.5',
+  px: '$4.5',
+  py: '$4',
+  bg: 'rgba(248,242,250,0.9)',
+  borderBottomWidth: 1,
+  borderBottomColor: '#e6e0e9',
+  $xs: {
+    px: '$4',
+    py: '$3.5',
+  },
+}))
+
+export const InfoTile = styled(YStack, styles({
+  minWidth: 0,
+  flexGrow: 1,
+  borderWidth: 1,
+  borderColor: 'rgba(203,196,210,0.9)',
+  borderRadius: 18,
+  bg: 'rgba(255,255,255,0.84)',
+  px: 16,
+  py: 14,
+  gap: 6,
+  shadowColor: 'rgba(79,55,138,0.12)',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.08,
+  shadowRadius: 18,
+  elevation: 2,
+  $xs: {
+    borderRadius: 16,
+    px: 14,
+    py: 12,
+    gap: 4,
+  },
+}))
+
+export const MetricTile = styled(InfoTile, styles({
+  bg: 'rgba(248,242,250,0.9)',
+}))
+
+export const InfoTileLabel = styled(Text, styles({
+  color: '$placeholderColor',
+  fontFamily: '$mono',
+  fontSize: '$2',
+  fontWeight: '700',
+  letterSpacing: 0.42,
+  textTransform: 'uppercase',
+}))
+
+export const InfoTileValue = styled(Text, styles({
+  color: '$color',
+  fontSize: '$5',
+  fontWeight: '700',
+  lineHeight: '$5',
+  textAlign: 'left',
+  $xs: {
+    fontSize: '$4',
+    lineHeight: '$4',
+  },
+}))
+
+export const InfoTileValueAccent = styled(InfoTileValue, styles({
+  color: '$blue10',
+}))
+
+export const InfoTileMeta = styled(Text, styles({
+  color: '$placeholderColor',
+  fontSize: '$3',
+  lineHeight: '$4',
+  textAlign: 'left',
 }))
 
 export const BackLinkButton = styled(Button, styles({
@@ -1283,6 +1381,8 @@ export const AdminResultValueRight = styled(Text, styles({
 
 export const PrimaryButton = styled(Button, styles({
   theme: 'brand',
+  bg: '#4f378a',
+  color: '#ffffff',
   size: '$4',
   px: '$5',
   py: '$2',
@@ -1292,19 +1392,19 @@ export const PrimaryButton = styled(Button, styles({
   letterSpacing: 0.6,
   borderRadius: 999,
   borderWidth: 1,
-  borderColor: '$borderColor',
-  shadowColor: '$shadowColor',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.12,
-  shadowRadius: 20,
+  borderColor: '#4f378a',
+  shadowColor: 'rgba(79,55,138,0.24)',
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.16,
+  shadowRadius: 24,
   minHeight: 56,
   pressStyle: {
     opacity: 1,
-    bg: '$backgroundPress',
+    bg: '#43306f',
   },
   hoverStyle: {
     opacity: 1,
-    bg: '$backgroundHover',
+    bg: '#6750a4',
   },
   $sm: {
     size: '$4',
@@ -1367,12 +1467,16 @@ export const SecondaryButton = styled(Button, styles({
   fontWeight: '700',
   letterSpacing: 0.6,
   borderRadius: 999,
-  borderColor: '$borderColor',
-  bg: '#ffffff',
+  borderColor: 'rgba(203,196,210,0.84)',
+  bg: 'rgba(255,255,255,0.82)',
   color: '$color',
   minHeight: 56,
+  shadowColor: 'rgba(79,55,138,0.14)',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.08,
+  shadowRadius: 18,
   hoverStyle: {
-    bg: '$backgroundHover',
+    bg: '#ffffff',
   },
   pressStyle: {
     bg: '$backgroundPress',
@@ -1386,5 +1490,7 @@ export const GhostDangerButton = styled(Button, styles({
   chromeless: true,
   color: '$red10',
   fontWeight: '700',
+  fontFamily: '$mono',
+  letterSpacing: 0.4,
   borderRadius: 999,
 }))

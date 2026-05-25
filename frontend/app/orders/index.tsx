@@ -10,8 +10,15 @@ import { listOrdersUseCase } from '../../src/orders/useCases'
 import { getPaymentStatusLabel, getPaymentTone } from '../../src/payments/useCases'
 import { useOrdersStore } from '../../src/store/ordersStore'
 import {
+  CardHeaderStrip,
   DataRow,
   Eyebrow,
+  InfoTile,
+  InfoTileLabel,
+  InfoTileMeta,
+  InfoTileValue,
+  InfoTileValueAccent,
+  MetricTile,
   PageContent,
   PageWrapper,
   PrimaryButton,
@@ -98,122 +105,73 @@ export default function OrdersScreen() {
               {cachedOrders.map((order) => (
                 <SurfaceCard key={order.id} style={{ padding: 0, overflow: 'hidden' }}>
                   <YStack>
-                    <XStack
-                      gap="$3"
-                      px="$4"
-                      py="$4"
-                      justifyContent="space-between"
-                      alignItems={isPhone ? 'flex-start' : 'center'}
-                      flexDirection={isPhone ? 'column' : 'row'}
-                      style={{
-                        backgroundColor: '#f8f2fa',
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#e6e0e9',
-                      }}
-                    >
-                      <YStack gap="$1.5" style={{ minWidth: 0, flex: 1 }}>
-                        <Text color="$placeholderColor" fontSize="$2" fontWeight="700" letterSpacing={0.6} textTransform="uppercase">
-                          Zamówienie
-                        </Text>
-                        <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
-                          #{order.id}
-                        </Text>
-                        <Text color="$placeholderColor" fontSize="$3">
-                          {formatDateTime(order.orderDate)}
-                        </Text>
-                      </YStack>
-
-                      <YStack
-                        alignItems={isPhone ? 'flex-start' : 'flex-end'}
-                        style={{
-                          minWidth: isPhone ? 0 : 180,
-                          width: isPhone ? '100%' : undefined,
-                          borderWidth: 1,
-                          borderColor: '#cbc4d2',
-                          borderRadius: 18,
-                          backgroundColor: '#ffffff',
-                          paddingHorizontal: 16,
-                          paddingVertical: 12,
-                        }}
+                    <CardHeaderStrip>
+                      <XStack
+                        gap="$3"
+                        justifyContent="space-between"
+                        alignItems={isPhone ? 'flex-start' : 'center'}
+                        flexDirection={isPhone ? 'column' : 'row'}
                       >
-                        <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        <YStack gap="$1.5" style={{ minWidth: 0, flex: 1 }}>
+                          <InfoTileLabel>
+                          Zamówienie
+                          </InfoTileLabel>
+                          <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
+                          #{order.id}
+                          </Text>
+                          <InfoTileMeta>
+                          {formatDateTime(order.orderDate)}
+                          </InfoTileMeta>
+                        </YStack>
+
+                        <MetricTile
+                          alignItems={isPhone ? 'flex-start' : 'flex-end'}
+                          style={{
+                            minWidth: isPhone ? 0 : 180,
+                            width: isPhone ? '100%' : undefined,
+                            paddingVertical: 12,
+                          }}
+                        >
+                          <InfoTileLabel>
                           Łączna kwota
-                        </Text>
-                        <Text color="$blue10" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
+                          </InfoTileLabel>
+                          <InfoTileValueAccent style={{ fontFamily: 'Inter_700Bold', fontSize: isPhone ? 24 : 28, lineHeight: isPhone ? 30 : 34 }}>
                           {formatCurrency(order.totalAmount)}
-                        </Text>
-                      </YStack>
-                    </XStack>
+                          </InfoTileValueAccent>
+                        </MetricTile>
+                      </XStack>
+                    </CardHeaderStrip>
 
                     <YStack p="$3.5" gap="$3.5">
                       <XStack gap="$3" flexWrap="wrap">
-                        <YStack
-                          flexBasis={220}
-                          style={{
-                            minWidth: 0,
-                            flexGrow: 1,
-                            borderWidth: 1,
-                            borderColor: '#cbc4d2',
-                            borderRadius: 18,
-                            backgroundColor: '#ffffff',
-                            paddingHorizontal: 16,
-                            paddingVertical: 14,
-                            gap: 6,
-                          }}
-                        >
-                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        <InfoTile flexBasis={220}>
+                          <InfoTileLabel>
                             Data
-                          </Text>
-                          <Text color="$color" fontSize="$4" fontWeight="700">
+                          </InfoTileLabel>
+                          <InfoTileValue style={{ fontSize: 18, lineHeight: 24 }}>
                             {formatDateTime(order.orderDate)}
-                          </Text>
-                        </YStack>
+                          </InfoTileValue>
+                        </InfoTile>
 
-                        <YStack
-                          flexBasis={180}
-                          style={{
-                            minWidth: 0,
-                            flexGrow: 1,
-                            borderWidth: 1,
-                            borderColor: '#cbc4d2',
-                            borderRadius: 18,
-                            backgroundColor: '#ffffff',
-                            paddingHorizontal: 16,
-                            paddingVertical: 14,
-                            gap: 6,
-                          }}
-                        >
-                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        <InfoTile flexBasis={180}>
+                          <InfoTileLabel>
                             Liczba pozycji
-                          </Text>
-                          <Text color="$color" fontSize="$5" fontWeight="700">
+                          </InfoTileLabel>
+                          <InfoTileValue>
                             {order.items.length}
-                          </Text>
-                        </YStack>
+                          </InfoTileValue>
+                        </InfoTile>
 
-                        <YStack
-                          flexBasis={220}
-                          style={{
-                            minWidth: 0,
-                            flexGrow: 1,
-                            borderWidth: 1,
-                            borderColor: '#cbc4d2',
-                            borderRadius: 18,
-                            backgroundColor: '#ffffff',
-                            paddingHorizontal: 16,
-                            paddingVertical: 14,
-                            gap: 10,
-                          }}
-                        >
-                          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                        <MetricTile flexBasis={220} gap="$2.5">
+                          <InfoTileLabel>
                             Płatność
-                          </Text>
+                          </InfoTileLabel>
                           <StatusBadge tone={getPaymentTone(order.payment?.status)}>
                             <StatusBadgeText tone={getPaymentTone(order.payment?.status)}>
                               {getPaymentStatusLabel(order.payment?.status)}
                             </StatusBadgeText>
                           </StatusBadge>
-                        </YStack>
+                        </MetricTile>
                       </XStack>
 
                       <YStack

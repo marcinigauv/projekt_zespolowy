@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter, type Href } from 'expo-router'
+import { usePathname, useRouter, type Href } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { Animated, Easing, Linking, Platform, Pressable, type LayoutChangeEvent } from 'react-native'
 import { XStack, YStack, useMedia } from 'tamagui'
@@ -22,6 +22,7 @@ function isExternalUrl(url: string): boolean {
 
 interface NotificationsToastHostProps {
   onMobileInsetChange?: (value: number) => void
+  placement?: 'inline' | 'overlay'
 }
 
 function NotificationMarqueeText({ message, hovered }: { message: string; hovered: boolean }) {
@@ -108,8 +109,9 @@ function NotificationMarqueeText({ message, hovered }: { message: string; hovere
   )
 }
 
-export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToastHostProps) {
+export function NotificationsToastHost({ onMobileInsetChange, placement = 'overlay' }: NotificationsToastHostProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const media = useMedia()
   const notifications = useNotificationsStore((state) => state.notifications)
   const dismissNotification = useNotificationsStore((state) => state.dismissNotification)
@@ -121,18 +123,29 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
   const shouldUseNativeDriver = Platform.OS !== 'web'
   const isWeb = Platform.OS === 'web'
   const isWebPhone = isWeb && media.xs
-  const isWebNarrowPhone = isWeb && media.xxs
   const isWebTablet = isWeb && !media.xs && media.md
-  const mobileBottomNavInset = isWebPhone ? (isWebNarrowPhone ? 78 : 88) : 0
-  const desktopBottomInset = isWebTablet ? 20 : isWeb ? 16 : 0
+  const isCartScreen = pathname === '/cart'
+  const shouldHideToast = isWebPhone && isCartScreen
+  const isInlinePhoneToast = isWeb && isWebPhone && placement === 'inline'
+  const isWebOverlayToast = isWeb && !isWebPhone && placement === 'overlay'
+  const webOverlayTopInset = isWebTablet ? 62 : 66
+  const overlayToastHeight = isWebOverlayToast ? 38 : undefined
+  const overlayToastMinHeight = isWebOverlayToast ? 38 : 56
+  const overlayToastPaddingVertical = isWebOverlayToast ? 2 : 8
+  const nativeBottomInset = 18
 
   const toastViewportStyle = {
-    bottom: isWebPhone ? mobileBottomNavInset : desktopBottomInset,
+    position: (isInlinePhoneToast ? 'relative' : 'absolute') as const,
+    top: isWebOverlayToast ? webOverlayTopInset : undefined,
+    bottom: isWeb ? undefined : nativeBottomInset,
     left: 0,
     right: 0,
-    alignItems: 'center' as const,
-    paddingHorizontal: isWebPhone ? 12 : isWebTablet ? 18 : 20,
-    paddingBottom: isWebPhone ? 12 : isWeb ? 0 : 18,
+    width: '100%' as const,
+    alignSelf: 'stretch' as const,
+    alignItems: (isWebPhone ? 'stretch' : isWebTablet ? 'center' : isWeb ? 'flex-end' : 'center') as const,
+    paddingHorizontal: isWebPhone ? 12 : isWebTablet ? 18 : isWeb ? 24 : 20,
+    paddingTop: isInlinePhoneToast ? 12 : 0,
+    paddingBottom: isInlinePhoneToast ? 8 : isWeb ? 0 : 18,
   }
 
   useEffect(() => {
@@ -197,7 +210,15 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
     ]).start()
   }, [activeNotification, opacity, shouldUseNativeDriver, translateY])
 
-  if (isWebPhone) {
+  if (placement === 'inline' && !isInlinePhoneToast) {
+    return null
+  }
+
+  if (placement === 'overlay' && isWeb && isWebPhone) {
+    return null
+  }
+
+  if (shouldHideToast) {
     return null
   }
 
@@ -222,8 +243,8 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
           opacity,
           transform: [{ translateY }],
           width: '100%',
-          maxWidth: isWebPhone ? undefined : isWebTablet ? 720 : 1040,
-          alignSelf: 'center',
+          maxWidth: isInlinePhoneToast ? undefined : isWebTablet ? 560 : isWeb ? 420 : 1040,
+          alignSelf: isWebOverlayToast ? (isWebTablet ? 'center' : 'flex-end') : 'center',
         }}
       >
         <Pressable
@@ -236,7 +257,13 @@ export function NotificationsToastHost({ onMobileInsetChange }: NotificationsToa
               key={renderedNotification.id}
                 flexDirection="row"
                 alignItems="center"
-                style={{ paddingHorizontal: 16, paddingVertical: 8, width: '100%', minHeight: 56 }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: overlayToastPaddingVertical,
+                  width: '100%',
+                  height: overlayToastHeight,
+                  minHeight: overlayToastMinHeight,
+                }}
               onPress={() => {
                 dismissNotification(renderedNotification.id)
 

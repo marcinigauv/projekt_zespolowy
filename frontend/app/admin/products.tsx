@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Modal, useWindowDimensions } from 'react-native'
+import { MaterialIcons } from '@expo/vector-icons'
 import { Label, ScrollView, Text, XStack, YStack, H1, Paragraph } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
@@ -25,12 +26,18 @@ import {
   AdminSectionCard,
   AdminSectionHeader,
   AdminSectionTitle,
+  CardHeaderStrip,
   DataRow,
   EmptyStateCard,
   Eyebrow,
   FormField,
   FormInput,
   GhostDangerButton,
+  InfoTile,
+  InfoTileLabel,
+  InfoTileMeta,
+  InfoTileValue,
+  MetricTile,
   ModalBackdrop,
   ModalBodyScroll,
   ModalCard,
@@ -314,18 +321,6 @@ export default function AdminProductsScreen() {
   }, [selectedProduct])
   const isPhone = viewportWidth <= 520
 
-  const detailCardStyle = {
-    minWidth: 0,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: '#cbc4d2',
-    borderRadius: 18,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 6,
-  } as const
-
   if (!canRender) {
     return null
   }
@@ -352,21 +347,12 @@ export default function AdminProductsScreen() {
           </SectionHeading>
 
           <AdminSectionCard style={{ padding: 0, overflow: 'hidden' }}>
-            <YStack
-              gap="$1.5"
-              px="$4"
-              py="$4"
-              style={{
-                backgroundColor: '#f8f2fa',
-                borderBottomWidth: 1,
-                borderBottomColor: '#e6e0e9',
-              }}
-            >
+            <CardHeaderStrip>
               <AdminSectionTitle>Znajdź produkt do edycji</AdminSectionTitle>
               <AdminHelperText>
                 Wpisz ID produktu lub kilka fraz (np. Lego, komputer)
               </AdminHelperText>
-            </YStack>
+            </CardHeaderStrip>
 
             <YStack p="$3.5" gap="$3.5">
               <SearchRow style={{ flexDirection: isPhone ? 'column' : 'row', alignItems: 'stretch' }}>
@@ -435,44 +421,39 @@ export default function AdminProductsScreen() {
                             <AdminResultMeta numberOfLines={2}>{product.description}</AdminResultMeta>
                           </AdminResultSummary>
 
-                          <YStack
+                          <MetricTile
                             alignItems={isPhone ? 'flex-start' : 'flex-end'}
                             style={{
                               minWidth: isPhone ? 0 : 170,
                               width: isPhone ? '100%' : undefined,
-                              borderWidth: 1,
-                                borderColor: '#cbc4d2',
-                              borderRadius: 18,
-                                backgroundColor: '#f8f2fa',
-                              paddingHorizontal: 16,
                               paddingVertical: 12,
                             }}
                           >
                             <ProductPrice color="$blue10">{product.price.toFixed(2)} zł</ProductPrice>
-                          </YStack>
+                          </MetricTile>
                         </XStack>
 
                         <XStack gap="$3" flexWrap="wrap" px="$4" pb="$4">
-                          <YStack flexBasis={120} style={detailCardStyle}>
-                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                          <InfoTile flexBasis={120}>
+                            <InfoTileLabel>
                               ID
-                            </Text>
-                            <Text color="$color" fontSize="$5" fontWeight="700">{product.id}</Text>
-                          </YStack>
+                            </InfoTileLabel>
+                            <InfoTileValue>{product.id}</InfoTileValue>
+                          </InfoTile>
 
-                          <YStack flexBasis={160} style={detailCardStyle}>
-                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                          <InfoTile flexBasis={160}>
+                            <InfoTileLabel>
                               Stan magazynowy
-                            </Text>
-                            <Text color="$color" fontSize="$5" fontWeight="700">{product.amount}</Text>
-                          </YStack>
+                            </InfoTileLabel>
+                            <InfoTileValue>{product.amount}</InfoTileValue>
+                          </InfoTile>
 
-                          <YStack flexBasis={260} style={detailCardStyle}>
-                            <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                          <InfoTile flexBasis={260}>
+                            <InfoTileLabel>
                               Kategorie
-                            </Text>
-                            <Text color="$color" fontSize="$4" fontWeight="700">{product.categories.join(', ')}</Text>
-                          </YStack>
+                            </InfoTileLabel>
+                            <InfoTileValue style={{ fontSize: 18, lineHeight: 24 }}>{product.categories.join(', ')}</InfoTileValue>
+                          </InfoTile>
                         </XStack>
 
                         <YStack
@@ -501,51 +482,42 @@ export default function AdminProductsScreen() {
           </AdminSectionCard>
 
           <AdminSectionCard style={{ padding: 0, overflow: 'hidden' }}>
-            <YStack
-              gap="$1.5"
-              px="$4"
-              py="$4"
-              style={{
-                backgroundColor: '#f8f2fa',
-                borderBottomWidth: 1,
-                borderBottomColor: '#e6e0e9',
-              }}
-            >
+            <CardHeaderStrip>
               <AdminSectionTitle>Wybrany produkt</AdminSectionTitle>
               <AdminHelperText>{selectedProductSummary}</AdminHelperText>
-            </YStack>
+            </CardHeaderStrip>
 
             {selectedProduct ? (
               <WideFormCard style={{ padding: 0, overflow: 'hidden' }}>
                 <YStack p="$3.5" gap="$3.5">
                   <XStack gap="$3" flexWrap="wrap" p="$3.5">
-                    <YStack flexBasis={240} style={detailCardStyle}>
-                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                    <InfoTile flexBasis={240}>
+                      <InfoTileLabel>
                         Nazwa
-                      </Text>
-                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.name}</Text>
-                    </YStack>
+                      </InfoTileLabel>
+                      <InfoTileValue>{selectedProduct.name}</InfoTileValue>
+                    </InfoTile>
 
-                    <YStack flexBasis={180} style={detailCardStyle}>
-                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                    <InfoTile flexBasis={180}>
+                      <InfoTileLabel>
                         ID
-                      </Text>
-                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.id}</Text>
-                    </YStack>
+                      </InfoTileLabel>
+                      <InfoTileValue>{selectedProduct.id}</InfoTileValue>
+                    </InfoTile>
 
-                    <YStack flexBasis={200} style={detailCardStyle}>
-                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                    <InfoTile flexBasis={200}>
+                      <InfoTileLabel>
                         Stan magazynowy
-                      </Text>
-                      <Text color="$color" fontSize="$5" fontWeight="700">{selectedProduct.amount}</Text>
-                    </YStack>
+                      </InfoTileLabel>
+                      <InfoTileValue>{selectedProduct.amount}</InfoTileValue>
+                    </InfoTile>
 
-                    <YStack flexBasis={300} style={detailCardStyle}>
-                      <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                    <InfoTile flexBasis={300}>
+                      <InfoTileLabel>
                         Kategorie
-                      </Text>
-                      <Text color="$color" fontSize="$4" fontWeight="700">{selectedProductCategories}</Text>
-                    </YStack>
+                      </InfoTileLabel>
+                      <InfoTileValue style={{ fontSize: 18, lineHeight: 24 }}>{selectedProductCategories}</InfoTileValue>
+                    </InfoTile>
                   </XStack>
 
                   <YStack
@@ -586,7 +558,20 @@ export default function AdminProductsScreen() {
                   paddingVertical: 40,
                 }}
               >
-                <Text fontSize="$8">⌕</Text>
+                <YStack
+                  width={64}
+                  height={64}
+                  borderRadius={999}
+                  alignItems="center"
+                  justifyContent="center"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: 'rgba(203,196,210,0.88)',
+                    backgroundColor: 'rgba(255,255,255,0.82)',
+                  }}
+                >
+                  <MaterialIcons name="search" size={30} color="#4f378a" />
+                </YStack>
                 <AdminHelperText>Brak wybranego produktu do edycji.</AdminHelperText>
               </EmptyStateCard>
             )}
@@ -769,7 +754,20 @@ export default function AdminProductsScreen() {
                 </YStack>
               ) : (
                 <EmptyStateCard gap="$3">
-                  <Text fontSize="$8">⌕</Text>
+                  <YStack
+                    width={64}
+                    height={64}
+                    borderRadius={999}
+                    alignItems="center"
+                    justifyContent="center"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: 'rgba(203,196,210,0.88)',
+                      backgroundColor: 'rgba(255,255,255,0.82)',
+                    }}
+                  >
+                    <MaterialIcons name="search" size={30} color="#4f378a" />
+                  </YStack>
                   <AdminHelperText>Najpierw wybierz produkt do edycji.</AdminHelperText>
                 </EmptyStateCard>
               )}

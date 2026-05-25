@@ -42,6 +42,7 @@ export default function RootLayout() {
         <YStack flex={1} pt={Platform.OS === 'web' ? 0 : mobileNotificationsInset}>
           <Stack screenOptions={{ headerShown: false }} />
         </YStack>
+
         <NotificationsToastHost onMobileInsetChange={setMobileNotificationsInset} />
       </TamaguiProvider>
     </GestureHandlerRootView>

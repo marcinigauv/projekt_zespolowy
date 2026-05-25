@@ -6,9 +6,15 @@ import { Header } from '../src/components/Header'
 import { useRouteAccess } from '../src/auth/useRouteAccess'
 import { logoutUserUseCase } from '../src/auth/useCases'
 import {
+  CardHeaderStrip,
   PageWrapper,
   PageContent,
   Eyebrow,
+  InfoTile,
+  InfoTileLabel,
+  InfoTileMeta,
+  InfoTileValue,
+  MetricTile,
   PrimaryButton,
   SecondaryButton,
   SectionDescription,
@@ -22,18 +28,6 @@ export default function Profile() {
   const { canRender, user } = useRouteAccess()
   const { width: viewportWidth } = useWindowDimensions()
   const isPhone = viewportWidth <= 520
-
-  const infoCardStyle = {
-    minWidth: 0,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: '#cbc4d2',
-    borderRadius: 18,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 6,
-  } as const
 
   if (!canRender) {
     return null
@@ -54,56 +48,47 @@ export default function Profile() {
 
           <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
             <YStack>
-              <YStack
-                gap="$2"
-                px="$4.5"
-                py="$4.5"
-                style={{
-                  backgroundColor: '#f8f2fa',
-                  borderBottomWidth: 1,
-                  borderBottomColor: '#e6e0e9',
-                }}
-              >
+              <CardHeaderStrip gap="$2">
                 <Text color="$placeholderColor" fontSize="$2" fontWeight="700" letterSpacing={0.6} textTransform="uppercase">
                   Dane konta
                 </Text>
                 <Text color="$color" fontFamily="$heading" fontSize="$8" fontWeight="600">
                   {user?.name} {user?.surname}
                 </Text>
-                <Text color="$placeholderColor" fontSize="$4">
+                <InfoTileMeta style={{ fontSize: 16, lineHeight: 24 }}>
                   {user?.email}
-                </Text>
-              </YStack>
+                </InfoTileMeta>
+              </CardHeaderStrip>
 
               <YStack p="$3.5" gap="$3.5">
                 <XStack gap="$3" flexWrap="wrap">
-                  <YStack flexBasis={240} style={infoCardStyle}>
-                    <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                  <InfoTile flexBasis={240}>
+                    <InfoTileLabel>
                       Imię
-                    </Text>
-                    <Text color="$color" fontSize="$5" fontWeight="700">
+                    </InfoTileLabel>
+                    <InfoTileValue>
                       {user?.name}
-                    </Text>
-                  </YStack>
+                    </InfoTileValue>
+                  </InfoTile>
 
-                  <YStack flexBasis={240} style={infoCardStyle}>
-                    <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                  <InfoTile flexBasis={240}>
+                    <InfoTileLabel>
                       Nazwisko
-                    </Text>
-                    <Text color="$color" fontSize="$5" fontWeight="700">
+                    </InfoTileLabel>
+                    <InfoTileValue>
                       {user?.surname}
-                    </Text>
-                  </YStack>
+                    </InfoTileValue>
+                  </InfoTile>
                 </XStack>
 
-                <YStack style={infoCardStyle}>
-                  <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+                <InfoTile>
+                  <InfoTileLabel>
                     Email
-                  </Text>
-                  <Text color="$color" fontSize="$5" fontWeight="700">
+                  </InfoTileLabel>
+                  <InfoTileValue>
                     {user?.email}
-                  </Text>
-                </YStack>
+                  </InfoTileValue>
+                </InfoTile>
 
                 <YStack
                   gap="$2.5"
@@ -115,14 +100,10 @@ export default function Profile() {
                     Szybkie akcje
                   </Text>
 
-                  <YStack
+                  <MetricTile
                     alignItems={isPhone ? 'stretch' : 'center'}
                     style={{
                       width: '100%',
-                      borderWidth: 1,
-                      borderColor: '#cbc4d2',
-                      borderRadius: 20,
-                      backgroundColor: '#f8f2fa',
                       padding: isPhone ? 12 : 14,
                     }}
                   >
@@ -157,7 +138,7 @@ export default function Profile() {
                         Wyloguj się
                       </PrimaryButton>
                     </XStack>
-                  </YStack>
+                  </MetricTile>
                 </YStack>
               </YStack>
             </YStack>

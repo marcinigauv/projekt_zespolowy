@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import { usePathname, useRouter } from 'expo-router'
 import { XStack, YStack, Text, Button, Popover, Separator } from 'tamagui'
-import { Feather } from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons'
 import { logoutUserUseCase } from '../auth/useCases'
+import { NotificationsToastHost } from './NotificationsToastHost'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import {
@@ -109,6 +110,7 @@ export function Header() {
   const pathname = usePathname()
   const { width: viewportWidth } = useWindowDimensions()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
   const cartItems = useCartStore((state) => state.getTotalItems())
   const [profileOpen, setProfileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -125,9 +127,15 @@ export function Header() {
     : undefined
   const accountPath = isAuthenticated ? '/profile' : '/login'
   const isAccountActive = pathname.startsWith('/profile') || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/admin')
+  const iconTriggerStyle = {
+    borderRadius: 999,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+  } as const
   const phoneTabs: Array<{
     key: string
-    icon: React.ComponentProps<typeof Feather>['name']
+    icon: React.ComponentProps<typeof MaterialIcons>['name']
     ariaLabel: string
     path: string
     active: boolean
@@ -142,7 +150,7 @@ export function Header() {
     },
     {
       key: 'cart',
-      icon: 'shopping-bag',
+      icon: 'shopping-cart',
       ariaLabel: 'Koszyk',
       path: '/cart',
       active: pathname === '/cart',
@@ -150,7 +158,7 @@ export function Header() {
     },
     {
       key: 'account',
-      icon: isAuthenticated ? 'user' : 'log-in',
+      icon: isAuthenticated ? 'person' : 'login',
       ariaLabel: isAuthenticated ? 'Konto' : 'Logowanie',
       path: accountPath,
       active: isAccountActive,
@@ -169,11 +177,21 @@ export function Header() {
   if (isAuthenticated) {
     phoneTabs.splice(2, 0, {
       key: 'orders',
-      icon: 'clipboard',
+      icon: 'receipt-long',
       ariaLabel: 'Zamówienia',
       path: '/orders',
       active: pathname === '/orders' || pathname.startsWith('/orders/'),
     })
+
+    if (user?.isAdmin) {
+      phoneTabs.splice(3, 0, {
+        key: 'admin',
+        icon: 'inventory-2',
+        ariaLabel: 'Admin',
+        path: '/admin/products',
+        active: pathname.startsWith('/admin'),
+      })
+    }
   }
 
   useEffect(() => {
@@ -212,10 +230,10 @@ export function Header() {
             aria-label="Koszyk"
             onPress={() => navigate('/cart')}
             pressStyle={{ opacity: 0.75 }}
-            style={{ borderRadius: 999 }}
+            style={iconTriggerStyle}
           >
             <HeaderIconButton>
-              <Feather name="shopping-bag" size={18} color="#4f378a" />
+              <MaterialIcons name="shopping-cart" size={20} color="#4f378a" />
               {cartItems > 0 && (
                 <HeaderBadge>
                   <Text color="#ffffff" fontSize="$1" fontWeight="800">
@@ -232,10 +250,10 @@ export function Header() {
                 unstyled
                 aria-label="Profil"
                 pressStyle={{ opacity: 0.8 }}
-                style={{ borderRadius: 999 }}
+                style={iconTriggerStyle}
               >
                 <HeaderPrimaryIconButton>
-                  <Feather name={isAuthenticated ? 'user' : 'log-in'} size={17} color="#1d1b20" />
+                  <MaterialIcons name={isAuthenticated ? 'person' : 'login'} size={20} color="#1d1b20" />
                 </HeaderPrimaryIconButton>
               </Button>
             </Popover.Trigger>
@@ -285,10 +303,10 @@ export function Header() {
                 aria-label="Koszyk"
                 onPress={() => navigate('/cart')}
                 pressStyle={{ opacity: 0.8 }}
-                style={{ borderRadius: 999 }}
+                style={iconTriggerStyle}
               >
                 <HeaderIconButton>
-                  <Feather name="shopping-bag" size={17} color="#4f378a" />
+                  <MaterialIcons name="shopping-cart" size={19} color="#4f378a" />
                   {cartItems > 0 && (
                     <HeaderBadge>
                       <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
@@ -298,6 +316,8 @@ export function Header() {
               </Button>
             </HeaderControls>
           </NavBar>
+
+          {isWeb ? <NotificationsToastHost placement="inline" /> : null}
         </YStack>
 
         <PhoneTabsWrap style={phoneTabsStyle}>
@@ -312,9 +332,9 @@ export function Header() {
                 pressStyle={{ bg: tab.active ? '#4f378a' : '$backgroundPress' }}
               >
                 <YStack style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                  <Feather
+                  <MaterialIcons
                     name={tab.icon}
-                    size={16}
+                    size={18}
                     color={tab.active ? '#ffffff' : '#494551'}
                   />
                   {tab.badge ? (
@@ -363,10 +383,10 @@ export function Header() {
             aria-label="Koszyk"
             onPress={() => navigate('/cart')}
             pressStyle={{ opacity: 0.85 }}
-            style={{ borderRadius: 999 }}
+            style={iconTriggerStyle}
           >
             <HeaderIconButton>
-              <Feather name="shopping-bag" size={17} color="#4f378a" />
+              <MaterialIcons name="shopping-cart" size={19} color="#4f378a" />
               {cartItems > 0 && (
                 <HeaderBadge>
                   <Text color="#ffffff" fontSize="$1" fontWeight="800">{cartItems}</Text>
@@ -380,10 +400,10 @@ export function Header() {
             onPress={() => setMenuOpen((current) => !current)}
             aria-label="Menu"
             pressStyle={{ opacity: 0.85 }}
-            style={{ borderRadius: 999 }}
+            style={iconTriggerStyle}
           >
             <HeaderPrimaryIconButton>
-              <Feather name="menu" size={18} color="#1d1b20" />
+              <MaterialIcons name="menu" size={20} color="#1d1b20" />
             </HeaderPrimaryIconButton>
           </Button>
         </HeaderControls>

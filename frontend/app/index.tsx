@@ -64,9 +64,9 @@ export default function Index() {
   const headingMaxWidth = isPhone ? '100%' : isTablet ? 700 : 620
   const headingGap = isPhone ? 8 : 6
   const titleStyle = {
-    fontSize: isNarrowPhone ? 24 : isPhone ? 28 : isTablet ? 30 : 36,
-    lineHeight: isNarrowPhone ? 30 : isPhone ? 34 : isTablet ? 36 : 42,
-    letterSpacing: isNarrowPhone ? -0.45 : isPhone ? -0.6 : -0.7,
+    fontSize: isPhone ? 28 : 32,
+    lineHeight: isPhone ? 34 : 40,
+    letterSpacing: isNarrowPhone ? -0.5 : isPhone ? -0.6 : -0.7,
     maxWidth: isPhone ? '100%' : 680,
   } as const
   const descriptionStyle = {
