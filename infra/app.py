@@ -39,6 +39,7 @@ compute_stack = ComputeStack(
     database=database_stack.database,
     db_secret=database_stack.db_secret,
     backend_repo=container_stack.backend_repo,
+    embedding_worker_repo=container_stack.embedding_worker_repo,
     db_initializer_repo=container_stack.db_initializer_repo,
     payments_provider_url=payments_provider_url,
     env=env

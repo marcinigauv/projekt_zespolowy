@@ -13,8 +13,6 @@ from src.orders.exceptions import CustomOrderException, handle_custom_order_exce
 from src.products.exceptions import CustomProductException, handle_custom_product_exception
 from src.users.exceptions import CustomUserException, handle_custom_user_exception
 from src.payments.exceptions import CustomPaymentException, handle_custom_payment_exception
-from src.vector_store.sync import sync_missing_products_to_vector_store
-import asyncio
 
 origins = [
     "http://localhost:3000",
@@ -26,17 +24,7 @@ origins = [
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     async with db.lifespan():
-        task = asyncio.create_task(
-            sync_missing_products_to_vector_store())
-
-        try:
-            yield
-        finally:
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
+        yield
 
 
 app = FastAPI(lifespan=app_lifespan)

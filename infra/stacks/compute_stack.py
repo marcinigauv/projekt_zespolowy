@@ -1,10 +1,17 @@
+from typing import Any
+
 from aws_cdk import Stack, Duration, RemovalPolicy, SecretValue, aws_ec2 as ec2, aws_ecs as ecs, aws_ecr as ecr, aws_rds as rds, aws_elasticloadbalancingv2 as elbv2, aws_logs as logs, aws_secretsmanager as secretsmanager, CfnOutput
 from constructs import Construct
 
 
 class ComputeStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.Secret, backend_repo: ecr.Repository, db_initializer_repo: ecr.Repository, payments_provider_url: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.ISecret, backend_repo: ecr.Repository, embedding_worker_repo: ecr.Repository, db_initializer_repo: ecr.Repository, payments_provider_url: str, **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        backend_task_cpu = 1024
+        backend_task_memory_mib = 2048
+        embedding_worker_task_cpu = 2048
+        embedding_worker_task_memory_mib = 8192
 
         password_pepper_secret = secretsmanager.Secret(
             self, "PasswordPepperSecret",
@@ -26,6 +33,9 @@ class ComputeStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
         )
 
+        password_pepper_secret_ref: secretsmanager.ISecret = password_pepper_secret
+        payments_secret_ref: secretsmanager.ISecret = payments_secret
+
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc,
                               container_insights=True)
         cluster.add_default_cloud_map_namespace(
@@ -34,7 +44,18 @@ class ComputeStack(Stack):
         )
 
         backend_task = ecs.FargateTaskDefinition(
-            self, "BackendTask", memory_limit_mib=8192, cpu=2048)
+            self,
+            "BackendTask",
+            memory_limit_mib=backend_task_memory_mib,
+            cpu=backend_task_cpu,
+        )
+
+        embedding_worker_task = ecs.FargateTaskDefinition(
+            self,
+            "EmbeddingWorkerTask",
+            memory_limit_mib=embedding_worker_task_memory_mib,
+            cpu=embedding_worker_task_cpu,
+        )
 
         db_initializer_log_group = logs.LogGroup(
             self, "DbInitializerLogGroup",
@@ -46,22 +67,26 @@ class ComputeStack(Stack):
             self, "DbInitializerTask", memory_limit_mib=1024, cpu=512)
 
         db_secret.grant_read(backend_task.task_role)
-        password_pepper_secret.grant_read(backend_task.task_role)
-        payments_secret.grant_read(backend_task.task_role)
+        db_secret.grant_read(embedding_worker_task.task_role)
+        password_pepper_secret_ref.grant_read(backend_task.task_role)
+        payments_secret_ref.grant_read(backend_task.task_role)
         db_secret.grant_read(db_initializer_task.task_role)
-        password_pepper_secret.grant_read(db_initializer_task.task_role)
-        payments_secret.grant_read(db_initializer_task.task_role)
+        password_pepper_secret_ref.grant_read(db_initializer_task.task_role)
+        payments_secret_ref.grant_read(db_initializer_task.task_role)
 
         if backend_task.execution_role is not None:
             db_secret.grant_read(backend_task.execution_role)
-            password_pepper_secret.grant_read(backend_task.execution_role)
-            payments_secret.grant_read(backend_task.execution_role)
+            password_pepper_secret_ref.grant_read(backend_task.execution_role)
+            payments_secret_ref.grant_read(backend_task.execution_role)
+
+        if embedding_worker_task.execution_role is not None:
+            db_secret.grant_read(embedding_worker_task.execution_role)
 
         if db_initializer_task.execution_role is not None:
             db_secret.grant_read(db_initializer_task.execution_role)
-            password_pepper_secret.grant_read(
+            password_pepper_secret_ref.grant_read(
                 db_initializer_task.execution_role)
-            payments_secret.grant_read(db_initializer_task.execution_role)
+            payments_secret_ref.grant_read(db_initializer_task.execution_role)
 
         backend_task.add_container(
             "Backend",
@@ -77,16 +102,42 @@ class ComputeStack(Stack):
                 "PAYMENTS_SETTINGS__PROVIDER_URL": payments_provider_url,
             },
             secrets={
-                "AUTH_SETTINGS__PASSWORD_PEPPER": ecs.Secret.from_secrets_manager(password_pepper_secret),
+                "AUTH_SETTINGS__PASSWORD_PEPPER": ecs.Secret.from_secrets_manager(password_pepper_secret_ref),
                 "DB_SQL_SETTINGS__USERNAME": ecs.Secret.from_secrets_manager(db_secret, "username"),
                 "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
-                "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret, "api_key"),
-                "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret, "sign_phrase"),
+                "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret_ref, "api_key"),
+                "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret_ref, "sign_phrase"),
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="backend", log_retention=logs.RetentionDays.ONE_WEEK),
             port_mappings=[ecs.PortMapping(
                 container_port=8000, protocol=ecs.Protocol.TCP, name="backend")],
+        )
+
+        embedding_worker_task.add_container(
+            "EmbeddingWorker",
+            image=ecs.ContainerImage.from_ecr_repository(
+                embedding_worker_repo, tag="latest"),
+            environment={
+                "DB_SQL_SETTINGS__HOST": database.db_instance_endpoint_address,
+                "DB_SQL_SETTINGS__PORT": "5432",
+                "DB_SQL_SETTINGS__DATABASE": "store_db",
+                "VECTOR_STORE_SETTINGS__CHROMA_HOST": "chroma",
+                "VECTOR_STORE_SETTINGS__CHROMA_PORT": "8000",
+                "VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY": "false",
+                "EMBEDDING_WORKER_INITIAL_DELAY_SECONDS": "15",
+                "EMBEDDING_WORKER_INTERVAL_SECONDS": "900",
+                "EMBEDDING_WORKER_PAGE_SIZE": "100",
+                "EMBEDDING_WORKER_MODEL_NAME": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            },
+            secrets={
+                "DB_SQL_SETTINGS__USERNAME": ecs.Secret.from_secrets_manager(db_secret, "username"),
+                "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
+            },
+            logging=ecs.LogDrivers.aws_logs(
+                stream_prefix="embedding-worker",
+                log_retention=logs.RetentionDays.ONE_WEEK,
+            ),
         )
 
         db_initializer_task.add_container(
@@ -104,11 +155,11 @@ class ComputeStack(Stack):
                 "PAYMENTS_SETTINGS__PROVIDER_URL": payments_provider_url,
             },
             secrets={
-                "AUTH_SETTINGS__PASSWORD_PEPPER": ecs.Secret.from_secrets_manager(password_pepper_secret),
+                "AUTH_SETTINGS__PASSWORD_PEPPER": ecs.Secret.from_secrets_manager(password_pepper_secret_ref),
                 "DB_SQL_SETTINGS__USERNAME": ecs.Secret.from_secrets_manager(db_secret, "username"),
                 "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
-                "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret, "api_key"),
-                "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret, "sign_phrase"),
+                "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret_ref, "api_key"),
+                "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret_ref, "sign_phrase"),
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="db-initializer",
@@ -143,6 +194,12 @@ class ComputeStack(Stack):
                 )],
             ),
         )
+        embedding_worker_service = ecs.FargateService(
+            self, "EmbeddingWorkerService", cluster=cluster, task_definition=embedding_worker_task, desired_count=1,
+            security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            service_connect_configuration=ecs.ServiceConnectProps(),
+        )
         chroma_service = ecs.FargateService(
             self, "ChromaService", cluster=cluster, task_definition=chroma_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
@@ -173,16 +230,18 @@ class ComputeStack(Stack):
         ecs_security_group.add_ingress_rule(ec2.Peer.security_group_id(
             alb.connections.security_groups[0].security_group_id), ec2.Port.all_tcp(), "ALB")
         database.connections.allow_from(
-            ecs_security_group, ec2.Port.tcp(5432), "Backend->RDS")
+            ecs_security_group, ec2.Port.tcp(5432), "ECS->RDS")
 
         self.alb = alb
 
         CfnOutput(self, "ClusterName", value=cluster.cluster_name)
         CfnOutput(self, "BackendServiceName",
                   value=backend_service.service_name)
+        CfnOutput(self, "EmbeddingWorkerServiceName",
+                  value=embedding_worker_service.service_name)
         CfnOutput(self, "ChromaServiceName", value=chroma_service.service_name)
         CfnOutput(self, "PaymentsSecretName",
-                  value=payments_secret.secret_name)
+                  value=payments_secret_ref.secret_name)
         CfnOutput(self, "DbInitializerTaskDefinitionArn",
                   value=db_initializer_task.task_definition_arn)
         CfnOutput(self, "DbInitializerLogGroupName",

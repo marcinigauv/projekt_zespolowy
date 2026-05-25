@@ -14,6 +14,14 @@ class ContainerStack(Stack):
             image_scan_on_push=True,
         )
 
+        self.embedding_worker_repo = ecr.Repository(
+            self, "EmbeddingWorker",
+            repository_name="store-embedding-worker",
+            removal_policy=RemovalPolicy.DESTROY,
+            empty_on_delete=True,
+            image_scan_on_push=True,
+        )
+
         self.db_initializer_repo = ecr.Repository(
             self, "DbInitializer",
             repository_name="store-db-initializer",
@@ -24,5 +32,7 @@ class ContainerStack(Stack):
 
         CfnOutput(self, "BackendRepositoryUri",
                   value=self.backend_repo.repository_uri)
+        CfnOutput(self, "EmbeddingWorkerRepositoryUri",
+                  value=self.embedding_worker_repo.repository_uri)
         CfnOutput(self, "DbInitializerRepositoryUri",
                   value=self.db_initializer_repo.repository_uri)

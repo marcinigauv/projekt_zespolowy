@@ -2,7 +2,7 @@ from src.products.models import ProductCreateRequest, ProductSearchRequest, Prod
 from src.products.exceptions import ProductNotFoundException
 from src.sql.db import DBSession
 from src.products.utils import add_product_to_db, delete_product_from_db, edit_product_in_db, get_products_from_db, get_product_by_id_from_db
-from src.products.dependencies import fetch_similar_products_in_vector_store, remove_product_from_vector_store, save_product_in_vector_store
+from src.products.dependencies import fetch_similar_products_in_vector_store
 
 
 async def get_products(
@@ -43,9 +43,7 @@ async def add_product(
     product_request: ProductCreateRequest,
 ) -> ProductResponse:
     product = await add_product_to_db(session, product_request)
-    response = ProductResponse.from_product(product)
-    save_product_in_vector_store(response)
-    return response
+    return ProductResponse.from_product(product)
 
 
 async def edit_product(
@@ -56,9 +54,7 @@ async def edit_product(
     product = await edit_product_in_db(session, product_id, product_request)
     if not product:
         raise ProductNotFoundException(product_id)
-    response = ProductResponse.from_product(product)
-    save_product_in_vector_store(response)
-    return response
+    return ProductResponse.from_product(product)
 
 
 async def delete_product(
@@ -68,5 +64,4 @@ async def delete_product(
     deleted = await delete_product_from_db(session, product_id)
     if not deleted:
         raise ProductNotFoundException(product_id)
-    remove_product_from_vector_store(product_id)
     return True

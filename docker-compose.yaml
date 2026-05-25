@@ -46,6 +46,31 @@ services:
       start_period: 20s
     restart: always
 
+  embedding-worker:
+    build:
+      context: ./backend
+      dockerfile: embedding_worker/Dockerfile
+    container_name: embedding-worker
+    environment:
+      DB_SQL_SETTINGS__HOST: postgres
+      DB_SQL_SETTINGS__PORT: 5432
+      DB_SQL_SETTINGS__USERNAME: ${DB_SQL_SETTINGS__USERNAME}
+      DB_SQL_SETTINGS__PASSWORD: ${DB_SQL_SETTINGS__PASSWORD}
+      DB_SQL_SETTINGS__DATABASE: ${DB_SQL_SETTINGS__DATABASE}
+      VECTOR_STORE_SETTINGS__CHROMA_HOST: chroma
+      VECTOR_STORE_SETTINGS__CHROMA_PORT: 8000
+      VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY: ${VECTOR_STORE_SETTINGS__CHROMA_ANONYMIZED_TELEMETRY}
+      EMBEDDING_WORKER_INITIAL_DELAY_SECONDS: ${EMBEDDING_WORKER_INITIAL_DELAY_SECONDS:-15}
+      EMBEDDING_WORKER_INTERVAL_SECONDS: ${EMBEDDING_WORKER_INTERVAL_SECONDS:-900}
+      EMBEDDING_WORKER_PAGE_SIZE: ${EMBEDDING_WORKER_PAGE_SIZE:-100}
+      EMBEDDING_WORKER_MODEL_NAME: ${EMBEDDING_WORKER_MODEL_NAME:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+    restart: always
+
   db_initializer:
     profiles: ["initializer"]
     build:
