@@ -1,6 +1,7 @@
 import { styled, YStack, XStack, Text, Button, Input, ScrollView } from 'tamagui'
 
 const styles = <Value,>(value: Value) => value
+const backgroundTransparentColor = '$backgroundTransparent' as unknown as '$background'
 
 export const PageWrapper = styled(YStack, styles({
   flex: 1,
@@ -113,7 +114,7 @@ export const SectionDescription = styled(Text, styles({
 }))
 
 export const SurfaceCard = styled(YStack, styles({
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   borderWidth: 1,
   borderColor: '$borderColor',
   borderRadius: 20,
@@ -182,7 +183,7 @@ export const ToastViewport = styled(YStack, styles({
 }))
 
 export const ToastCardButton = styled(Button, styles({
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   borderWidth: 1,
   borderColor: '$borderColor',
   borderRadius: 20,
@@ -232,7 +233,7 @@ export const ToastTooltip = styled(YStack, styles({
   bottom: '100%',
   mt: '$2',
   maxWidth: 420,
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   borderRadius: 18,
   px: '$4',
   py: '$2.5',
@@ -369,7 +370,7 @@ export const SearchInput = styled(FormInput, styles({
 }))
 
 export const NavBar = styled(XStack, styles({
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   minHeight: 64,
   minWidth: 0,
   ai: 'center',
@@ -591,7 +592,7 @@ export const HeaderMenuButton = styled(Button, styles({
 }))
 
 export const PhoneTabsWrap = styled(YStack, styles({
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   width: '100%',
   alignItems: 'center',
   px: '$2.5',
@@ -650,7 +651,7 @@ export const PhoneTabButton = styled(Button, styles({
   $xs: {
     minHeight: 40,
     px: '$1.5',
-    py: '$1.25',
+    py: 5,
   },
 }))
 
@@ -672,7 +673,7 @@ export const PhoneTabBadge = styled(YStack, styles({
 }))
 
 export const HeaderProfileSurface = styled(YStack, styles({
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
 }))
 
 export const HeaderProfileSummary = styled(YStack, styles({
@@ -916,7 +917,7 @@ export const ProductInfo = styled(YStack, styles({
   bg: '$background',
 }))
 
-export const ProductCardSection = styled(YStack, styles({
+const productCardSectionStyles = styles({
   p: '$2.5',
   gap: '$1',
   bg: '$background',
@@ -926,15 +927,20 @@ export const ProductCardSection = styled(YStack, styles({
   $xs: {
     p: '$1.5',
   },
-}))
+} as const)
 
-export const ProductTitleSection = styled(ProductCardSection, styles({
+export const ProductCardSection = styled(YStack, productCardSectionStyles)
+
+export const ProductTitleSection = styled(YStack, styles({
+  ...productCardSectionStyles,
   minHeight: 62,
   justifyContent: 'center',
   $sm: {
+    ...productCardSectionStyles.$sm,
     minHeight: 56,
   },
   $xs: {
+    ...productCardSectionStyles.$xs,
     minHeight: 50,
   },
 }))
@@ -1097,7 +1103,7 @@ export const InfoTile = styled(YStack, styles({
   borderWidth: 1,
   borderColor: '$borderColor',
   borderRadius: 18,
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   px: 16,
   py: 14,
   gap: 6,
@@ -1459,7 +1465,7 @@ export const SecondaryButton = styled(Button, styles({
   letterSpacing: 0.6,
   borderRadius: 999,
   borderColor: '$borderColor',
-  bg: '$backgroundTransparent',
+  bg: backgroundTransparentColor,
   color: '$color',
   minHeight: 56,
   shadowColor: '$shadowColor',
