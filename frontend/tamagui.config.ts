@@ -180,6 +180,372 @@ const semanticTokens = {
   red10: '#ba1a1a',
 }
 
+type StitchThemeMode = 'light' | 'dark'
+
+type StitchThemePalette = {
+  mode: StitchThemeMode
+  background: string
+  backgroundHover: string
+  backgroundPress: string
+  backgroundStrong: string
+  surface: string
+  surfaceVariant: string
+  color: string
+  mutedText: string
+  borderColor: string
+  outlineColor: string
+  primary: string
+  primaryContainer: string
+  secondary: string
+  tertiary: string
+  accent: string
+  error: string
+  shadowColor: string
+  shadowColorHover: string
+  gradientStart: string
+  gradientMid: string
+  gradientEnd: string
+  overlay: string
+  glow: string
+}
+
+const hexToRgb = (value: string) => {
+  const normalized = value.trim().replace('#', '')
+
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+    return null
+  }
+
+  return {
+    r: Number.parseInt(normalized.slice(0, 2), 16),
+    g: Number.parseInt(normalized.slice(2, 4), 16),
+    b: Number.parseInt(normalized.slice(4, 6), 16),
+  }
+}
+
+const withAlpha = (value: string, alpha: number) => {
+  const rgb = hexToRgb(value)
+
+  if (!rgb) {
+    return value
+  }
+
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`
+}
+
+const createStitchTheme = (palette: StitchThemePalette) => {
+  const baseTheme = palette.mode === 'dark' ? defaultConfig.themes.dark : defaultConfig.themes.light
+
+  return {
+    ...baseTheme,
+    blue10: palette.primary,
+    gold10: palette.tertiary,
+    gray10: palette.outlineColor,
+    gray11: palette.mutedText,
+    red10: palette.error,
+    background: palette.background,
+    backgroundHover: palette.backgroundHover,
+    backgroundPress: palette.backgroundPress,
+    backgroundFocus: palette.backgroundPress,
+    backgroundStrong: palette.backgroundStrong,
+    backgroundTransparent: withAlpha(palette.background, 0.84),
+    color: palette.color,
+    colorHover: palette.color,
+    colorPress: palette.color,
+    colorFocus: palette.color,
+    colorTransparent: withAlpha(palette.color, palette.mode === 'dark' ? 0.74 : 0.72),
+    borderColor: palette.borderColor,
+    borderColorHover: palette.outlineColor,
+    borderColorFocus: palette.primary,
+    borderColorPress: palette.borderColor,
+    placeholderColor: palette.mutedText,
+    outlineColor: palette.outlineColor,
+    shadowColor: palette.shadowColor,
+    shadowColorHover: palette.shadowColorHover,
+    stitchPrimary: palette.primary,
+    stitchPrimaryContainer: palette.primaryContainer,
+    stitchSecondary: palette.secondary,
+    stitchTertiary: palette.tertiary,
+    stitchAccent: palette.accent,
+    stitchBackground: palette.background,
+    stitchSurface: palette.surface,
+    stitchSurfaceVariant: palette.surfaceVariant,
+    stitchText: palette.color,
+    stitchTextMuted: palette.mutedText,
+    stitchBorder: palette.borderColor,
+    stitchOutline: palette.outlineColor,
+    stitchError: palette.error,
+    stitchGradientStart: palette.gradientStart,
+    stitchGradientMid: palette.gradientMid,
+    stitchGradientEnd: palette.gradientEnd,
+    stitchOverlay: palette.overlay,
+    stitchGlow: palette.glow,
+  }
+}
+
+const stitchThemes = {
+  stitchLuxeLight: createStitchTheme({
+    mode: 'light',
+    background: '#fdf7ff',
+    backgroundHover: '#f8f2fa',
+    backgroundPress: '#ece6ee',
+    backgroundStrong: '#e6e0e9',
+    surface: '#ffffff',
+    surfaceVariant: '#f2ecf4',
+    color: '#1d1b20',
+    mutedText: '#494551',
+    borderColor: '#cbc4d2',
+    outlineColor: '#7a7582',
+    primary: '#4f378a',
+    primaryContainer: '#6750a4',
+    secondary: '#63597c',
+    tertiary: '#765b00',
+    accent: '#6750a4',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(79, 55, 138, 0.12)',
+    shadowColorHover: 'rgba(79, 55, 138, 0.18)',
+    gradientStart: '#fdf7ff',
+    gradientMid: '#ece6ee',
+    gradientEnd: '#dee2e6',
+    overlay: 'rgba(253, 247, 255, 0.7)',
+    glow: 'rgba(103, 80, 164, 0.14)',
+  }),
+  stitchLuxeDark: createStitchTheme({
+    mode: 'dark',
+    background: '#121212',
+    backgroundHover: '#1d1b20',
+    backgroundPress: '#2b2930',
+    backgroundStrong: '#36343b',
+    surface: '#211f26',
+    surfaceVariant: '#49454f',
+    color: '#ece6ee',
+    mutedText: '#cbc4d2',
+    borderColor: '#49454f',
+    outlineColor: '#948f99',
+    primary: '#e7c365',
+    primaryContainer: '#c9a74d',
+    secondary: '#cdc0e9',
+    tertiary: '#ffdf93',
+    accent: '#c9a74d',
+    error: '#ffb4ab',
+    shadowColor: 'rgba(231, 195, 101, 0.18)',
+    shadowColorHover: 'rgba(231, 195, 101, 0.26)',
+    gradientStart: '#e7c365',
+    gradientMid: '#d9b55b',
+    gradientEnd: '#c9a74d',
+    overlay: 'rgba(18, 18, 18, 0.84)',
+    glow: 'rgba(231, 195, 101, 0.24)',
+  }),
+  stitchInception: createStitchTheme({
+    mode: 'light',
+    background: '#fdf7ff',
+    backgroundHover: '#f8f2fa',
+    backgroundPress: '#ece6ee',
+    backgroundStrong: '#dee2e6',
+    surface: '#ffffff',
+    surfaceVariant: '#f2ecf4',
+    color: '#1d1b20',
+    mutedText: '#494551',
+    borderColor: '#cbc4d2',
+    outlineColor: '#cbc4d2',
+    primary: '#4f378a',
+    primaryContainer: '#6750a4',
+    secondary: '#63597c',
+    tertiary: '#765b00',
+    accent: '#6750a4',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(79, 55, 138, 0.08)',
+    shadowColorHover: 'rgba(79, 55, 138, 0.12)',
+    gradientStart: '#fdf7ff',
+    gradientMid: '#ece6ee',
+    gradientEnd: '#dee2e6',
+    overlay: 'rgba(255, 255, 255, 0.6)',
+    glow: 'rgba(103, 80, 164, 0.12)',
+  }),
+  stitchCyberpunk: createStitchTheme({
+    mode: 'dark',
+    background: '#0a0014',
+    backgroundHover: '#13051f',
+    backgroundPress: '#1b0a2a',
+    backgroundStrong: '#261338',
+    surface: '#12081e',
+    surfaceVariant: '#1d1b20',
+    color: '#ffffff',
+    mutedText: '#cbc4d2',
+    borderColor: 'rgba(0, 243, 255, 0.32)',
+    outlineColor: '#00f3ff',
+    primary: '#00f3ff',
+    primaryContainer: '#ff00ff',
+    secondary: '#ff00ff',
+    tertiary: '#39ff14',
+    accent: '#39ff14',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(0, 243, 255, 0.24)',
+    shadowColorHover: 'rgba(255, 0, 255, 0.28)',
+    gradientStart: '#00f3ff',
+    gradientMid: '#0a0014',
+    gradientEnd: '#ff00ff',
+    overlay: 'rgba(255, 255, 255, 0.03)',
+    glow: 'rgba(255, 0, 255, 0.6)',
+  }),
+  stitchMatrix: createStitchTheme({
+    mode: 'dark',
+    background: '#000000',
+    backgroundHover: '#050505',
+    backgroundPress: '#0d0d0d',
+    backgroundStrong: '#111111',
+    surface: '#0d0d0d',
+    surfaceVariant: '#003b00',
+    color: '#00ff41',
+    mutedText: '#008f11',
+    borderColor: '#00ff41',
+    outlineColor: '#00ff41',
+    primary: '#00ff41',
+    primaryContainer: '#003b00',
+    secondary: '#003b00',
+    tertiary: '#008f11',
+    accent: '#008f11',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(0, 0, 0, 0)',
+    shadowColorHover: 'rgba(0, 0, 0, 0)',
+    gradientStart: '#000000',
+    gradientMid: '#003b00',
+    gradientEnd: '#00ff41',
+    overlay: 'rgba(0, 255, 65, 0.08)',
+    glow: 'rgba(0, 255, 65, 0.18)',
+  }),
+  stitchStarWars: createStitchTheme({
+    mode: 'dark',
+    background: '#0a0a0a',
+    backgroundHover: '#141218',
+    backgroundPress: '#211f26',
+    backgroundStrong: '#2b2930',
+    surface: '#121212',
+    surfaceVariant: '#1a1a1a',
+    color: '#fdf7ff',
+    mutedText: '#cbc4d2',
+    borderColor: 'rgba(212, 175, 55, 0.18)',
+    outlineColor: '#d4af37',
+    primary: '#d4af37',
+    primaryContainer: '#e0c097',
+    secondary: '#ffffff',
+    tertiary: '#765b00',
+    accent: '#ff0000',
+    error: '#f2b8b5',
+    shadowColor: 'rgba(212, 175, 55, 0.16)',
+    shadowColorHover: 'rgba(212, 175, 55, 0.24)',
+    gradientStart: '#d4af37',
+    gradientMid: '#a78628',
+    gradientEnd: '#765b00',
+    overlay: 'rgba(255, 255, 255, 0.03)',
+    glow: 'rgba(212, 175, 55, 0.2)',
+  }),
+  stitchHarryPotter: createStitchTheme({
+    mode: 'dark',
+    background: '#0a0e1a',
+    backgroundHover: '#121a2e',
+    backgroundPress: '#17213a',
+    backgroundStrong: '#1d2b45',
+    surface: '#121a2e',
+    surfaceVariant: '#1a2340',
+    color: '#d4af37',
+    mutedText: '#c9b78e',
+    borderColor: 'rgba(212, 175, 55, 0.24)',
+    outlineColor: '#d4af37',
+    primary: '#d4af37',
+    primaryContainer: '#ae0001',
+    secondary: '#740001',
+    tertiary: '#ae0001',
+    accent: '#ae0001',
+    error: '#ffb4ab',
+    shadowColor: 'rgba(212, 175, 55, 0.18)',
+    shadowColorHover: 'rgba(212, 175, 55, 0.24)',
+    gradientStart: '#0a0e1a',
+    gradientMid: '#121a2e',
+    gradientEnd: '#740001',
+    overlay: 'rgba(18, 26, 46, 0.82)',
+    glow: 'rgba(212, 175, 55, 0.18)',
+  }),
+  stitchLotr: createStitchTheme({
+    mode: 'dark',
+    background: '#1a1d16',
+    backgroundHover: '#242b1f',
+    backgroundPress: '#2b3426',
+    backgroundStrong: '#33402d',
+    surface: '#242b1f',
+    surfaceVariant: '#3e2723',
+    color: '#d4c3a1',
+    mutedText: '#a79c84',
+    borderColor: 'rgba(212, 195, 161, 0.24)',
+    outlineColor: '#d4c3a1',
+    primary: '#4a5d23',
+    primaryContainer: '#334015',
+    secondary: '#3e2723',
+    tertiary: '#ffd700',
+    accent: '#ffd700',
+    error: '#ffb4ab',
+    shadowColor: 'rgba(74, 93, 35, 0.18)',
+    shadowColorHover: 'rgba(255, 215, 0, 0.2)',
+    gradientStart: '#1a1d16',
+    gradientMid: '#242b1f',
+    gradientEnd: '#4a5d23',
+    overlay: 'rgba(36, 43, 31, 0.82)',
+    glow: 'rgba(255, 215, 0, 0.18)',
+  }),
+  stitchNoir: createStitchTheme({
+    mode: 'dark',
+    background: '#000000',
+    backgroundHover: '#111111',
+    backgroundPress: '#191919',
+    backgroundStrong: '#222222',
+    surface: '#111111',
+    surfaceVariant: '#1a1a1a',
+    color: '#ffffff',
+    mutedText: '#9e9e9e',
+    borderColor: '#333333',
+    outlineColor: '#ffffff',
+    primary: '#ff0000',
+    primaryContainer: '#330000',
+    secondary: '#333333',
+    tertiary: '#ff0000',
+    accent: '#ff0000',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(0, 0, 0, 0.42)',
+    shadowColorHover: 'rgba(255, 0, 0, 0.16)',
+    gradientStart: '#111111',
+    gradientMid: '#050505',
+    gradientEnd: '#000000',
+    overlay: 'rgba(17, 17, 17, 0.86)',
+    glow: 'rgba(255, 0, 0, 0.12)',
+  }),
+  stitchSynthwave: createStitchTheme({
+    mode: 'dark',
+    background: '#2b065a',
+    backgroundHover: '#3d0a85',
+    backgroundPress: '#4d10a6',
+    backgroundStrong: '#5d19bf',
+    surface: '#3d0a85',
+    surfaceVariant: '#5011b0',
+    color: '#ff71ce',
+    mutedText: '#d9b6ff',
+    borderColor: '#b967ff',
+    outlineColor: '#b967ff',
+    primary: '#01cdfe',
+    primaryContainer: '#ff71ce',
+    secondary: '#05ffa1',
+    tertiary: '#fffb96',
+    accent: '#fffb96',
+    error: '#ba1a1a',
+    shadowColor: 'rgba(1, 205, 254, 0.24)',
+    shadowColorHover: 'rgba(255, 113, 206, 0.28)',
+    gradientStart: '#2b065a',
+    gradientMid: '#3d0a85',
+    gradientEnd: '#ff71ce',
+    overlay: 'rgba(61, 10, 133, 0.78)',
+    glow: 'rgba(255, 113, 206, 0.35)',
+  }),
+}
+
 const config = createTamagui({
   ...defaultConfig,
   defaultFont: 'body',
@@ -304,6 +670,7 @@ const config = createTamagui({
       borderColor: '#cbc4d2',
       shadowColor: 'rgba(79, 55, 138, 0.1)',
     },
+    ...stitchThemes,
   },
   settings: {
     ...defaultConfig.settings,
