@@ -176,9 +176,9 @@ export default function Index() {
               <ProductList>
                 {products.map((product) => {
                   return (
-                    <ProductListItem key={product.id}>
-                      <CatalogProductCard hoverStyle={{ scale: 1.015 }}>
-                        <CatalogProductPressable
+                    <ProductListItem  key={product.id}>
+                      <CatalogProductCard  hoverStyle={{ scale: 1.015 }}>
+                        <CatalogProductPressable 
                           onPress={() => router.push(`/products/${product.id}`)}
                         >
                           <CatalogProductMedia>

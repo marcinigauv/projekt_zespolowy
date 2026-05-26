@@ -183,7 +183,7 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
           const remainingCategories = Math.max(0, item.categories.length - visibleCategories.length)
 
           return (
-            <ProductCarouselFrame
+            <ProductCarouselFrame  
               key={item.id}
               flex={1}
               minWidth={0}

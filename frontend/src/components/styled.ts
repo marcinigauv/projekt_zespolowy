@@ -759,6 +759,9 @@ export const CatalogProductCard = styled(YStack, styles({
 export const CatalogProductPressable = styled(Button, styles({
   unstyled: true,
   width: '100%',
+  borderWidth: 0,
+  backgroundColor: 'inherit',
+  borderRadius: '$10',
   flexDirection: 'column',
   alignItems: 'stretch',
   justifyContent: 'flex-start',
@@ -883,6 +886,7 @@ export const ProductCardLinkButton = styled(Button, styles({
   unstyled: true,
   width: '100%',
   flex: 1,
+  borderWidth: 0,
   flexDirection: 'column',
   justifyContent: 'flex-start',
   alignItems: 'stretch',
