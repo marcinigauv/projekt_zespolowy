@@ -12,6 +12,10 @@ on:
         required: true
         default: https://api.sandbox.paynow.pl/v1/payments
 
+concurrency:
+  group: store-aws-${{ inputs.aws_region }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -462,6 +466,10 @@ jobs:
             echo "::warning::Seed task failed or did not start cleanly. Review CloudWatch log group $SEED_LOG_GROUP_NAME"
             aws logs tail "$SEED_LOG_GROUP_NAME" --since 30m || true
           fi
+
+      - name: Fail when seed did not complete
+        if: steps.seed.outcome != 'success' && steps.seed_retry.outcome != 'success'
+        run: exit 1
 
       - name: Refresh embedding worker after seed
         if: steps.seed.outcome == 'success' || steps.seed_retry.outcome == 'success'

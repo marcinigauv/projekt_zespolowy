@@ -186,6 +186,8 @@ class ComputeStack(Stack):
             self, "BackendService", cluster=cluster, task_definition=backend_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            circuit_breaker=ecs.DeploymentCircuitBreaker(rollback=True),
+            min_healthy_percent=50,
             service_connect_configuration=ecs.ServiceConnectProps(
                 services=[ecs.ServiceConnectService(
                     port_mapping_name="backend",
@@ -198,12 +200,16 @@ class ComputeStack(Stack):
             self, "EmbeddingWorkerService", cluster=cluster, task_definition=embedding_worker_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            circuit_breaker=ecs.DeploymentCircuitBreaker(rollback=True),
+            min_healthy_percent=50,
             service_connect_configuration=ecs.ServiceConnectProps(),
         )
         chroma_service = ecs.FargateService(
             self, "ChromaService", cluster=cluster, task_definition=chroma_task, desired_count=1,
             security_groups=[ecs_security_group], vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            circuit_breaker=ecs.DeploymentCircuitBreaker(rollback=True),
+            min_healthy_percent=50,
             service_connect_configuration=ecs.ServiceConnectProps(
                 services=[ecs.ServiceConnectService(
                     port_mapping_name="chroma",

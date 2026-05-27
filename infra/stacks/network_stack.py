@@ -29,8 +29,6 @@ class NetworkStack(Stack):
         )
         self.alb_security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(80), "HTTP")
-        self.alb_security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.tcp(443), "HTTPS")
 
         self.ecs_security_group = ec2.SecurityGroup(
             self, "ECSSG", vpc=self.vpc, allow_all_outbound=True

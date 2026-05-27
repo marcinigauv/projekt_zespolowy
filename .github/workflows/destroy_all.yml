@@ -8,6 +8,10 @@ on:
         required: true
         default: eu-central-1
 
+concurrency:
+  group: store-aws-${{ inputs.aws_region }}
+  cancel-in-progress: false
+
 jobs:
   destroy:
     runs-on: ubuntu-latest
