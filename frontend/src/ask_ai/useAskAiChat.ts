@@ -77,11 +77,16 @@ interface UseAskAiChatOptions {
 export function useAskAiChat({ enabled, autoInitialize = false }: UseAskAiChatOptions): AskAiChatController {
   const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [sessionId, setSessionId] = useState('')
-  const [draft, setDraft] = useState('')
+  const [draft, setDraftState] = useState('')
   const [latestMessage, setLatestMessage] = useState<AskAiMessagePollDto | null>(null)
   const [isInitializing, setIsInitializing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const setDraft = useCallback((value: string) => {
+    const clampedDraft = value.length > MAX_MESSAGE_LENGTH ? value.slice(0, MAX_MESSAGE_LENGTH) : value
+    setDraftState(clampedDraft)
+  }, [])
 
   const clearPolling = useCallback(() => {
     if (pollingTimeoutRef.current) {
