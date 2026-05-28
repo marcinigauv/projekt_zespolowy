@@ -4,6 +4,7 @@ from aws_cdk import App, Environment
 from stacks.network_stack import NetworkStack
 from stacks.database_stack import DatabaseStack
 from stacks.container_stack import ContainerStack
+from stacks.cache_stack import CacheStack
 from stacks.compute_stack import ComputeStack
 from stacks.cdn_stack import CdnStack
 
@@ -31,6 +32,14 @@ database_stack.add_dependency(network_stack)
 
 container_stack = ContainerStack(app, "StoreContainers", env=env)
 
+cache_stack = CacheStack(
+    app, "StoreCache",
+    vpc=network_stack.vpc,
+    ecs_security_group=network_stack.ecs_security_group,
+    env=env
+)
+cache_stack.add_dependency(network_stack)
+
 compute_stack = ComputeStack(
     app, "StoreCompute",
     vpc=network_stack.vpc,
@@ -41,12 +50,15 @@ compute_stack = ComputeStack(
     backend_repo=container_stack.backend_repo,
     embedding_worker_repo=container_stack.embedding_worker_repo,
     db_initializer_repo=container_stack.db_initializer_repo,
+    redis_host=cache_stack.redis_host,
+    redis_port=cache_stack.redis_port,
     payments_provider_url=payments_provider_url,
     env=env
 )
 compute_stack.add_dependency(network_stack)
 compute_stack.add_dependency(database_stack)
 compute_stack.add_dependency(container_stack)
+compute_stack.add_dependency(cache_stack)
 
 cdn_stack = CdnStack(
     app, "StoreCdn",

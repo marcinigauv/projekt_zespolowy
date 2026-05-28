@@ -1,0 +1,16 @@
+{
+  "version": "2026-05-27-local-v1",
+  "macrosFile": "macros.md",
+  "systemFragments": [
+    "system.md",
+    "scope_rules.md",
+    "tone_rules.md"
+  ],
+  "userTemplate": "user.md",
+  "defaults": {
+    "STORE_NAME": "Sklep Internetowy",
+    "FALLBACK_MESSAGE": "Przykro mi, nie rozumiem tego zadania.",
+    "TEMPORARY_ERROR_MESSAGE": "Przepraszam, chwilowo nie mogę przygotować odpowiedzi. Spróbuj ponownie za moment.",
+    "USE_CASE": "pomoc w zakupach ze sklepu internetowego"
+  }
+}

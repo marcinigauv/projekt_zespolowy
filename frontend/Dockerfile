@@ -19,7 +19,8 @@ RUN npm run build:web
 
 FROM nginx:1.27.0-alpine AS runtime
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY docker-entrypoint-resolver.sh /docker-entrypoint.d/99-resolver.sh
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /etc/nginx /var/log/nginx /run

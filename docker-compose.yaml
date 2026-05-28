@@ -10,7 +10,8 @@ services:
     ports:
       - "8081:8080"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: always
 
   backend:
@@ -31,11 +32,33 @@ services:
       PAYMENTS_SETTINGS__PROVIDER_URL: ${PAYMENTS_SETTINGS__PROVIDER_URL}
       PAYMENTS_SETTINGS__API_KEY: ${PAYMENTS_SETTINGS__API_KEY}
       PAYMENTS_SETTINGS__SIGN_PHRASE: ${PAYMENTS_SETTINGS__SIGN_PHRASE}
+      REDIS_SETTINGS__HOST: ${REDIS_SETTINGS__HOST}
+      REDIS_SETTINGS__PORT: ${REDIS_SETTINGS__PORT}
+      REDIS_SETTINGS__DB: ${REDIS_SETTINGS__DB}
+      REDIS_SETTINGS__PASSWORD: ${REDIS_SETTINGS__PASSWORD}
+      ASK_AI_SETTINGS__ENABLED: ${ASK_AI_SETTINGS__ENABLED}
+      ASK_AI_SETTINGS__PRIMARY_PROVIDER: ${ASK_AI_SETTINGS__PRIMARY_PROVIDER}
+      ASK_AI_SETTINGS__FALLBACK_PROVIDER: ${ASK_AI_SETTINGS__FALLBACK_PROVIDER}
+      ASK_AI_SETTINGS__FAILOVER_ENABLED: ${ASK_AI_SETTINGS__FAILOVER_ENABLED}
+      ASK_AI_SETTINGS__SESSION_TTL_SECONDS: ${ASK_AI_SETTINGS__SESSION_TTL_SECONDS}
+      ASK_AI_SETTINGS__MESSAGE_TTL_SECONDS: ${ASK_AI_SETTINGS__MESSAGE_TTL_SECONDS}
+      ASK_AI_SETTINGS__REQUEST_TIMEOUT_SECONDS: ${ASK_AI_SETTINGS__REQUEST_TIMEOUT_SECONDS}
+      ASK_AI_SETTINGS__MAX_CONTEXT_PRODUCTS: ${ASK_AI_SETTINGS__MAX_CONTEXT_PRODUCTS}
+      ASK_AI_SETTINGS__PROMPT_MANIFEST_PATH: ${ASK_AI_SETTINGS__PROMPT_MANIFEST_PATH}
+      GROQ_SETTINGS__API_KEY: ${GROQ_SETTINGS__API_KEY}
+      GROQ_SETTINGS__BASE_URL: ${GROQ_SETTINGS__BASE_URL}
+      GROQ_SETTINGS__MODEL: ${GROQ_SETTINGS__MODEL}
+      BEDROCK_SETTINGS__REGION: ${BEDROCK_SETTINGS__REGION}
+      BEDROCK_SETTINGS__MODEL_ID: ${BEDROCK_SETTINGS__MODEL_ID}
+      BEDROCK_SETTINGS__GUARDRAIL_ID: ${BEDROCK_SETTINGS__GUARDRAIL_ID}
+      BEDROCK_SETTINGS__GUARDRAIL_VERSION: ${BEDROCK_SETTINGS__GUARDRAIL_VERSION}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
       # chroma:
       #   condition: service_healthy
     healthcheck:
@@ -97,6 +120,14 @@ services:
       backend:
         condition: service_healthy
     restart: "no"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    restart: always
 
   postgres:
     image: postgres:18-alpine

@@ -5,7 +5,7 @@ from constructs import Construct
 
 
 class ComputeStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.ISecret, backend_repo: ecr.Repository, embedding_worker_repo: ecr.Repository, db_initializer_repo: ecr.Repository, payments_provider_url: str, **kwargs: Any) -> None:
+    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, ecs_security_group: ec2.SecurityGroup, alb_security_group: ec2.SecurityGroup, database: rds.DatabaseInstance, db_secret: secretsmanager.ISecret, backend_repo: ecr.Repository, embedding_worker_repo: ecr.Repository, db_initializer_repo: ecr.Repository, redis_host: str, redis_port: str, payments_provider_url: str, **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         backend_task_cpu = 1024
@@ -33,8 +33,18 @@ class ComputeStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
         )
 
+        groq_secret = secretsmanager.Secret(
+            self, "GroqSecret",
+            secret_name="store/askai-groq",
+            secret_object_value={
+                "api_key": SecretValue.unsafe_plain_text("replace-me"),
+            },
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         password_pepper_secret_ref: secretsmanager.ISecret = password_pepper_secret
         payments_secret_ref: secretsmanager.ISecret = payments_secret
+        groq_secret_ref: secretsmanager.ISecret = groq_secret
 
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc,
                               container_insights=True)
@@ -70,6 +80,7 @@ class ComputeStack(Stack):
         db_secret.grant_read(embedding_worker_task.task_role)
         password_pepper_secret_ref.grant_read(backend_task.task_role)
         payments_secret_ref.grant_read(backend_task.task_role)
+        groq_secret_ref.grant_read(backend_task.task_role)
         db_secret.grant_read(db_initializer_task.task_role)
         password_pepper_secret_ref.grant_read(db_initializer_task.task_role)
         payments_secret_ref.grant_read(db_initializer_task.task_role)
@@ -78,6 +89,7 @@ class ComputeStack(Stack):
             db_secret.grant_read(backend_task.execution_role)
             password_pepper_secret_ref.grant_read(backend_task.execution_role)
             payments_secret_ref.grant_read(backend_task.execution_role)
+            groq_secret_ref.grant_read(backend_task.execution_role)
 
         if embedding_worker_task.execution_role is not None:
             db_secret.grant_read(embedding_worker_task.execution_role)
@@ -93,6 +105,21 @@ class ComputeStack(Stack):
             image=ecs.ContainerImage.from_ecr_repository(
                 backend_repo, tag="latest"),
             environment={
+                "ASK_AI_SETTINGS__ENABLED": "true",
+                "ASK_AI_SETTINGS__PRIMARY_PROVIDER": "bedrock",
+                "ASK_AI_SETTINGS__FALLBACK_PROVIDER": "groq",
+                "ASK_AI_SETTINGS__FAILOVER_ENABLED": "true",
+                "ASK_AI_SETTINGS__SESSION_TTL_SECONDS": "900",
+                "ASK_AI_SETTINGS__MESSAGE_TTL_SECONDS": "900",
+                "ASK_AI_SETTINGS__REQUEST_TIMEOUT_SECONDS": "20",
+                "ASK_AI_SETTINGS__MAX_CONTEXT_PRODUCTS": "5",
+                "ASK_AI_SETTINGS__PROMPT_MANIFEST_PATH": "prompts/ask_ai/manifest.json",
+                "BEDROCK_SETTINGS__REGION": self.region,
+                "BEDROCK_SETTINGS__MODEL_ID": "amazon.nova-lite-v1:0",
+                "GROQ_SETTINGS__MODEL": "llama-3.3-70b-versatile",
+                "REDIS_SETTINGS__HOST": redis_host,
+                "REDIS_SETTINGS__PORT": redis_port,
+                "REDIS_SETTINGS__DB": "0",
                 "DB_SQL_SETTINGS__HOST": database.db_instance_endpoint_address,
                 "DB_SQL_SETTINGS__PORT": "5432",
                 "DB_SQL_SETTINGS__DATABASE": "store_db",
@@ -107,6 +134,7 @@ class ComputeStack(Stack):
                 "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
                 "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret_ref, "api_key"),
                 "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret_ref, "sign_phrase"),
+                "GROQ_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(groq_secret_ref, "api_key"),
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="backend", log_retention=logs.RetentionDays.ONE_WEEK),
@@ -248,6 +276,8 @@ class ComputeStack(Stack):
         CfnOutput(self, "ChromaServiceName", value=chroma_service.service_name)
         CfnOutput(self, "PaymentsSecretName",
                   value=payments_secret_ref.secret_name)
+        CfnOutput(self, "GroqSecretName",
+                  value=groq_secret_ref.secret_name)
         CfnOutput(self, "DbInitializerTaskDefinitionArn",
                   value=db_initializer_task.task_definition_arn)
         CfnOutput(self, "DbInitializerLogGroupName",

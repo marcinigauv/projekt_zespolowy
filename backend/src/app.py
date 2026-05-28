@@ -9,6 +9,7 @@ from src.orders.router import orders_router
 from src.payments.router import payments_router
 from src.products.router import products_router
 from src.users.router import users_router
+from src.ask_ai.router import ask_ai_router
 from src.orders.exceptions import CustomOrderException, handle_custom_order_exception
 from src.products.exceptions import CustomProductException, handle_custom_product_exception
 from src.users.exceptions import CustomUserException, handle_custom_user_exception
@@ -18,6 +19,9 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8080",
     "http://localhost:8081",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8081",
 ]
 
 
@@ -42,6 +46,7 @@ app.include_router(orders_router)
 app.include_router(payments_router)
 app.include_router(products_router)
 app.include_router(users_router)
+app.include_router(ask_ai_router)
 
 app.add_exception_handler(CustomProductException,
                           handle_custom_product_exception)

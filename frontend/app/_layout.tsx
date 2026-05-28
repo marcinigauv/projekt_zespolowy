@@ -14,6 +14,7 @@ import {
 import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { hydrateAuthSessionUseCase } from '../src/auth/useCases'
+import { AskAiFloatingWidget } from '../src/ask_ai/components/AskAiFloatingWidget'
 import { NotificationsToastHost } from '../src/components/NotificationsToastHost'
 import { useAuthStore } from '../src/store/authStore'
 import { DEFAULT_THEME_PREFERENCE, resolveThemePreference } from '../src/theme/options'
@@ -44,7 +45,10 @@ export default function RootLayout() {
       <TamaguiProvider config={tamaguiConfig} defaultTheme={activeTheme}>
         <Theme name={activeTheme} forceClassName>
           <YStack flex={1} pt={Platform.OS === 'web' ? 0 : mobileNotificationsInset}>
-            <Stack screenOptions={{ headerShown: false }} />
+            <YStack flex={1}>
+              <Stack screenOptions={{ headerShown: false }} />
+              <AskAiFloatingWidget />
+            </YStack>
           </YStack>
 
           <NotificationsToastHost onMobileInsetChange={setMobileNotificationsInset} />

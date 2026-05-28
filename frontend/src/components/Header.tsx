@@ -32,8 +32,14 @@ import {
 
 function ProfileMenu({ onClose }: { onClose: () => void }) {
   const router = useRouter()
+  const theme = useTheme()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
+  const primaryColor = getVariableValue(theme.stitchPrimary)
+  const textColor = getVariableValue(theme.color)
+  const placeholderColor = getVariableValue(theme.placeholderColor)
+  const sectionLabelColor = getVariableValue(theme.gray11)
+  const dangerColor = getVariableValue(theme.red10)
 
   const go = (path: string) => {
     onClose()
@@ -54,13 +60,13 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         <HeaderProfileSummary>
           <HeaderProfileRow>
             <HeaderAvatar>
-              <Text color="$stitchPrimary" fontWeight="700" fontSize="$5">
+              <Text fontWeight="700" fontSize="$5" style={{ color: primaryColor }}>
                 {user.name?.[0] || '?'}
               </Text>
             </HeaderAvatar>
             <YStack>
-              <Text fontWeight="700" fontSize="$5" color="$color">{user.name}</Text>
-              <Text fontSize="$3" color="$placeholderColor">{user.email}</Text>
+              <Text fontWeight="700" fontSize="$5" style={{ color: textColor }}>{user.name}</Text>
+              <Text fontSize="$3" style={{ color: placeholderColor }}>{user.email}</Text>
             </YStack>
           </HeaderProfileRow>
         </HeaderProfileSummary>
@@ -77,7 +83,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           <>
             <Separator borderBottomColor="$borderColor" />
             <YStack px="$3" pt="$2" pb="$1">
-              <Text fontSize="$2" color="$gray11" fontWeight="700" textTransform="uppercase" letterSpacing={0.8}>
+              <Text fontSize="$2" fontWeight="700" textTransform="uppercase" letterSpacing={0.8} style={{ color: sectionLabelColor }}>
                 Panel Admina
               </Text>
             </YStack>
@@ -87,7 +93,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           </>
         ) : null}
         <HeaderMenuButton onPress={handleLogout}>
-          <Text color="$red10">Wyloguj się</Text>
+          <Text style={{ color: dangerColor }}>Wyloguj się</Text>
         </HeaderMenuButton>
       </HeaderProfileSurface>
     )
@@ -124,6 +130,9 @@ export function Header() {
   const onPrimaryColor = getVariableValue(theme.stitchOnPrimary)
   const textColor = getVariableValue(theme.color)
   const mutedColor = getVariableValue(theme.placeholderColor)
+  const backgroundColor = getVariableValue(theme.background)
+  const backgroundPressColor = getVariableValue(theme.backgroundPress)
+  const backgroundStrongColor = getVariableValue(theme.backgroundStrong)
   const navBarStyle = isWeb && !isPhone
     ? { position: 'sticky' as const, top: 0, zIndex: 40, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : undefined
@@ -160,6 +169,13 @@ export function Header() {
       path: '/cart',
       active: pathname === '/cart',
       badge: cartItems > 0 ? cartItems : null,
+    },
+    {
+      key: 'ask-ai',
+      icon: 'auto-awesome',
+      ariaLabel: 'AskAI',
+      path: '/ask-ai',
+      active: pathname === '/ask-ai',
     },
     {
       key: 'account',
@@ -216,7 +232,7 @@ export function Header() {
       <NavBar px={isWideDesktop ? '$6' : '$4'} style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
+            <Text fontFamily="$mono" fontSize="$2" fontWeight="700" style={{ color: primaryColor }}>
               SI
             </Text>
           </HeaderBrandMark>
@@ -241,7 +257,7 @@ export function Header() {
               <MaterialIcons name="shopping-cart" size={20} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
-                  <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">
+                  <Text fontSize="$1" fontWeight="800" style={{ color: onPrimaryColor }}>
                     {cartItems}
                   </Text>
                 </HeaderBadge>
@@ -286,7 +302,7 @@ export function Header() {
           <NavBar>
             <HeaderBrand>
               <HeaderBrandMark>
-                <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
+                <Text fontFamily="$mono" fontSize="$2" fontWeight="700" style={{ color: primaryColor }}>
                   SI
                 </Text>
               </HeaderBrandMark>
@@ -314,7 +330,7 @@ export function Header() {
                   <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
                   {cartItems > 0 && (
                     <HeaderBadge>
-                      <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                      <Text fontSize="$1" fontWeight="800" style={{ color: onPrimaryColor }}>{cartItems}</Text>
                     </HeaderBadge>
                   )}
                 </HeaderIconButton>
@@ -332,9 +348,9 @@ export function Header() {
                 key={tab.key}
                 aria-label={tab.ariaLabel}
                 onPress={() => navigate(tab.path)}
-                bg={tab.active ? '$stitchPrimary' : 'transparent'}
-                hoverStyle={{ bg: tab.active ? '$stitchPrimary' : '$backgroundPress' }}
-                pressStyle={{ bg: tab.active ? '$stitchPrimary' : '$backgroundPress' }}
+                style={{ backgroundColor: tab.active ? primaryColor : 'transparent' }}
+                hoverStyle={{ background: tab.active ? primaryColor : backgroundPressColor }}
+                pressStyle={{ background: tab.active ? primaryColor : backgroundPressColor }}
               >
                 <YStack style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   <MaterialIcons
@@ -344,10 +360,9 @@ export function Header() {
                   />
                   {tab.badge ? (
                     <PhoneTabBadge
-                      bg={tab.active ? '$background' : '$backgroundStrong'}
-                      style={{ position: 'absolute', top: -8, right: -12 }}
+                      style={{ position: 'absolute', top: -8, right: -12, backgroundColor: tab.active ? backgroundColor : backgroundStrongColor }}
                     >
-                      <Text color={tab.active ? '$stitchPrimary' : '$color'} fontSize="$1" fontWeight="800">
+                      <Text fontSize="$1" fontWeight="800" style={{ color: tab.active ? primaryColor : textColor }}>
                         {tab.badge}
                       </Text>
                     </PhoneTabBadge>
@@ -366,7 +381,7 @@ export function Header() {
       <NavBar style={navBarStyle}>
         <HeaderBrand>
           <HeaderBrandMark>
-            <Text color="$stitchPrimary" fontFamily="$mono" fontSize="$2" fontWeight="700">
+            <Text fontFamily="$mono" fontSize="$2" fontWeight="700" style={{ color: primaryColor }}>
               SI
             </Text>
           </HeaderBrandMark>
@@ -394,7 +409,7 @@ export function Header() {
               <MaterialIcons name="shopping-cart" size={19} color={primaryColor} />
               {cartItems > 0 && (
                 <HeaderBadge>
-                  <Text color="$stitchOnPrimary" fontSize="$1" fontWeight="800">{cartItems}</Text>
+                  <Text fontSize="$1" fontWeight="800" style={{ color: onPrimaryColor }}>{cartItems}</Text>
                 </HeaderBadge>
               )}
             </HeaderIconButton>
@@ -417,7 +432,7 @@ export function Header() {
       {menuOpen && (
         <HeaderMenuWrap style={{ zIndex: 39 }}>
           <HeaderMenuCard>
-            <Text fontSize="$6" fontWeight="700" color="$color">Nawigacja</Text>
+            <Text fontSize="$6" fontWeight="700" style={{ color: textColor }}>Nawigacja</Text>
 
             <HeaderMenuButton onPress={() => navigate('/')}>
               Strona glowna

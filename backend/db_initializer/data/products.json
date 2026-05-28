@@ -5,7 +5,8 @@
         "price": 249.99,
         "amount": 18,
         "categories": [
-            "LEGO",
+            "Zabawki",
+            "Klocki LEGO",
             "City"
         ],
         "image_url": "https://images.pexels.com/photos/4934169/pexels-photo-4934169.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -16,9 +17,9 @@
         "price": 399.99,
         "amount": 12,
         "categories": [
-            "LEGO",
-            "Technic",
-            "Motoryzacja / sport motorowy"
+            "Zabawki",
+            "Klocki LEGO",
+            "Technic"
         ],
         "image_url": "https://images.pexels.com/photos/34200502/pexels-photo-34200502.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -29,7 +30,7 @@
         "amount": 25,
         "categories": [
             "Elektronika",
-            "Raspberry Pi",
+            "Komputery jednopłytkowe",
             "IoT"
         ],
         "image_url": "https://images.pexels.com/photos/1472443/pexels-photo-1472443.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -41,8 +42,8 @@
         "amount": 9,
         "categories": [
             "Elektronika",
-            "Kamera akcji",
-            "Video"
+            "Foto i Wideo",
+            "Kamera akcji"
         ],
         "image_url": "https://images.pexels.com/photos/14407523/pexels-photo-14407523.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -52,9 +53,9 @@
         "price": 179.99,
         "amount": 42,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Technic",
-            "Samochody"
+            "Technic"
         ],
         "image_url": "https://images.pexels.com/photos/34200502/pexels-photo-34200502.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -64,9 +65,9 @@
         "price": 849,
         "amount": 8,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Gwiezdne Wojny",
-            "Kolekcjonerskie"
+            "Star Wars"
         ],
         "image_url": "https://images.pexels.com/photos/29806648/pexels-photo-29806648.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -76,9 +77,9 @@
         "price": 459.99,
         "amount": 11,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Creator",
-            "Architektura"
+            "Creator"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -88,9 +89,9 @@
         "price": 129.9,
         "amount": 67,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "City",
-            "Pojazdy"
+            "City"
         ],
         "image_url": "https://images.pexels.com/photos/4934169/pexels-photo-4934169.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -100,9 +101,9 @@
         "price": 219,
         "amount": 34,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Friends",
-            "Dla dziewczynek"
+            "Friends"
         ],
         "image_url": "https://images.pexels.com/photos/19916226/pexels-photo-19916226.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -112,9 +113,9 @@
         "price": 299.9,
         "amount": 29,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Icons",
-            "Dekoracje"
+            "Icons"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -124,9 +125,9 @@
         "price": 89.99,
         "amount": 78,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Speed Champions",
-            "Samochody"
+            "Speed Champions"
         ],
         "image_url": "https://images.pexels.com/photos/34200502/pexels-photo-34200502.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -136,9 +137,9 @@
         "price": 499,
         "amount": 17,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Harry Potter",
-            "Pociągi"
+            "Harry Potter"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -148,9 +149,9 @@
         "price": 899,
         "amount": 9,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Ninjago",
-            "Fantasy"
+            "Ninjago"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -160,9 +161,9 @@
         "price": 499,
         "amount": 15,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Architektura",
-            "Kolekcjonerskie"
+            "Architecture"
         ],
         "image_url": "https://images.pexels.com/photos/8289844/pexels-photo-8289844.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -172,9 +173,9 @@
         "price": 649,
         "amount": 22,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Marvel",
-            "Superbohaterowie"
+            "Marvel"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -184,9 +185,9 @@
         "price": 799,
         "amount": 18,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Disney",
-            "Dla dziewczynek"
+            "Disney"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -196,9 +197,9 @@
         "price": 599,
         "amount": 16,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Creator",
-            "Samochody"
+            "Creator"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -208,9 +209,9 @@
         "price": 799,
         "amount": 7,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Technic",
-            "Sport motorowy"
+            "Technic"
         ],
         "image_url": "https://images.pexels.com/photos/34200502/pexels-photo-34200502.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -220,9 +221,9 @@
         "price": 399,
         "amount": 33,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Icons",
-            "Dekoracje"
+            "Icons"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -232,9 +233,9 @@
         "price": 449,
         "amount": 19,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "City",
-            "Kosmos"
+            "City"
         ],
         "image_url": "https://images.pexels.com/photos/4934169/pexels-photo-4934169.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -244,9 +245,9 @@
         "price": 1999,
         "amount": 5,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Harry Potter",
-            "Kolekcjonerskie"
+            "Harry Potter"
         ],
         "image_url": "https://images.pexels.com/photos/8365831/pexels-photo-8365831.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -256,9 +257,9 @@
         "price": 1699,
         "amount": 6,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Technic",
-            "Samochody"
+            "Technic"
         ],
         "image_url": "https://images.pexels.com/photos/34200502/pexels-photo-34200502.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -268,9 +269,9 @@
         "price": 499,
         "amount": 27,
         "categories": [
+            "Zabawki",
             "Klocki LEGO",
-            "Friends",
-            "Sport"
+            "Friends"
         ],
         "image_url": "https://images.pexels.com/photos/19916226/pexels-photo-19916226.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -293,7 +294,7 @@
         "amount": 56,
         "categories": [
             "Elektronika",
-            "Arduino",
+            "Komputery jednopłytkowe",
             "IoT"
         ],
         "image_url": "https://images.pexels.com/photos/15470542/pexels-photo-15470542.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -304,9 +305,9 @@
         "price": 3899,
         "amount": 14,
         "categories": [
-            "Drony",
-            "Fotografia",
-            "Elektronika"
+            "Elektronika",
+            "Foto i Wideo",
+            "Drony"
         ],
         "image_url": "https://images.pexels.com/photos/28641255/pexels-photo-28641255.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -316,9 +317,9 @@
         "price": 529,
         "amount": 112,
         "categories": [
-            "Akcesoria",
-            "Mysz",
-            "Praca"
+            "Elektronika",
+            "Akcesoria komputerowe",
+            "Peryferia"
         ],
         "image_url": "https://images.pexels.com/photos/7006949/pexels-photo-7006949.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -328,9 +329,9 @@
         "price": 1499,
         "amount": 38,
         "categories": [
+            "Elektronika",
             "Audio",
-            "Słuchawki",
-            "Elektronika"
+            "Słuchawki"
         ],
         "image_url": "https://images.pexels.com/photos/3541365/pexels-photo-3541365.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -341,7 +342,7 @@
         "amount": 19,
         "categories": [
             "Elektronika",
-            "Karta graficzna",
+            "Podzespoły PC",
             "Gaming"
         ],
         "image_url": "https://images.pexels.com/photos/34552803/pexels-photo-34552803.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -353,7 +354,7 @@
         "amount": 23,
         "categories": [
             "Elektronika",
-            "Tablet",
+            "Tablety",
             "Samsung"
         ],
         "image_url": "https://images.pexels.com/photos/47261/pexels-photo-47261.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -364,9 +365,9 @@
         "price": 249,
         "amount": 145,
         "categories": [
-            "Akcesoria",
-            "Powerbank",
-            "Podróże"
+            "Elektronika",
+            "Akcesoria mobilne",
+            "Powerbanki"
         ],
         "image_url": "https://images.pexels.com/photos/30708285/pexels-photo-30708285.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -376,9 +377,9 @@
         "price": 699,
         "amount": 41,
         "categories": [
+            "Elektronika",
             "Inteligentny dom",
-            "Oświetlenie",
-            "Elektronika"
+            "Oświetlenie"
         ],
         "image_url": "https://images.pexels.com/photos/32967485/pexels-photo-32967485.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -389,8 +390,8 @@
         "amount": 26,
         "categories": [
             "Elektronika",
-            "Procesor",
-            "Gaming"
+            "Podzespoły PC",
+            "Procesory"
         ],
         "image_url": "https://images.pexels.com/photos/343239/pexels-photo-343239.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -400,9 +401,9 @@
         "price": 2199,
         "amount": 31,
         "categories": [
-            "Kamera akcji",
-            "Sport",
-            "Fotografia"
+            "Elektronika",
+            "Foto i Wideo",
+            "Kamera akcji"
         ],
         "image_url": "https://images.pexels.com/photos/37126190/pexels-photo-37126190.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -412,9 +413,9 @@
         "price": 1899,
         "amount": 44,
         "categories": [
+            "Elektronika",
             "Inteligentny dom",
-            "Robot odkurzający",
-            "Elektronika"
+            "AGD"
         ],
         "image_url": "https://images.pexels.com/photos/4112723/pexels-photo-4112723.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -425,7 +426,7 @@
         "amount": 63,
         "categories": [
             "Elektronika",
-            "Pamięć RAM",
+            "Podzespoły PC",
             "Gaming"
         ],
         "image_url": "https://images.pexels.com/photos/16303235/pexels-photo-16303235.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -436,9 +437,9 @@
         "price": 1199,
         "amount": 72,
         "categories": [
+            "Elektronika",
             "Audio",
-            "Słuchawki",
-            "Elektronika"
+            "Słuchawki"
         ],
         "image_url": "https://images.pexels.com/photos/3921845/pexels-photo-3921845.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -448,9 +449,9 @@
         "price": 899,
         "amount": 51,
         "categories": [
-            "Kamera bezpieczeństwa",
+            "Elektronika",
             "Inteligentny dom",
-            "Elektronika"
+            "Kamery bezpieczeństwa"
         ],
         "image_url": "https://images.pexels.com/photos/17056400/pexels-photo-17056400.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -461,8 +462,8 @@
         "amount": 12,
         "categories": [
             "Elektronika",
-            "Procesor",
-            "Gaming"
+            "Podzespoły PC",
+            "Procesory"
         ],
         "image_url": "https://images.pexels.com/photos/32300577/pexels-photo-32300577.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -473,7 +474,7 @@
         "amount": 37,
         "categories": [
             "Elektronika",
-            "SSD",
+            "Podzespoły PC",
             "Pamięć masowa"
         ],
         "image_url": "https://images.pexels.com/photos/22604142/pexels-photo-22604142.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -484,9 +485,9 @@
         "price": 499,
         "amount": 88,
         "categories": [
+            "Elektronika",
             "Audio",
-            "Głośnik przenośny",
-            "Elektronika"
+            "Głośniki"
         ],
         "image_url": "https://images.pexels.com/photos/15684881/pexels-photo-15684881.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -496,9 +497,9 @@
         "price": 699,
         "amount": 54,
         "categories": [
+            "Elektronika",
             "Gaming",
-            "Mysz",
-            "Akcesoria"
+            "Akcesoria komputerowe"
         ],
         "image_url": "https://images.pexels.com/photos/28993116/pexels-photo-28993116.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -508,9 +509,9 @@
         "price": 899,
         "amount": 46,
         "categories": [
-            "Fotografia",
-            "Gimbal",
-            "Wideo"
+            "Elektronika",
+            "Foto i Wideo",
+            "Akcesoria foto"
         ],
         "image_url": "https://images.pexels.com/photos/6545581/pexels-photo-6545581.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -520,8 +521,8 @@
         "price": 799,
         "amount": 62,
         "categories": [
+            "Elektronika",
             "Gaming",
-            "Słuchawki",
             "Audio"
         ],
         "image_url": "https://images.pexels.com/photos/12304811/pexels-photo-12304811.jpeg?auto=compress&cs=tinysrgb&h=350"
@@ -532,9 +533,9 @@
         "price": 799,
         "amount": 29,
         "categories": [
-            "Kamera bezpieczeństwa",
+            "Elektronika",
             "Inteligentny dom",
-            "Elektronika"
+            "Kamery bezpieczeństwa"
         ],
         "image_url": "https://images.pexels.com/photos/27638181/pexels-photo-27638181.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -544,9 +545,9 @@
         "price": 1099,
         "amount": 38,
         "categories": [
-            "Kamera bezpieczeństwa",
+            "Elektronika",
             "Inteligentny dom",
-            "Elektronika"
+            "Kamery bezpieczeństwa"
         ],
         "image_url": "https://images.pexels.com/photos/13031858/pexels-photo-13031858.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -556,9 +557,9 @@
         "price": 3899,
         "amount": 14,
         "categories": [
-            "Monitor",
-            "Praca",
-            "Elektronika"
+            "Elektronika",
+            "Monitory",
+            "Praca"
         ],
         "image_url": "https://images.pexels.com/photos/6045226/pexels-photo-6045226.jpeg?auto=compress&cs=tinysrgb&h=350"
     },
@@ -568,8 +569,8 @@
         "price": 899,
         "amount": 48,
         "categories": [
+            "Elektronika",
             "Gaming",
-            "Słuchawki",
             "Audio"
         ],
         "image_url": "https://images.pexels.com/photos/36374389/pexels-photo-36374389.jpeg?auto=compress&cs=tinysrgb&h=350"

@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project
 
 COPY --chown=app:app src/ ./src/
+COPY --chown=app:app prompts/ ./prompts/
 
 USER app
 
