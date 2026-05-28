@@ -129,7 +129,7 @@ class ComputeStack(Stack):
                 "ASK_AI_SETTINGS__MAX_CONTEXT_PRODUCTS": "5",
                 "ASK_AI_SETTINGS__PROMPT_MANIFEST_PATH": "prompts/ask_ai/manifest.json",
                 "BEDROCK_SETTINGS__REGION": self.region,
-                "BEDROCK_SETTINGS__MODEL_ID": "amazon.nova-lite-v1:0",
+                "BEDROCK_SETTINGS__MODEL_ID": "eu.amazon.nova-lite-v1:0",
                 "GROQ_SETTINGS__MODEL": "llama-3.3-70b-versatile",
                 "REDIS_SETTINGS__HOST": redis_host,
                 "REDIS_SETTINGS__PORT": redis_port,

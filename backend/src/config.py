@@ -53,7 +53,7 @@ class GroqSettings(BaseModel):
 
 class BedrockSettings(BaseModel):
     region: str = "eu-central-1"
-    model_id: str = "amazon.nova-lite-v1:0"
+    model_id: str = "eu.amazon.nova-lite-v1:0"
     guardrail_id: str | None = None
     guardrail_version: str | None = None
 
