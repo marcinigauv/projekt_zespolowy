@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, status
 from uuid import uuid4
@@ -36,6 +37,9 @@ NO_MATCH_RESPONSE_MARKERS = (
     "brak",
     "nie znalezion",
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def _build_theme_history_summary(theme_history: list[str]) -> str:
@@ -299,6 +303,17 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
             else _build_suggested_products(catalog_context.products)
         )
         message_state.updated_at = datetime.now(timezone.utc)
+
+        logger.info(
+            "AskAI LLM response | user_id=%s session_id=%s message_id=%s provider=%s status=%s response=%s",
+            message_state.user_id,
+            message_state.session_id,
+            message_state.message_id,
+            message_state.selected_provider,
+            message_state.status.value,
+            normalized_response,
+        )
+
         await session_store.save_message(message_state)
     except AskAiGenerationFailed as exc:
         message_state.status = AskAiMessageStatus.ERROR
@@ -310,6 +325,17 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
         message_state.final_response = temporary_error_message
         message_state.suggested_products = []
         message_state.updated_at = datetime.now(timezone.utc)
+
+        logger.warning(
+            "AskAI generation failed | user_id=%s session_id=%s message_id=%s last_error_class=%s failover_reason=%s attempts=%s",
+            message_state.user_id,
+            message_state.session_id,
+            message_state.message_id,
+            message_state.last_error_class,
+            message_state.failover_reason,
+            len(message_state.provider_attempts),
+        )
+
         await session_store.save_message(message_state)
     except Exception as exc:
         message_state.status = AskAiMessageStatus.ERROR
@@ -319,6 +345,14 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
         message_state.final_response = temporary_error_message
         message_state.suggested_products = []
         message_state.updated_at = datetime.now(timezone.utc)
+
+        logger.exception(
+            "AskAI internal error | user_id=%s session_id=%s message_id=%s",
+            message_state.user_id,
+            message_state.session_id,
+            message_state.message_id,
+        )
+
         await session_store.save_message(message_state)
 
 
