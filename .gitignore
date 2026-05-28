@@ -1,3 +1,4 @@
 .env
 *__pycache__/
 infra/cdk.out*
+LLM_tests

@@ -19,7 +19,14 @@ from src.sql.models import Product
 DOMAIN_KEYWORDS = {
     "produkt",
     "produkty",
+    "lego",
+    "klock",
+    "zestaw",
     "cena",
+    "po ile",
+    "za ile",
+    "budżet",
+    "budzet",
     "koszt",
     "dostępność",
     "dostepnosc",
@@ -52,6 +59,25 @@ RECOMMENDATION_KEYWORDS = {
     "prezent",
     "propozycj",
     "szukam",
+    "chcę",
+    "chce",
+}
+
+GENERIC_RECOMMENDATION_STEMS = {
+    "polec",
+    "rekomend",
+    "propozyc",
+    "prezent",
+    "szuk",
+    "klock",
+    "produkt",
+    "zakup",
+    "sklep",
+    "now",
+    "tani",
+    "drog",
+    "budzet",
+    "budżet",
 }
 
 STOPWORDS = {
@@ -71,6 +97,11 @@ STOPWORDS = {
     "jaka",
     "jakie",
     "jaki",
+    "hej",
+    "siema",
+    "ej",
+    "czesc",
+    "cześć",
     "jest",
     "już",
     "lub",
@@ -128,6 +159,8 @@ def _extract_search_terms(message: str) -> list[str]:
         variants = [token]
         if token.endswith("ów") and len(token) > 4:
             variants.append(token[:-2])
+        elif token.endswith("ow") and len(token) > 4:
+            variants.append(token[:-2])
         elif token.endswith(("y", "i", "e", "a")) and len(token) > 4:
             variants.append(token[:-1])
 
@@ -180,6 +213,19 @@ def _looks_recommendation_request(message: str) -> bool:
     return any(keyword in normalized_message for keyword in RECOMMENDATION_KEYWORDS)
 
 
+def _is_general_recommendation_request(message: str) -> bool:
+    terms = _extract_search_terms(message)
+    if not terms:
+        return True
+
+    specific_terms = [
+        term
+        for term in terms
+        if not any(stem in term for stem in GENERIC_RECOMMENDATION_STEMS)
+    ]
+    return len(specific_terms) == 0
+
+
 def _format_product(product: Product) -> str:
     description = " ".join(product.description.split())
     categories = ", ".join(product.categories)
@@ -207,6 +253,8 @@ async def build_catalog_context(
     limit = config.ask_ai_settings.max_context_products
     use_case = "wyszukiwanie produktów po nazwie, opisie lub kategorii"
     is_recommendation_request = _looks_recommendation_request(combined_message)
+    is_general_recommendation = _is_general_recommendation_request(
+        user_message)
 
     if "najtań" in normalized_message or "najtans" in normalized_message:
         use_case = "ranking najtańszych produktów"
@@ -242,7 +290,7 @@ async def build_catalog_context(
             limit,
         )
 
-        if not products and is_recommendation_request:
+        if not products and is_recommendation_request and is_general_recommendation:
             use_case = "ogólne rekomendacje produktowe na podstawie aktywnej rozmowy i aktualnego katalogu"
             products = await get_top_10_new_products_from_db(session)
 

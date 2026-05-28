@@ -1,5 +1,5 @@
 {
-  "version": "2026-05-27-local-v1",
+  "version": "2026-05-28-throttle-prompts-v2",
   "macrosFile": "macros.md",
   "systemFragments": [
     "system.md",

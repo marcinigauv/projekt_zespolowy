@@ -1,6 +1,6 @@
 from typing import Any
 
-from aws_cdk import Stack, Duration, RemovalPolicy, SecretValue, aws_ec2 as ec2, aws_ecs as ecs, aws_ecr as ecr, aws_rds as rds, aws_elasticloadbalancingv2 as elbv2, aws_logs as logs, aws_secretsmanager as secretsmanager, CfnOutput
+from aws_cdk import Stack, Duration, RemovalPolicy, SecretValue, aws_ec2 as ec2, aws_ecs as ecs, aws_ecr as ecr, aws_rds as rds, aws_elasticloadbalancingv2 as elbv2, aws_iam as iam, aws_logs as logs, aws_secretsmanager as secretsmanager, CfnOutput
 from constructs import Construct
 
 
@@ -75,6 +75,18 @@ class ComputeStack(Stack):
 
         db_initializer_task = ecs.FargateTaskDefinition(
             self, "DbInitializerTask", memory_limit_mib=1024, cpu=512)
+
+        backend_task.task_role.add_to_principal_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "bedrock:Converse",
+                    "bedrock:ConverseStream",
+                    "bedrock:InvokeModel",
+                    "bedrock:InvokeModelWithResponseStream",
+                ],
+                resources=["*"],
+            )
+        )
 
         db_secret.grant_read(backend_task.task_role)
         db_secret.grant_read(embedding_worker_task.task_role)

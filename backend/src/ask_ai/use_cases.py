@@ -29,6 +29,13 @@ from src.users.utils import get_user_details_from_db_by_id
 SESSION_TRANSCRIPT_LIMIT = 20
 PROMPT_HISTORY_LIMIT = 8
 SUGGESTED_PRODUCTS_LIMIT = 4
+NO_MATCH_RESPONSE_MARKERS = (
+    "nie mamy",
+    "nie posiadamy",
+    "nie ma",
+    "brak",
+    "nie znalezion",
+)
 
 
 def _build_theme_history_summary(theme_history: list[str]) -> str:
@@ -66,6 +73,13 @@ def _build_transcript_entry(message_state: AskAiMessageState) -> AskAiTranscript
         updated_at=message_state.updated_at,
         suggested_products=message_state.suggested_products,
     )
+
+
+def _response_indicates_no_catalog_match(response: str) -> bool:
+    normalized = response.strip().lower()
+    if not normalized:
+        return False
+    return any(marker in normalized for marker in NO_MATCH_RESPONSE_MARKERS)
 
 
 def _format_conversation_history(messages: list[AskAiMessageState], current_message_id: str) -> str:
@@ -242,11 +256,9 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
         message_state.use_case = catalog_context.use_case
         prompt_render = prompt_bundle.render(
             {
-                "THEME": message_state.active_theme_snapshot,
                 "ACTIVE_THEME_SNAPSHOT": message_state.active_theme_snapshot,
                 "TONE_PROFILE": tone_profile.label,
                 "THEME_PROMPT_HINT": tone_profile.prompt_hint,
-                "THEME_WELCOME_HINT": tone_profile.welcome_hint,
                 "USE_CASE": catalog_context.use_case,
                 "THEME_CHANGED_DURING_SESSION": "tak" if message_state.theme_changed_during_session else "nie",
                 "THEME_CHANGE_COUNT": message_state.theme_change_count,
@@ -265,15 +277,26 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
             )
         )
 
-        message_state.status = AskAiMessageStatus.COMPLETED
-        message_state.partial_response = generation_result.content
-        message_state.final_response = generation_result.content
+        normalized_response = generation_result.content.strip()
+        is_exact_fallback_response = normalized_response == fallback_message
+        indicates_no_catalog_match = _response_indicates_no_catalog_match(
+            normalized_response)
+
+        message_state.status = (
+            AskAiMessageStatus.BLOCKED
+            if is_exact_fallback_response
+            else AskAiMessageStatus.COMPLETED
+        )
+        message_state.partial_response = normalized_response
+        message_state.final_response = normalized_response
         message_state.selected_provider = generation_result.selected_provider
         message_state.failover_reason = generation_result.failover_reason
         message_state.prompt_version = prompt_render.version
         message_state.provider_attempts = generation_result.attempts
-        message_state.suggested_products = _build_suggested_products(
-            catalog_context.products,
+        message_state.suggested_products = (
+            []
+            if is_exact_fallback_response or indicates_no_catalog_match
+            else _build_suggested_products(catalog_context.products)
         )
         message_state.updated_at = datetime.now(timezone.utc)
         await session_store.save_message(message_state)
