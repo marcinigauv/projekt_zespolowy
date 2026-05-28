@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta, timezone
+import re
+import unicodedata
 from fastapi import HTTPException, status
 from uuid import uuid4
 
@@ -37,6 +39,9 @@ NO_MATCH_RESPONSE_MARKERS = (
     "brak",
     "nie znalezion",
 )
+PRODUCT_LINE_PATTERN = re.compile(r"^\s*(?:[-*]|\d+\.)\s+")
+PRICE_MARKER_PATTERN = re.compile(r"\d+(?:[.,]\d+)?\s*zł", re.IGNORECASE)
+PRODUCT_TOKEN_PATTERN = re.compile(r"[0-9a-ząćęłńóśźż]+", re.IGNORECASE)
 
 
 logger = logging.getLogger(__name__)
@@ -84,6 +89,79 @@ def _response_indicates_no_catalog_match(response: str) -> bool:
     if not normalized:
         return False
     return any(marker in normalized for marker in NO_MATCH_RESPONSE_MARKERS)
+
+
+def _normalize_product_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value.lower())
+    without_diacritics = "".join(
+        char for char in normalized if not unicodedata.combining(char)
+    )
+    ascii_only = re.sub(r"[^0-9a-z\s]", " ", without_diacritics)
+    return " ".join(ascii_only.split())
+
+
+def _tokenize_product_text(value: str) -> set[str]:
+    return {
+        token
+        for token in PRODUCT_TOKEN_PATTERN.findall(_normalize_product_text(value))
+        if len(token) >= 3
+    }
+
+
+def _line_looks_like_product_reference(line: str) -> bool:
+    normalized_line = line.strip()
+    if not normalized_line:
+        return False
+
+    normalized_lower = normalized_line.lower()
+    return (
+        PRODUCT_LINE_PATTERN.match(normalized_line) is not None
+        or PRICE_MARKER_PATTERN.search(normalized_lower) is not None
+        or " zł" in normalized_lower
+    )
+
+
+def _line_matches_catalog_product(line: str, products: list[Product]) -> bool:
+    normalized_line = _normalize_product_text(line)
+    if not normalized_line:
+        return True
+
+    line_tokens = _tokenize_product_text(normalized_line)
+
+    for product in products:
+        normalized_product_name = _normalize_product_text(product.name)
+        if normalized_product_name and normalized_product_name in normalized_line:
+            return True
+
+        product_tokens = _tokenize_product_text(product.name)
+        if not product_tokens:
+            continue
+
+        overlap = len(line_tokens & product_tokens)
+        required_overlap = 2 if len(product_tokens) >= 2 else 1
+        if overlap >= required_overlap:
+            return True
+
+    return False
+
+
+def _response_mentions_out_of_catalog_products(response: str, products: list[Product]) -> bool:
+    if not response.strip() or not products:
+        return False
+
+    response_lines = [line.strip()
+                      for line in response.splitlines() if line.strip()]
+    product_like_lines = [
+        line for line in response_lines if _line_looks_like_product_reference(line)
+    ]
+
+    if not product_like_lines:
+        return False
+
+    return any(
+        not _line_matches_catalog_product(line, products)
+        for line in product_like_lines
+    )
 
 
 def _format_conversation_history(messages: list[AskAiMessageState], current_message_id: str) -> str:
@@ -282,6 +360,21 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
         )
 
         normalized_response = generation_result.content.strip()
+        mentions_out_of_catalog_products = _response_mentions_out_of_catalog_products(
+            normalized_response,
+            catalog_context.products,
+        )
+        if mentions_out_of_catalog_products:
+            logger.warning(
+                "AskAI response rejected as out-of-catalog | user_id=%s session_id=%s message_id=%s provider=%s response=%s",
+                message_state.user_id,
+                message_state.session_id,
+                message_state.message_id,
+                generation_result.selected_provider,
+                normalized_response,
+            )
+            normalized_response = fallback_message
+
         is_exact_fallback_response = normalized_response == fallback_message
         indicates_no_catalog_match = _response_indicates_no_catalog_match(
             normalized_response)
