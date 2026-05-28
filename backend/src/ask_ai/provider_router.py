@@ -55,6 +55,13 @@ class AskAiProviderRouter:
 
         for attempt_number, provider_name in enumerate(provider_order, start=1):
             provider = _build_provider(provider_name)
+            is_primary_attempt = attempt_number == 1
+            should_failover = (
+                is_primary_attempt
+                and config.ask_ai_settings.failover_enabled
+                and fallback_provider_name is not None
+            )
+
             try:
                 content = await provider.generate(request)
             except AskAiTransientProviderError as exc:
@@ -68,12 +75,6 @@ class AskAiProviderRouter:
                     )
                 )
 
-                is_primary_attempt = attempt_number == 1
-                should_failover = (
-                    is_primary_attempt
-                    and config.ask_ai_settings.failover_enabled
-                    and fallback_provider_name is not None
-                )
                 if should_failover:
                     failover_reason = exc.__class__.__name__
                     continue
@@ -93,6 +94,11 @@ class AskAiProviderRouter:
                         error_message=str(exc),
                     )
                 )
+
+                if should_failover:
+                    failover_reason = exc.__class__.__name__
+                    continue
+
                 raise AskAiGenerationFailed(
                     message="AskAI provider request failed.",
                     attempts=attempts,

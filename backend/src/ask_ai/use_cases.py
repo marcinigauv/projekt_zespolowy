@@ -326,14 +326,21 @@ async def process_message_generation(user_id: int, session_id: str, message_id: 
         message_state.suggested_products = []
         message_state.updated_at = datetime.now(timezone.utc)
 
+        last_error_message = (
+            message_state.provider_attempts[-1].error_message
+            if message_state.provider_attempts
+            else None
+        )
+
         logger.warning(
-            "AskAI generation failed | user_id=%s session_id=%s message_id=%s last_error_class=%s failover_reason=%s attempts=%s",
+            "AskAI generation failed | user_id=%s session_id=%s message_id=%s last_error_class=%s failover_reason=%s attempts=%s last_error_message=%s",
             message_state.user_id,
             message_state.session_id,
             message_state.message_id,
             message_state.last_error_class,
             message_state.failover_reason,
             len(message_state.provider_attempts),
+            last_error_message,
         )
 
         await session_store.save_message(message_state)
