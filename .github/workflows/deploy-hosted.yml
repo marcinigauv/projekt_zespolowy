@@ -34,6 +34,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate required CI secrets
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GROQ_SETTINGS__API_KEY: ${{ secrets.GROQ_SETTINGS__API_KEY }}
+          PAYMENTS_SETTINGS__API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
+          PAYMENTS_SETTINGS__SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
+        run: |
+          for secret_name in AWS_ACCOUNT_ID AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY GROQ_SETTINGS__API_KEY PAYMENTS_SETTINGS__API_KEY PAYMENTS_SETTINGS__SIGN_PHRASE; do
+            value="${!secret_name}"
+            if [ -z "$value" ]; then
+              echo "Missing required secret: $secret_name" >&2
+              exit 1
+            fi
+          done
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -168,12 +185,13 @@ jobs:
           embedding_worker_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='EmbeddingWorkerServiceName'].OutputValue" --output text)
           chroma_service_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='ChromaServiceName'].OutputValue" --output text)
           payments_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PaymentsSecretName'].OutputValue" --output text)
+          groq_secret_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='GroqSecretName'].OutputValue" --output text)
           db_initializer_task_definition_arn=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='DbInitializerTaskDefinitionArn'].OutputValue" --output text)
           db_initializer_log_group_name=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='DbInitializerLogGroupName'].OutputValue" --output text)
           private_subnet_ids=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='PrivateSubnetIds'].OutputValue" --output text)
           ecs_security_group_id=$(aws cloudformation describe-stacks --stack-name ${STACK_PREFIX}Compute --query "Stacks[0].Outputs[?OutputKey=='EcsSecurityGroupId'].OutputValue" --output text)
 
-          for value_name in cluster_name backend_service_name embedding_worker_service_name chroma_service_name payments_secret_name db_initializer_task_definition_arn db_initializer_log_group_name private_subnet_ids ecs_security_group_id; do
+          for value_name in cluster_name backend_service_name embedding_worker_service_name chroma_service_name payments_secret_name groq_secret_name db_initializer_task_definition_arn db_initializer_log_group_name private_subnet_ids ecs_security_group_id; do
             value="${!value_name}"
             if [ -z "$value" ] || [ "$value" = "None" ]; then
               echo "Could not resolve compute output: $value_name" >&2
@@ -186,6 +204,7 @@ jobs:
           echo "embedding_worker_service_name=$embedding_worker_service_name" >> "$GITHUB_OUTPUT"
           echo "chroma_service_name=$chroma_service_name" >> "$GITHUB_OUTPUT"
           echo "payments_secret_name=$payments_secret_name" >> "$GITHUB_OUTPUT"
+          echo "groq_secret_name=$groq_secret_name" >> "$GITHUB_OUTPUT"
           echo "db_initializer_task_definition_arn=$db_initializer_task_definition_arn" >> "$GITHUB_OUTPUT"
           echo "db_initializer_log_group_name=$db_initializer_log_group_name" >> "$GITHUB_OUTPUT"
           echo "private_subnet_ids=$private_subnet_ids" >> "$GITHUB_OUTPUT"
@@ -214,6 +233,11 @@ jobs:
           PAYMENTS_API_KEY: ${{ secrets.PAYMENTS_SETTINGS__API_KEY }}
           PAYMENTS_SIGN_PHRASE: ${{ secrets.PAYMENTS_SETTINGS__SIGN_PHRASE }}
         run: |
+          if [ -z "$PAYMENTS_API_KEY" ] || [ -z "$PAYMENTS_SIGN_PHRASE" ]; then
+            echo "Payments secrets are empty." >&2
+            exit 1
+          fi
+
           for attempt in 1 2 3 4 5 6; do
             if aws secretsmanager describe-secret --secret-id "$PAYMENTS_SECRET_NAME" >/dev/null 2>&1; then
               break
@@ -228,9 +252,58 @@ jobs:
             sleep 10
           done
 
+          payments_secret_payload=$(python - <<'PY'
+          import json
+          import os
+
+          print(json.dumps({
+              "api_key": os.environ["PAYMENTS_API_KEY"],
+              "sign_phrase": os.environ["PAYMENTS_SIGN_PHRASE"],
+          }))
+          PY
+          )
+
           aws secretsmanager put-secret-value \
             --secret-id "$PAYMENTS_SECRET_NAME" \
-            --secret-string "{\"api_key\":\"$PAYMENTS_API_KEY\",\"sign_phrase\":\"$PAYMENTS_SIGN_PHRASE\"}"
+            --secret-string "$payments_secret_payload"
+
+      - name: Sync Groq secret
+        env:
+          GROQ_SECRET_NAME: ${{ steps.compute.outputs.groq_secret_name }}
+          GROQ_API_KEY: ${{ secrets.GROQ_SETTINGS__API_KEY }}
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "GROQ_SETTINGS__API_KEY is empty." >&2
+            exit 1
+          fi
+
+          for attempt in 1 2 3 4 5 6; do
+            if aws secretsmanager describe-secret --secret-id "$GROQ_SECRET_NAME" >/dev/null 2>&1; then
+              break
+            fi
+
+            if [ "$attempt" = "6" ]; then
+              echo "Groq secret was not found after compute deploy: $GROQ_SECRET_NAME" >&2
+              exit 1
+            fi
+
+            echo "Waiting for Groq secret to become available: $GROQ_SECRET_NAME"
+            sleep 10
+          done
+
+          groq_secret_payload=$(python - <<'PY'
+          import json
+          import os
+
+          print(json.dumps({
+              "api_key": os.environ["GROQ_API_KEY"],
+          }))
+          PY
+          )
+
+          aws secretsmanager put-secret-value \
+            --secret-id "$GROQ_SECRET_NAME" \
+            --secret-string "$groq_secret_payload"
 
       - name: Force ECS rollout
         env:

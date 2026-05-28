@@ -96,6 +96,7 @@ class ComputeStack(Stack):
         db_secret.grant_read(db_initializer_task.task_role)
         password_pepper_secret_ref.grant_read(db_initializer_task.task_role)
         payments_secret_ref.grant_read(db_initializer_task.task_role)
+        groq_secret_ref.grant_read(db_initializer_task.task_role)
 
         if backend_task.execution_role is not None:
             db_secret.grant_read(backend_task.execution_role)
@@ -111,6 +112,7 @@ class ComputeStack(Stack):
             password_pepper_secret_ref.grant_read(
                 db_initializer_task.execution_role)
             payments_secret_ref.grant_read(db_initializer_task.execution_role)
+            groq_secret_ref.grant_read(db_initializer_task.execution_role)
 
         backend_task.add_container(
             "Backend",
@@ -200,6 +202,7 @@ class ComputeStack(Stack):
                 "DB_SQL_SETTINGS__PASSWORD": ecs.Secret.from_secrets_manager(db_secret, "password"),
                 "PAYMENTS_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(payments_secret_ref, "api_key"),
                 "PAYMENTS_SETTINGS__SIGN_PHRASE": ecs.Secret.from_secrets_manager(payments_secret_ref, "sign_phrase"),
+                "GROQ_SETTINGS__API_KEY": ecs.Secret.from_secrets_manager(groq_secret_ref, "api_key"),
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="db-initializer",

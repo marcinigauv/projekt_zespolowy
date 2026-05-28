@@ -27,6 +27,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate required CI secrets
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          for secret_name in AWS_ACCOUNT_ID AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            value="${!secret_name}"
+            if [ -z "$value" ]; then
+              echo "Missing required secret: $secret_name" >&2
+              exit 1
+            fi
+          done
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -57,6 +71,7 @@ jobs:
           cdk destroy
           ${STACK_PREFIX}Cdn
           ${STACK_PREFIX}Compute
+          ${STACK_PREFIX}Cache
           ${STACK_PREFIX}Containers
           ${STACK_PREFIX}Database
           ${STACK_PREFIX}Network
