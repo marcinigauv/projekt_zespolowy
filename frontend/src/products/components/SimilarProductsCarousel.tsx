@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Image, useWindowDimensions } from 'react-native'
+import { Image, Platform, useWindowDimensions } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Text, XStack, YStack } from 'tamagui'
 import { StateMessageCard } from '../../components/StateMessageCard'
@@ -181,6 +181,82 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
         {displayedProducts.map((item) => {
           const visibleCategories = item.categories.slice(0, 1)
           const remainingCategories = Math.max(0, item.categories.length - visibleCategories.length)
+          const productPath = `/products/${item.id}`
+          const cardBody = (
+            <YStack flex={1} justifyContent="space-between">
+              <YStack>
+                <ProductCarouselMedia style={{ height: cardMediaHeight }}>
+                  <ProductImage product={item} />
+                </ProductCarouselMedia>
+
+                <ProductCardSection style={{ minHeight: isPhone ? 44 : isTabletRange ? 52 : 48 }}>
+                  <BadgeRow>
+                    {visibleCategories.map((category) => (
+                      <CategoryBadge key={`${item.id}-${category}`}>
+                        <Text fontSize="$1" color="$stitchPrimary" fontWeight="600" letterSpacing={0.4}>
+                          {category}
+                        </Text>
+                      </CategoryBadge>
+                    ))}
+                    {remainingCategories > 0 ? (
+                      <CategoryBadge>
+                        <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.4}>
+                          +{remainingCategories}
+                        </Text>
+                      </CategoryBadge>
+                    ) : null}
+                  </BadgeRow>
+                </ProductCardSection>
+
+                <ProductCardSection
+                  style={{
+                    flex: 1,
+                    minHeight: isPhone ? 96 : isTabletRange ? 138 : 114,
+                    gap: isTabletRange ? '$2' : '$1.5',
+                  }}
+                >
+                  <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
+                  <ProductMetaText
+                    numberOfLines={descriptionLines}
+                    style={{
+                      color: '$gray11',
+                      fontSize: isNarrowPhone ? '$2' : isTabletRange ? '$3' : '$2',
+                      lineHeight: isNarrowPhone ? 18 : isTabletRange ? 22 : 20,
+                    }}
+                  >
+                    {item.description}
+                  </ProductMetaText>
+                </ProductCardSection>
+              </YStack>
+
+              <ProductCardSection>
+                <DataRow
+                  style={{
+                    justifyContent: 'space-between',
+                    alignItems: isPhone ? 'flex-start' : 'center',
+                    flexDirection: isPhone ? 'column' : 'row',
+                    gap: isPhone ? 10 : 12,
+                  }}
+                >
+                  <YStack gap="$1">
+                    <ProductMetaText fontFamily="$mono" style={{ fontSize: 12, lineHeight: 16, letterSpacing: 0.45, textTransform: 'uppercase' }}>
+                      Dostępnych
+                    </ProductMetaText>
+                    <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$4' : '$5'} fontWeight="700">
+                      {item.amount} szt.
+                    </Text>
+                  </YStack>
+
+                  <YStack gap="$1" alignItems={isPhone ? 'flex-start' : 'flex-end'}>
+                    <ProductMetaText fontFamily="$mono" style={{ fontSize: 12, lineHeight: 16, letterSpacing: 0.45, textTransform: 'uppercase' }}>
+                      Cena
+                    </ProductMetaText>
+                    <ProductPrice>{formatCurrency(item.price)}</ProductPrice>
+                  </YStack>
+                </DataRow>
+              </ProductCardSection>
+            </YStack>
+          )
 
           return (
             <ProductCarouselFrame  
@@ -190,81 +266,25 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
               style={{ minHeight: cardMinHeight }}
             >
               <YStack flex={1}>
-                <ProductCardLinkButton style={{ padding: 0, flex: 1 }} onPress={() => router.push(`/products/${item.id}`)}>
-                  <YStack flex={1} justifyContent="space-between">
-                    <YStack>
-                      <ProductCarouselMedia style={{ height: cardMediaHeight }}>
-                        <ProductImage product={item} />
-                      </ProductCarouselMedia>
-
-                      <ProductCardSection style={{ minHeight: isPhone ? 44 : isTabletRange ? 52 : 48 }}>
-                        <BadgeRow>
-                          {visibleCategories.map((category) => (
-                            <CategoryBadge key={`${item.id}-${category}`}>
-                              <Text fontSize="$1" color="$stitchPrimary" fontWeight="600" letterSpacing={0.4}>
-                                {category}
-                              </Text>
-                            </CategoryBadge>
-                          ))}
-                          {remainingCategories > 0 ? (
-                            <CategoryBadge>
-                              <Text fontSize="$1" color="$gray11" fontWeight="600" letterSpacing={0.4}>
-                                +{remainingCategories}
-                              </Text>
-                            </CategoryBadge>
-                          ) : null}
-                        </BadgeRow>
-                      </ProductCardSection>
-
-                      <ProductCardSection
-                        style={{
-                          flex: 1,
-                          minHeight: isPhone ? 96 : isTabletRange ? 138 : 114,
-                          gap: isTabletRange ? '$2' : '$1.5',
-                        }}
-                      >
-                        <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
-                        <ProductMetaText
-                          numberOfLines={descriptionLines}
-                          style={{
-                            color: '$gray11',
-                            fontSize: isNarrowPhone ? '$2' : isTabletRange ? '$3' : '$2',
-                            lineHeight: isNarrowPhone ? 18 : isTabletRange ? 22 : 20,
-                          }}
-                        >
-                          {item.description}
-                        </ProductMetaText>
-                      </ProductCardSection>
-                    </YStack>
-
-                    <ProductCardSection>
-                      <DataRow
-                        style={{
-                          justifyContent: 'space-between',
-                          alignItems: isPhone ? 'flex-start' : 'center',
-                          flexDirection: isPhone ? 'column' : 'row',
-                          gap: isPhone ? 10 : 12,
-                        }}
-                      >
-                        <YStack gap="$1">
-                          <ProductMetaText fontFamily="$mono" style={{ fontSize: 12, lineHeight: 16, letterSpacing: 0.45, textTransform: 'uppercase' }}>
-                            Dostępnych
-                          </ProductMetaText>
-                          <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$4' : '$5'} fontWeight="700">
-                            {item.amount} szt.
-                          </Text>
-                        </YStack>
-
-                        <YStack gap="$1" alignItems={isPhone ? 'flex-start' : 'flex-end'}>
-                          <ProductMetaText fontFamily="$mono" style={{ fontSize: 12, lineHeight: 16, letterSpacing: 0.45, textTransform: 'uppercase' }}>
-                            Cena
-                          </ProductMetaText>
-                          <ProductPrice>{formatCurrency(item.price)}</ProductPrice>
-                        </YStack>
-                      </DataRow>
-                    </ProductCardSection>
-                  </YStack>
-                </ProductCardLinkButton>
+                {Platform.OS === 'web' ? (
+                  <a
+                    href={productPath}
+                    aria-label={item.name}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      flex: 1,
+                      textDecoration: 'none',
+                      color: 'inherit',
+                    }}
+                  >
+                    {cardBody}
+                  </a>
+                ) : (
+                  <ProductCardLinkButton style={{ padding: 0, flex: 1 }} onPress={() => router.push(productPath)}>
+                    {cardBody}
+                  </ProductCardLinkButton>
+                )}
                 <ProductCardFooter>
                   <ProductCardAddButton
                     size="$3"

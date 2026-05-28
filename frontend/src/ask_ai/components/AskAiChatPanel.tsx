@@ -2,8 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { Platform, ScrollView, useWindowDimensions } from 'react-native'
-import { Text, TextArea, XStack, YStack, getVariableValue, useTheme } from 'tamagui'
-import { PrimaryButton, SecondaryButton } from '../../components/styled'
+import { Button, Text, TextArea, XStack, YStack, getVariableValue, useTheme } from 'tamagui'
 import type { AskAiSuggestedProductDto, AskAiTranscriptEntryDto } from '../api'
 import type { AskAiChatController } from '../useAskAiChat'
 
@@ -15,20 +14,7 @@ interface AskAiChatPanelProps {
   expanded?: boolean
 }
 
-const QUICK_PROMPTS = [
-  {
-    label: 'Prezent do 200 zł',
-    value: 'Pomóż mi wybrać prezent do 200 zł dla osoby, która lubi elektronikę.',
-  },
-  {
-    label: 'LEGO dla dziecka',
-    value: 'Szukam zestawu LEGO dla 8-latka. Pokaż najlepsze opcje i wyjaśnij różnice.',
-  },
-  {
-    label: 'Porównaj gadżety',
-    value: 'Porównaj kamerę sportową i Raspberry Pi pod kątem praktycznego prezentu.',
-  },
-] as const
+const MODAL_RECOMMENDATION_COLUMN_BREAKPOINT = 1380
 
 const timeFormatter = new Intl.DateTimeFormat('pl-PL', {
   hour: '2-digit',
@@ -55,15 +41,15 @@ function getAssistantText(entry: AskAiTranscriptEntryDto): string {
   }
 
   if (entry.status === 'pending' || entry.status === 'running') {
-    return 'AskAI przygotowuje odpowiedź...'
+    return '...'
   }
 
   return 'Brak odpowiedzi.'
 }
 
-function getConversationStatusLabel(controller: AskAiChatController, isThinking: boolean): string {
+function getStatusLabel(controller: AskAiChatController, isThinking: boolean): string {
   if (controller.error) {
-    return 'Problem z połączeniem'
+    return 'Błąd'
   }
 
   if (controller.latestMessage?.status === 'session_reset') {
@@ -71,25 +57,15 @@ function getConversationStatusLabel(controller: AskAiChatController, isThinking:
   }
 
   if (controller.isInitializing) {
-    return 'Uruchamianie sesji'
+    return 'Łączenie'
   }
 
   if (isThinking) {
-    return 'AskAI analizuje katalog'
+    return 'Analiza'
   }
 
-  if (controller.transcript.length > 0) {
-    return 'Rozmowa aktywna'
-  }
-
-  if (controller.sessionId) {
-    return 'Sesja gotowa'
-  }
-
-  return 'Gotowe do startu'
+  return ''
 }
-
-const MODAL_RECOMMENDATION_COLUMN_BREAKPOINT = 1480
 
 export function AskAiChatPanel({ controller, variant = 'page', expanded = false }: AskAiChatPanelProps): React.JSX.Element {
   const router = useRouter()
@@ -102,26 +78,32 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
   const showRecommendationColumn = isModal && expanded && width >= MODAL_RECOMMENDATION_COLUMN_BREAKPOINT
   const recommendationColumnWidth = width >= 1900 ? 320 : 292
   const isThinking = controller.isSubmitting || controller.latestMessage?.status === 'pending' || controller.latestMessage?.status === 'running'
-  const statusLabel = getConversationStatusLabel(controller, isThinking)
-  const counterColor = controller.remainingCharacters <= 250 ? '$red10' : controller.remainingCharacters <= 750 ? '$color' : '$placeholderColor'
+  const statusLabel = getStatusLabel(controller, isThinking)
   const textColor = getVariableValue(theme.color)
   const primaryColor = getVariableValue(theme.stitchPrimary)
   const placeholderColor = getVariableValue(theme.placeholderColor)
-  const accentSurface = 'rgba(34, 211, 238, 0.1)'
-  const accentSurfaceStrong = 'rgba(34, 211, 238, 0.14)'
-  const amberSurface = 'rgba(245, 158, 11, 0.12)'
-  const neutralSurface = 'rgba(255, 255, 255, 0.03)'
-  const dangerColor = '#ff6b6b'
+  const borderColor = getVariableValue(theme.borderColor)
+  const surfaceColor = getVariableValue(theme.background)
+  const hoverColor = getVariableValue(theme.backgroundHover)
+  const counterColor = controller.remainingCharacters <= 250 ? '$red10' : '$placeholderColor'
+  const draftCounter = `${controller.characterCount}/${controller.maxMessageLength}`
   const messageInputAccessibilityProps = Platform.OS === 'web'
     ? { 'aria-label': 'Wiadomość do AskAI' }
     : { accessibilityLabel: 'Wiadomość do AskAI' }
+  const sendButtonAccessibilityProps = Platform.OS === 'web'
+    ? { 'aria-label': 'Wyślij do AskAI' }
+    : { accessibilityLabel: 'Wyślij do AskAI' }
+  const resetButtonAccessibilityProps = Platform.OS === 'web'
+    ? { 'aria-label': 'Nowa sesja AskAI' }
+    : { accessibilityLabel: 'Nowa sesja AskAI' }
   const shadowStyle = {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 4,
   }
+
   const recommendedProducts = useMemo(() => {
     const uniqueProducts = new Map<number, AskAiSuggestedProductDto>()
 
@@ -135,7 +117,6 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
 
     return Array.from(uniqueProducts.values())
   }, [controller.transcript])
-  const conversationCountLabel = `${controller.transcript.length} wiadomości`
 
   useEffect(() => {
     if (!controller.transcript.length) {
@@ -145,292 +126,134 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
     transcriptScrollRef.current?.scrollToEnd({ animated: true })
   }, [controller.latestMessage?.status, controller.transcript.length])
 
-  const renderMetaPill = (label: string, value: string, tone: 'default' | 'accent' | 'warning' = 'default') => {
-    const backgroundColor = tone === 'accent' ? accentSurfaceStrong : tone === 'warning' ? amberSurface : neutralSurface
-    const pillColor = tone === 'accent' ? primaryColor : tone === 'warning' ? '#f59e0b' : placeholderColor
+  const statusDotColor = controller.error
+    ? '#f87171'
+    : isThinking
+      ? primaryColor
+      : controller.isInitializing
+        ? '#f59e0b'
+        : 'rgba(148, 163, 184, 0.7)'
 
-    return (
+  const renderRecommendationCard = (product: AskAiSuggestedProductDto) => {
+    const card = (
       <YStack
         borderWidth={1}
         borderColor="$borderColor"
-        px="$2.5"
-        py="$1.5"
+        bg="$backgroundHover"
+        p="$2.5"
+        gap="$1.5"
         style={{
-          borderRadius: 999,
-          backgroundColor,
+          borderRadius: 14,
+          ...shadowStyle,
         }}
       >
-        <Text fontSize="$2" fontWeight="700" style={{ color: pillColor }}>
-          {label}: {value}
-        </Text>
+        <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text color="$color" fontSize="$3" fontWeight="700" numberOfLines={1} style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+            {product.name}
+          </Text>
+          <Text color="$stitchPrimary" fontSize="$3" fontWeight="700">
+            {formatPrice(product.price)}
+          </Text>
+        </XStack>
+
+        <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text color="$placeholderColor" fontSize="$1" fontWeight="600">
+            {product.amount} szt.
+          </Text>
+          <MaterialIcons name="open-in-new" size={13} color={placeholderColor} />
+        </XStack>
       </YStack>
     )
-  }
 
-  const renderStateCard = ({
-    icon,
-    title,
-    description,
-    tone = 'default',
-    actionLabel,
-    onAction,
-  }: {
-    icon: React.ComponentProps<typeof MaterialIcons>['name']
-    title: string
-    description: string
-    tone?: 'default' | 'warning' | 'danger'
-    actionLabel?: string
-    onAction?: () => void
-  }) => {
-    const iconColor = tone === 'danger' ? dangerColor : tone === 'warning' ? '#f59e0b' : primaryColor
-    const surfaceColor = tone === 'danger' ? 'rgba(255, 107, 107, 0.14)' : tone === 'warning' ? amberSurface : accentSurface
-
-    return (
-      <YStack flex={1} px="$3" py="$4" style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <YStack
-          borderWidth={1}
-          borderColor="$borderColor"
-          p="$3"
+    if (Platform.OS === 'web') {
+      return (
+        <a
+          key={product.id}
+          href={product.productPath}
           style={{
-            width: 56,
-            height: 56,
-            borderRadius: 999,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: surfaceColor,
+            display: 'block',
+            textDecoration: 'none',
+            color: 'inherit',
           }}
+          aria-label={product.name}
         >
-          <MaterialIcons name={icon} size={28} color={iconColor} />
-        </YStack>
-
-        <YStack gap="$1.5" style={{ alignItems: 'center', maxWidth: 300, marginTop: 8 }}>
-          <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="800" style={{ textAlign: 'center' }}>
-            {title}
-          </Text>
-          <Text color="$placeholderColor" fontSize="$2" lineHeight="$4" style={{ textAlign: 'center' }}>
-            {description}
-          </Text>
-        </YStack>
-
-        {actionLabel && onAction ? (
-          <YStack style={{ width: '100%', maxWidth: 240, marginTop: 16 }}>
-            <SecondaryButton onPress={onAction}>
-              {actionLabel}
-            </SecondaryButton>
-          </YStack>
-        ) : null}
-      </YStack>
-    )
-  }
-
-  const renderSuggestedProducts = (products: AskAiSuggestedProductDto[]) => {
-    if (!products.length) {
-      return null
+          {card}
+        </a>
+      )
     }
 
     return (
-      <YStack gap="$2.5">
-        {products.map((product) => (
-          <YStack
-            key={product.id}
-            borderWidth={1}
-            borderColor="$borderColor"
-            bg="$backgroundHover"
-            p="$3"
-            gap="$2.5"
-            style={{
-              borderRadius: 20,
-              ...shadowStyle,
-            }}
-          >
-            <XStack gap="$3" style={{ alignItems: 'flex-start' }}>
-              <YStack
-                borderWidth={1}
-                borderColor="$borderColor"
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 18,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: accentSurface,
-                }}
-              >
-                <MaterialIcons name="inventory-2" size={22} color={primaryColor} />
-              </YStack>
-
-              <YStack gap="$1.5" style={{ flex: 1, minWidth: 0 }}>
-                <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text color="$color" fontSize="$4" fontWeight="800" style={{ flex: 1, minWidth: 0 }}>
-                    {product.name}
-                  </Text>
-                  <Text color="$color" fontSize="$5" fontWeight="800" style={{ color: primaryColor }}>
-                    {formatPrice(product.price)}
-                  </Text>
-                </XStack>
-
-                <Text color="$placeholderColor" fontSize="$3" lineHeight="$4" numberOfLines={3}>
-                  {product.description}
-                </Text>
-              </YStack>
-            </XStack>
-
-            <XStack gap="$2" flexWrap="wrap">
-              <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-                Dostępne: {product.amount} szt.
-              </Text>
-              {product.categories.slice(0, 2).map((category) => (
-                <YStack
-                  key={`${product.id}-${category}`}
-                  borderWidth={1}
-                  borderColor="$borderColor"
-                  px="$2"
-                  py="$1"
-                  style={{
-                    borderRadius: 999,
-                    backgroundColor: neutralSurface,
-                  }}
-                >
-                  <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-                    {category}
-                  </Text>
-                </YStack>
-              ))}
-            </XStack>
-
-            <XStack style={{ justifyContent: 'flex-start' }}>
-              <SecondaryButton onPress={() => router.push(product.productPath)}>
-                Zobacz produkt
-              </SecondaryButton>
-            </XStack>
-          </YStack>
-        ))}
-      </YStack>
+      <Button
+        key={product.id}
+        unstyled
+        onPress={() => router.push(product.productPath)}
+      >
+        {card}
+      </Button>
     )
   }
 
   const renderRecommendationsSection = () => {
-    const content = recommendedProducts.length ? (
-      showRecommendationColumn ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingBottom: 6 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderSuggestedProducts(recommendedProducts)}
-        </ScrollView>
-      ) : (
-        renderSuggestedProducts(recommendedProducts)
-      )
-    ) : (
-      <YStack flex={1} px="$2" py="$4" style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <YStack
-          borderWidth={1}
-          borderColor="$borderColor"
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 999,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: accentSurface,
-          }}
-        >
-          <MaterialIcons name="auto-awesome" size={24} color={primaryColor} />
-        </YStack>
-
-        <YStack gap="$1.5" style={{ alignItems: 'center', maxWidth: 260, marginTop: 8 }}>
-          <Text color="$color" fontSize="$4" fontWeight="800" style={{ textAlign: 'center' }}>
-            Rekomendacje pojawią się po pierwszej odpowiedzi
-          </Text>
-          <Text color="$placeholderColor" fontSize="$2" lineHeight="$4" style={{ textAlign: 'center' }}>
-            AskAI doda trafione produkty do tej listy w trakcie rozmowy.
-          </Text>
-        </YStack>
-      </YStack>
-    )
+    if (!recommendedProducts.length) {
+      return null
+    }
 
     return (
       <YStack
         borderWidth={1}
         borderColor="$borderColor"
         bg="$background"
-        p="$3"
-        gap="$2.5"
+        p="$2.5"
+        gap="$2"
         style={{
           flex: showRecommendationColumn ? 1 : undefined,
-          minHeight: showRecommendationColumn ? 0 : !isModal ? 150 : 200,
-          borderRadius: 22,
+          minHeight: showRecommendationColumn ? 0 : 128,
+          borderRadius: 16,
           overflow: 'hidden',
           ...shadowStyle,
         }}
       >
-        <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="800">
-            Rekomendacje
-          </Text>
-          {recommendedProducts.length ? (
-            <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-              {recommendedProducts.length} trafień
-            </Text>
-          ) : null}
-        </XStack>
+        <Text color="$placeholderColor" fontSize="$1" fontWeight="700" textTransform="uppercase" letterSpacing={0.6}>
+          Produkty
+        </Text>
 
         <YStack flex={1} style={{ minHeight: 0 }}>
-          {content}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingBottom: 4 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {recommendedProducts.map(renderRecommendationCard)}
+          </ScrollView>
         </YStack>
       </YStack>
     )
   }
 
   const renderTranscriptEntry = (entry: AskAiTranscriptEntryDto) => {
-    const assistantTone = entry.status === 'error' ? dangerColor : primaryColor
-
     return (
-      <YStack key={entry.messageId} gap="$2.5">
+      <YStack key={entry.messageId} gap="$2">
         <XStack style={{ justifyContent: 'flex-end' }}>
           <YStack
             borderWidth={1}
             borderColor="$borderColor"
             bg="$backgroundHover"
-            p="$3.5"
-            gap="$2"
+            p="$2.5"
+            gap="$1"
             style={{
-              maxWidth: isCompactPhone ? '92%' : isModal ? '88%' : '84%',
-              borderRadius: 22,
-              borderTopRightRadius: 12,
-              ...shadowStyle,
+              maxWidth: isCompactPhone ? '92%' : isModal ? '86%' : '82%',
+              borderRadius: 14,
+              borderTopRightRadius: 8,
             }}
           >
-            <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-              <XStack gap="$1.5" style={{ alignItems: 'center' }}>
-                <YStack
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 999,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: neutralSurface,
-                  }}
-                >
-                  <MaterialIcons name="person" size={14} color={placeholderColor} />
-                </YStack>
-                <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-                  Ty
-                </Text>
-              </XStack>
-
-              {formatMessageTime(entry.updatedAt) ? (
-                <Text color="$placeholderColor" fontSize="$2">
-                  {formatMessageTime(entry.updatedAt)}
-                </Text>
-              ) : null}
-            </XStack>
-
-            <Text color="$color" fontSize="$4" lineHeight="$5">
+            <Text color="$color" fontSize="$3" lineHeight="$4">
               {entry.userMessage}
             </Text>
+            {formatMessageTime(entry.updatedAt) ? (
+              <Text color="$placeholderColor" fontSize="$1" fontWeight="600" style={{ textAlign: 'right' }}>
+                {formatMessageTime(entry.updatedAt)}
+              </Text>
+            ) : null}
           </YStack>
         </XStack>
 
@@ -439,145 +262,118 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
             borderWidth={1}
             borderColor="$borderColor"
             bg="$background"
-            p="$3.5"
-            gap="$2"
+            p="$2.5"
+            gap="$1"
             style={{
-              maxWidth: '94%',
-              borderRadius: 22,
-              borderTopLeftRadius: 12,
-              ...shadowStyle,
+              maxWidth: '92%',
+              borderRadius: 14,
+              borderTopLeftRadius: 8,
             }}
           >
-            <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-              <XStack gap="$1.5" style={{ alignItems: 'center' }}>
-                <YStack
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 999,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: accentSurface,
-                  }}
-                >
-                  <MaterialIcons name="auto-awesome" size={14} color={assistantTone} />
-                </YStack>
-                <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-                  AskAI
-                </Text>
-              </XStack>
-
-              {formatMessageTime(entry.updatedAt) ? (
-                <Text color="$placeholderColor" fontSize="$2">
-                  {formatMessageTime(entry.updatedAt)}
-                </Text>
-              ) : null}
-            </XStack>
-
-            <Text color="$color" fontSize="$4" lineHeight="$5">
+            <Text color="$color" fontSize="$3" lineHeight="$4">
               {getAssistantText(entry)}
             </Text>
+            {formatMessageTime(entry.updatedAt) ? (
+              <Text color="$placeholderColor" fontSize="$1" fontWeight="600">
+                {formatMessageTime(entry.updatedAt)}
+              </Text>
+            ) : null}
           </YStack>
         </XStack>
       </YStack>
     )
   }
 
-  const renderTranscript = () => {
-    const showBlockingError = Boolean(controller.error && controller.transcript.length === 0)
+  const renderEmptyState = () => {
+    const toneColor = controller.error ? '#f87171' : controller.latestMessage?.status === 'session_reset' ? '#f59e0b' : primaryColor
+    const text = controller.error
+      ? 'Błąd połączenia'
+      : controller.latestMessage?.status === 'session_reset'
+        ? 'Sesja wygasła'
+        : controller.isInitializing
+          ? 'Łączenie...'
+          : 'Nowa rozmowa'
 
+    return (
+      <YStack flex={1} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <XStack gap="$2" style={{ alignItems: 'center' }}>
+          <MaterialIcons name="auto-awesome" size={14} color={toneColor} />
+          <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
+            {text}
+          </Text>
+        </XStack>
+      </YStack>
+    )
+  }
+
+  const renderTranscript = () => {
     return (
       <YStack
         flex={1}
         borderWidth={1}
         borderColor="$borderColor"
         bg="$background"
-        p="$3"
-        gap="$2.5"
+        p="$2.5"
+        gap="$2"
         style={{
-          minHeight: isModal ? 400 : isCompactPhone ? 240 : 420,
-          borderRadius: 22,
+          minHeight: isModal ? 340 : isCompactPhone ? 210 : 300,
+          borderRadius: 16,
           overflow: 'hidden',
           ...shadowStyle,
         }}
       >
-        <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <YStack gap="$0.5" style={{ flex: 1, minWidth: 0 }}>
-            <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="800">
-              Rozmowa
-            </Text>
-            {!isThinking && !controller.error && controller.transcript.length ? (
-              <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-                {conversationCountLabel}
+        <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <XStack gap="$2" style={{ alignItems: 'center' }}>
+            <YStack
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 999,
+                backgroundColor: statusDotColor,
+              }}
+            />
+            {statusLabel ? (
+              <Text color="$placeholderColor" fontSize="$1" fontWeight="700" textTransform="uppercase" letterSpacing={0.6}>
+                {statusLabel}
               </Text>
             ) : null}
-          </YStack>
+          </XStack>
 
-          {isThinking || controller.error
-            ? renderMetaPill('Status', statusLabel, isThinking ? 'accent' : 'warning')
-            : null}
-        </XStack>
-
-        {controller.error && controller.transcript.length ? (
-          <YStack
-            borderWidth={1}
-            borderColor="$borderColor"
-            px="$3"
-            py="$2.5"
+          <Button
+            unstyled
+            {...resetButtonAccessibilityProps}
+            disabled={controller.isInitializing}
+            onPress={() => {
+              void controller.initializeSession()
+            }}
+            pressStyle={{ opacity: 0.8 }}
             style={{
-              borderRadius: 22,
-              backgroundColor: 'rgba(255, 107, 107, 0.12)',
+              width: 28,
+              height: 28,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor,
+              backgroundColor: hoverColor,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: controller.isInitializing ? 0.5 : 1,
             }}
           >
-            <Text color="$red10" fontSize="$3" fontWeight="700">
-              {controller.error}
-            </Text>
-          </YStack>
-        ) : null}
+            <MaterialIcons name="restart-alt" size={14} color={placeholderColor} />
+          </Button>
+        </XStack>
 
-        {controller.isInitializing && controller.transcript.length === 0 ? (
-          renderStateCard({
-            icon: 'hourglass-top',
-            title: 'Uruchamiam nową sesję',
-            description: 'Za chwilę możesz zadać pierwsze pytanie i otrzymać listę najlepiej dopasowanych produktów.',
-          })
-        ) : showBlockingError ? (
-          renderStateCard({
-            icon: 'wifi-off',
-            title: 'Nie udało się połączyć z AskAI',
-            description: controller.error,
-            tone: 'danger',
-            actionLabel: 'Nowa sesja',
-            onAction: () => {
-              void controller.initializeSession()
-            },
-          })
-        ) : controller.latestMessage?.status === 'session_reset' ? (
-          renderStateCard({
-            icon: 'history-toggle-off',
-            title: 'Bieżąca sesja wygasła',
-            description: 'Uruchom nową sesję, aby kontynuować rozmowę i odbudować listę rekomendacji.',
-            tone: 'warning',
-            actionLabel: 'Rozpocznij od nowa',
-            onAction: () => {
-              void controller.initializeSession()
-            },
-          })
-        ) : controller.transcript.length ? (
+        {controller.transcript.length ? (
           <ScrollView
             ref={transcriptScrollRef}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ gap: 14, paddingBottom: 6 }}
+            contentContainerStyle={{ gap: 10, paddingBottom: 4 }}
             keyboardShouldPersistTaps="handled"
           >
             {controller.transcript.map(renderTranscriptEntry)}
           </ScrollView>
         ) : (
-          renderStateCard({
-            icon: 'chat-bubble-outline',
-            title: 'Zadaj pierwsze pytanie',
-            description: 'Zapytaj o budżet, kategorię albo konkretne zastosowanie produktu.',
-          })
+          renderEmptyState()
         )}
       </YStack>
     )
@@ -588,106 +384,116 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
       borderWidth={1}
       borderColor="$borderColor"
       bg="$backgroundHover"
-      p="$3"
-      gap="$2.5"
+      p="$2"
+      gap="$1.5"
       style={{
-        borderRadius: 22,
+        borderRadius: 16,
         ...shadowStyle,
       }}
     >
-      <Text color="$color" fontSize="$4" fontWeight="800">
-        Wiadomość
-      </Text>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 4, paddingRight: 4 }}>
-        {QUICK_PROMPTS.map((prompt) => (
-          <SecondaryButton key={prompt.label} onPress={() => controller.setDraft(prompt.value)}>
-            {prompt.label}
-          </SecondaryButton>
-        ))}
-      </ScrollView>
-
       <TextArea
         {...messageInputAccessibilityProps}
         value={controller.draft}
         onChangeText={controller.setDraft}
-        placeholder="Napisz, czego szukasz..."
+        onKeyDown={(event: any) => {
+          if (Platform.OS !== 'web') {
+            return
+          }
+
+          if (event?.key !== 'Enter' || event?.isComposing) {
+            return
+          }
+
+          if (event?.ctrlKey) {
+            event?.preventDefault?.()
+            controller.setDraft(`${controller.draft}\n`)
+            return
+          }
+
+          event?.preventDefault?.()
+          if (controller.canSubmit) {
+            void controller.submitMessage()
+          }
+        }}
+        placeholder="Napisz wiadomość..."
         placeholderTextColor={placeholderColor}
         maxLength={controller.maxMessageLength}
         autoCorrect={false}
         autoCapitalize="sentences"
+        multiline
         borderWidth={1}
         borderColor="$borderColor"
         bg="$background"
-        p="$4"
+        p="$2.5"
         focusStyle={{ borderColor: '$blue10' }}
         style={{
           minHeight,
-          borderRadius: 20,
+          maxHeight: 148,
+          borderRadius: 12,
           color: textColor,
+          fontSize: 13,
+          lineHeight: 18,
         }}
       />
 
-      {isCompactComposer ? (
-        <YStack gap="$2.5">
-          <Text color={counterColor} fontSize="$2" fontWeight="700">
-            {controller.remainingCharacters} znaków pozostało
-          </Text>
+      <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text color={counterColor} fontSize="$1" fontWeight="700">
+          {draftCounter}
+        </Text>
 
-          <YStack gap="$2">
-            <SecondaryButton disabled={controller.isInitializing} onPress={() => void controller.initializeSession()}>
-              Nowa sesja
-            </SecondaryButton>
-            <PrimaryButton disabled={!controller.canSubmit} onPress={() => void controller.submitMessage()}>
-              {isThinking ? 'Generowanie...' : 'Wyślij do AskAI'}
-            </PrimaryButton>
-          </YStack>
-        </YStack>
-      ) : (
-        <XStack gap="$3" flexWrap="wrap" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text color={counterColor} fontSize="$2" fontWeight="700">
-            {controller.remainingCharacters} znaków pozostało
-          </Text>
-
-          <XStack gap="$2" flexWrap="wrap">
-            <SecondaryButton disabled={controller.isInitializing} onPress={() => void controller.initializeSession()}>
-              Nowa sesja
-            </SecondaryButton>
-            <PrimaryButton disabled={!controller.canSubmit} onPress={() => void controller.submitMessage()}>
-              {isThinking ? 'Generowanie...' : 'Wyślij do AskAI'}
-            </PrimaryButton>
-          </XStack>
-        </XStack>
-      )}
+        <Button
+          unstyled
+          {...sendButtonAccessibilityProps}
+          disabled={!controller.canSubmit}
+          onPress={() => {
+            void controller.submitMessage()
+          }}
+          pressStyle={{ opacity: 0.8 }}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor,
+            backgroundColor: controller.canSubmit ? surfaceColor : hoverColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: controller.canSubmit ? 1 : 0.55,
+          }}
+        >
+          <MaterialIcons
+            name={isThinking ? 'hourglass-top' : 'send'}
+            size={15}
+            color={controller.canSubmit ? primaryColor : placeholderColor}
+          />
+        </Button>
+      </XStack>
     </YStack>
   )
 
-  return (
-    <YStack flex={1} gap="$3.5" style={{ minHeight: 0 }}>
-      {showRecommendationColumn ? (
-        <XStack gap="$3.5" style={{ flex: 1, minHeight: 0 }}>
-          <YStack gap="$3.5" style={{ flex: 1.55, minHeight: 0 }}>
-            {renderTranscript()}
-            {renderComposer(150)}
-          </YStack>
+  const recommendationsSection = renderRecommendationsSection()
 
-          <YStack width={recommendationColumnWidth} style={{ minHeight: 0 }}>
-            {renderRecommendationsSection()}
-          </YStack>
-        </XStack>
-      ) : !isModal ? (
-        <YStack gap="$3.5" style={{ flex: 1, minHeight: 0 }}>
+  if (showRecommendationColumn && recommendationsSection) {
+    return (
+      <XStack gap="$2.5" style={{ flex: 1, minHeight: 0 }}>
+        <YStack gap="$2.5" style={{ flex: 1.5, minHeight: 0 }}>
           {renderTranscript()}
-          {renderComposer(isCompactPhone ? 128 : 156)}
-          {renderRecommendationsSection()}
+          {renderComposer(84)}
         </YStack>
-      ) : (
-        <YStack gap="$3.5" style={{ flex: 1, minHeight: 0 }}>
-          {renderTranscript()}
-          {renderComposer(isModal ? 136 : isCompactPhone ? 128 : 156)}
-          {renderRecommendationsSection()}
+
+        <YStack width={recommendationColumnWidth} style={{ minHeight: 0 }}>
+          {recommendationsSection}
         </YStack>
-      )}
+      </XStack>
+    )
+  }
+
+  return (
+    <YStack gap="$2.5" style={{ flex: 1, minHeight: 0 }}>
+      {renderTranscript()}
+      {renderComposer(isCompactComposer ? 70 : 78)}
+      {recommendationsSection}
     </YStack>
   )
 }
+

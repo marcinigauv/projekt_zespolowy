@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Animated, Easing, Platform, useWindowDimensions } from 'react-native'
 import { Button, Text, XStack, YStack, getVariableValue, useTheme } from 'tamagui'
 import { useAuthStore } from '../../store/authStore'
-import { AskAiChatPanel } from './AskAiChatPanel'
+import { AskAiChatPanel } from '../components/AskAiChatPanel'
 import { useAskAiChat } from '../useAskAiChat'
 
 const PHONE_BREAKPOINT = 520
@@ -174,26 +174,25 @@ export function AskAiFloatingWidget() {
   const primaryColor = getVariableValue(theme.stitchPrimary)
   const placeholderColor = getVariableValue(theme.placeholderColor)
   const onPrimaryColor = getVariableValue(theme.stitchOnPrimary)
-  const showLauncherLabel = resolvedViewportWidth >= 1680
-  const launcherSize = resolvedViewportWidth >= 1480 ? 54 : 50
-  const launcherRightOffset = resolvedViewportWidth > 1280 ? 16 : 12
-  const launcherBottomOffset = resolvedViewportWidth > 768 ? 16 : 12
-  const panelRightOffset = resolvedViewportWidth > 1280 ? 18 : 12
-  const panelTopOffset = resolvedViewportWidth > 1024 ? 68 : 56
-  const panelBottomOffset = 12
-  const collapsedPanelWidth = resolvedViewportWidth > 1600 ? 460 : resolvedViewportWidth > 1200 ? 440 : 400
-  const expandedPanelWidth = resolvedViewportWidth > 1600 ? 720 : resolvedViewportWidth > 1320 ? 660 : 580
+  const launcherSize = 44
+  const launcherRightOffset = resolvedViewportWidth > 1280 ? 14 : 10
+  const launcherBottomOffset = resolvedViewportWidth > 768 ? 14 : 10
+  const panelRightOffset = resolvedViewportWidth > 1280 ? 14 : 10
+  const panelTopOffset = resolvedViewportWidth > 1024 ? 110 : 102
+  const panelBottomOffset = 10
+  const collapsedPanelWidth = resolvedViewportWidth > 1500 ? 420 : resolvedViewportWidth > 1200 ? 400 : 368
+  const expandedPanelWidth = resolvedViewportWidth > 1600 ? 620 : resolvedViewportWidth > 1320 ? 560 : 520
   const panelWidth = Math.min(
     isExpanded ? expandedPanelWidth : collapsedPanelWidth,
-    Math.max(resolvedViewportWidth - 24, 360),
+    Math.max(resolvedViewportWidth - 20, 340),
   )
   const fixedPosition = 'fixed' as const
   const shadowStyle = {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 8,
   }
 
   const overlayLayer = (
@@ -204,7 +203,7 @@ export function AskAiFloatingWidget() {
         right: 0,
         bottom: 0,
         left: 0,
-        zIndex: 58,
+        zIndex: 22,
       }}
     >
       <Button
@@ -217,7 +216,7 @@ export function AskAiFloatingWidget() {
           right: 0,
           bottom: 0,
           left: 0,
-          backgroundColor: 'rgba(10, 14, 22, 0.28)',
+          backgroundColor: 'rgba(10, 14, 22, 0.2)',
         }}
       />
     </YStack>
@@ -231,32 +230,37 @@ export function AskAiFloatingWidget() {
         right: panelRightOffset,
         bottom: panelBottomOffset,
         width: panelWidth,
-        zIndex: 60,
+        zIndex: 24,
       }}
     >
       <YStack
         borderWidth={1}
         borderColor="$borderColor"
         bg="$background"
-        p="$4"
-        gap="$3"
+        p="$3"
+        gap="$2"
         style={{
           flex: 1,
-          borderRadius: 26,
+          borderRadius: 18,
           overflow: 'hidden',
           backgroundColor: surfaceColor,
           ...shadowStyle,
         }}
       >
-        <XStack gap="$3" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <YStack gap="$0.5" style={{ flex: 1, minWidth: 0 }}>
-            <Text color="$color" fontFamily="$heading" fontSize="$7" fontWeight="800">
+        <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <XStack gap="$2" style={{ alignItems: 'center', flex: 1, minWidth: 0 }}>
+            <YStack
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 999,
+                backgroundColor: primaryColor,
+              }}
+            />
+            <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="700" numberOfLines={1}>
               AskAI
             </Text>
-            <Text color="$placeholderColor" fontSize="$2" fontWeight="700">
-              Doradca zakupowy
-            </Text>
-          </YStack>
+          </XStack>
 
           <XStack gap="$2" flexWrap="wrap" style={{ alignItems: 'center' }}>
             <Button
@@ -265,8 +269,8 @@ export function AskAiFloatingWidget() {
               onPress={() => setIsExpanded((current) => !current)}
               pressStyle={{ opacity: 0.85 }}
               style={{
-                width: 38,
-                height: 38,
+                width: 32,
+                height: 32,
                 borderRadius: 999,
                 borderWidth: 1,
                 borderColor: getVariableValue(theme.borderColor),
@@ -277,7 +281,7 @@ export function AskAiFloatingWidget() {
             >
               <MaterialIcons
                 name={isExpanded ? 'close-fullscreen' : 'open-in-full'}
-                size={16}
+                size={14}
                 color={placeholderColor}
               />
             </Button>
@@ -288,8 +292,8 @@ export function AskAiFloatingWidget() {
               onPress={() => setIsOpen(false)}
               pressStyle={{ opacity: 0.85 }}
               style={{
-                width: 38,
-                height: 38,
+                width: 32,
+                height: 32,
                 borderRadius: 999,
                 borderWidth: 1,
                 borderColor: getVariableValue(theme.borderColor),
@@ -298,7 +302,7 @@ export function AskAiFloatingWidget() {
                 justifyContent: 'center',
               }}
             >
-              <MaterialIcons name="close" size={18} color={placeholderColor} />
+              <MaterialIcons name="close" size={16} color={placeholderColor} />
             </Button>
           </XStack>
         </XStack>
@@ -317,7 +321,7 @@ export function AskAiFloatingWidget() {
           position: fixedPosition,
           right: launcherRightOffset,
           bottom: launcherBottomOffset,
-          zIndex: 46,
+          zIndex: 24,
         }}
       >
         <Button
@@ -330,43 +334,30 @@ export function AskAiFloatingWidget() {
             borderWidth: 1,
             borderColor: getVariableValue(theme.borderColor),
             backgroundColor: softSurfaceColor,
-            width: showLauncherLabel ? undefined : launcherSize,
-            minHeight: launcherSize,
-            paddingHorizontal: showLauncherLabel ? 14 : 0,
-            paddingVertical: showLauncherLabel ? 10 : 0,
+            width: launcherSize,
+            height: launcherSize,
             alignItems: 'center',
             justifyContent: 'center',
             ...shadowStyle,
           }}
         >
-          <XStack gap={showLauncherLabel ? '$2.5' : '$0'} style={{ alignItems: 'center' }}>
-            <YStack
-              style={{
-                width: showLauncherLabel ? 34 : 36,
-                height: showLauncherLabel ? 34 : 36,
-                borderRadius: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: primaryColor,
-              }}
-            >
-              <MaterialIcons name="auto-awesome" size={18} color={onPrimaryColor} />
-            </YStack>
-
-            {showLauncherLabel ? (
-              <Text color="$color" fontSize="$3" fontWeight="800">
-                AskAI
-              </Text>
-            ) : null}
-          </XStack>
+          <YStack
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 999,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: primaryColor,
+            }}
+          >
+            <MaterialIcons name="auto-awesome" size={14} color={onPrimaryColor} />
+          </YStack>
         </Button>
       </YStack>
 
       {shouldRenderPanel ? Platform.OS === 'web' ? (
-        <>
-          {overlayLayer}
-          {panelLayer}
-        </>
+        panelLayer
       ) : (
         <>
           <Animated.View style={{ opacity: overlayOpacity }}>

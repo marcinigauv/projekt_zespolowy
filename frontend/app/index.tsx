@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Image, useWindowDimensions } from 'react-native'
+import { Image, Platform, useWindowDimensions } from 'react-native'
 import { Text, ScrollView, YStack } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { StateMessageCard } from '../src/components/StateMessageCard'
@@ -175,51 +175,71 @@ export default function Index() {
             ) : (
               <ProductList>
                 {products.map((product) => {
+                  const productPath = `/products/${product.id}`
+                  const cardContent = (
+                    <>
+                      <CatalogProductMedia>
+                        <CatalogProductMediaFrame>
+                          {product.imageUrl && !imageErrors[product.id] ? (
+                            <Image
+                              source={{ uri: product.imageUrl }}
+                              resizeMode="cover"
+                              onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
+                              style={{ width: '100%', height: '100%' }}
+                            />
+                          ) : imageErrors[product.id] ? (
+                            <YStack flex={1} width="100%" alignItems="center" justifyContent="center" px="$3">
+                              <Text color="$placeholderColor" fontSize="$3" fontWeight="600" style={{ textAlign: 'center' }}>
+                                Zdjęcie produktu niedostępne
+                              </Text>
+                            </YStack>
+                          ) : (
+                            <YStack flex={1} width="100%" alignItems="center" justifyContent="center">
+                              <Text fontFamily="$heading" fontWeight="800" color="$stitchPrimary" fontSize="$8" lineHeight="$8" style={{ textAlign: 'center' }}>
+                                {product.name.slice(0, 1).toUpperCase()}
+                              </Text>
+                            </YStack>
+                          )}
+                        </CatalogProductMediaFrame>
+                      </CatalogProductMedia>
+
+                      <CatalogProductBody>
+                        <CatalogProductTitle numberOfLines={2}>
+                          {product.name}
+                        </CatalogProductTitle>
+
+                        <CatalogProductPriceRow>
+                          <CatalogProductPrice>{formatPrice(product.price)}</CatalogProductPrice>
+                        </CatalogProductPriceRow>
+
+                        <CatalogProductDescription numberOfLines={1}>
+                          DOSTĘPNE: {product.amount} szt.
+                        </CatalogProductDescription>
+                      </CatalogProductBody>
+                    </>
+                  )
+
                   return (
                     <ProductListItem  key={product.id}>
                       <CatalogProductCard  hoverStyle={{ scale: 1.015 }}>
-                        <CatalogProductPressable 
-                          onPress={() => router.push(`/products/${product.id}`)}
-                        >
-                          <CatalogProductMedia>
-                            <CatalogProductMediaFrame>
-                              {product.imageUrl && !imageErrors[product.id] ? (
-                                <Image
-                                  source={{ uri: product.imageUrl }}
-                                  resizeMode="cover"
-                                  onError={() => setImageErrors((prev) => ({ ...prev, [product.id]: true }))}
-                                  style={{ width: '100%', height: '100%' }}
-                                />
-                              ) : imageErrors[product.id] ? (
-                                <YStack flex={1} width="100%" alignItems="center" justifyContent="center" px="$3">
-                                  <Text color="$placeholderColor" fontSize="$3" fontWeight="600" style={{ textAlign: 'center' }}>
-                                    Zdjęcie produktu niedostępne
-                                  </Text>
-                                </YStack>
-                              ) : (
-                                <YStack flex={1} width="100%" alignItems="center" justifyContent="center">
-                                  <Text fontFamily="$heading" fontWeight="800" color="$stitchPrimary" fontSize="$8" lineHeight="$8" style={{ textAlign: 'center' }}>
-                                    {product.name.slice(0, 1).toUpperCase()}
-                                  </Text>
-                                </YStack>
-                              )}
-                            </CatalogProductMediaFrame>
-                          </CatalogProductMedia>
-
-                          <CatalogProductBody>
-                            <CatalogProductTitle numberOfLines={2}>
-                              {product.name}
-                            </CatalogProductTitle>
-
-                            <CatalogProductPriceRow>
-                              <CatalogProductPrice>{formatPrice(product.price)}</CatalogProductPrice>
-                            </CatalogProductPriceRow>
-
-                            <CatalogProductDescription numberOfLines={1}>
-                              DOSTĘPNE: {product.amount} szt.
-                            </CatalogProductDescription>
-                          </CatalogProductBody>
-                        </CatalogProductPressable>
+                        {Platform.OS === 'web' ? (
+                          <a
+                            href={productPath}
+                            aria-label={product.name}
+                            style={{
+                              display: 'block',
+                              width: '100%',
+                              textDecoration: 'none',
+                              color: 'inherit',
+                            }}
+                          >
+                            {cardContent}
+                          </a>
+                        ) : (
+                          <CatalogProductPressable onPress={() => router.push(productPath)}>
+                            {cardContent}
+                          </CatalogProductPressable>
+                        )}
                       </CatalogProductCard>
                     </ProductListItem>
                   )
