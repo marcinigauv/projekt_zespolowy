@@ -1,6 +1,8 @@
+import * as Clipboard from 'expo-clipboard'
+import * as ExpoLinking from 'expo-linking'
 import { MaterialIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Platform, ScrollView, useWindowDimensions } from 'react-native'
 import { Button, Text, TextArea, XStack, YStack, getVariableValue, useTheme } from 'tamagui'
 import type { AskAiSuggestedProductDto, AskAiTranscriptEntryDto } from '../api'
@@ -12,9 +14,11 @@ interface AskAiChatPanelProps {
   controller: AskAiChatController
   variant?: AskAiChatPanelVariant
   expanded?: boolean
+  showRecommendations?: boolean
 }
 
-const MODAL_RECOMMENDATION_COLUMN_BREAKPOINT = 1380
+const MODAL_RECOMMENDATION_COLUMN_BREAKPOINT = 1500
+const PHONE_FULLSCREEN_BREAKPOINT = 520
 
 const timeFormatter = new Intl.DateTimeFormat('pl-PL', {
   hour: '2-digit',
@@ -67,17 +71,29 @@ function getStatusLabel(controller: AskAiChatController, isThinking: boolean): s
   return ''
 }
 
-export function AskAiChatPanel({ controller, variant = 'page', expanded = false }: AskAiChatPanelProps): React.JSX.Element {
+export function AskAiChatPanel({
+  controller,
+  variant = 'page',
+  expanded = false,
+  showRecommendations = true,
+}: AskAiChatPanelProps): React.JSX.Element {
   const router = useRouter()
   const theme = useTheme()
   const { width } = useWindowDimensions()
   const transcriptScrollRef = useRef<ScrollView>(null)
+  const copyResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [hoveredRecommendationId, setHoveredRecommendationId] = useState<number | null>(null)
+  const [copiedRecommendationId, setCopiedRecommendationId] = useState<number | null>(null)
   const isModal = variant === 'modal'
+  const isPhoneFullscreen = !isModal && width <= PHONE_FULLSCREEN_BREAKPOINT
   const isCompactPhone = !isModal && width <= 430
   const isCompactComposer = isCompactPhone || (isModal && width <= 860)
-  const showRecommendationColumn = isModal && expanded && width >= MODAL_RECOMMENDATION_COLUMN_BREAKPOINT
+  const isRecommendationsEnabled = showRecommendations
+  const showRecommendationColumn = isModal && isRecommendationsEnabled && expanded && width >= MODAL_RECOMMENDATION_COLUMN_BREAKPOINT
   const recommendationColumnWidth = width >= 1900 ? 320 : 292
   const isThinking = controller.isSubmitting || controller.latestMessage?.status === 'pending' || controller.latestMessage?.status === 'running'
+  const isInputLocked = isThinking || controller.isInitializing
+  const sendDisabled = !controller.canSubmit || isInputLocked
   const statusLabel = getStatusLabel(controller, isThinking)
   const textColor = getVariableValue(theme.color)
   const primaryColor = getVariableValue(theme.stitchPrimary)
@@ -87,6 +103,7 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
   const hoverColor = getVariableValue(theme.backgroundHover)
   const counterColor = controller.remainingCharacters <= 250 ? '$red10' : '$placeholderColor'
   const draftCounter = `${controller.characterCount}/${controller.maxMessageLength}`
+  const inputPlaceholder = isInputLocked ? 'Czekaj na odpowiedź AskAI...' : 'Napisz wiadomość...'
   const messageInputAccessibilityProps = Platform.OS === 'web'
     ? { 'aria-label': 'Wiadomość do AskAI' }
     : { accessibilityLabel: 'Wiadomość do AskAI' }
@@ -126,6 +143,14 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
     transcriptScrollRef.current?.scrollToEnd({ animated: true })
   }, [controller.latestMessage?.status, controller.transcript.length])
 
+  useEffect(() => {
+    return () => {
+      if (copyResetTimeoutRef.current) {
+        clearTimeout(copyResetTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const statusDotColor = controller.error
     ? '#f87171'
     : isThinking
@@ -134,24 +159,68 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
         ? '#f59e0b'
         : 'rgba(148, 163, 184, 0.7)'
 
+  const resolveProductUrl = (productPath: string): string => {
+    const normalizedPath = productPath.startsWith('/') ? productPath : `/${productPath}`
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return `${window.location.origin}${normalizedPath}`
+    }
+
+    return ExpoLinking.createURL(normalizedPath)
+  }
+
+  const copyProductLink = async (product: AskAiSuggestedProductDto): Promise<void> => {
+    try {
+      await Clipboard.setStringAsync(resolveProductUrl(product.productPath))
+      setCopiedRecommendationId(product.id)
+
+      if (copyResetTimeoutRef.current) {
+        clearTimeout(copyResetTimeoutRef.current)
+      }
+
+      copyResetTimeoutRef.current = setTimeout(() => {
+        setCopiedRecommendationId((current) => (current === product.id ? null : current))
+      }, 1200)
+    } catch {
+      return
+    }
+  }
+
   const renderRecommendationCard = (product: AskAiSuggestedProductDto) => {
+    const isHovered = hoveredRecommendationId === product.id
+    const isCopied = copiedRecommendationId === product.id
+
     const card = (
       <YStack
         borderWidth={1}
         borderColor="$borderColor"
-        bg="$backgroundHover"
+        bg={isHovered ? '$background' : '$backgroundHover'}
         p="$2.5"
         gap="$1.5"
         style={{
-          borderRadius: 14,
-          ...shadowStyle,
+          borderRadius: isPhoneFullscreen ? 12 : 14,
+          width: isPhoneFullscreen ? 224 : undefined,
+          borderColor: isHovered ? primaryColor : borderColor,
+          opacity: isHovered ? 1 : 0.96,
+          ...(!isPhoneFullscreen ? shadowStyle : {}),
         }}
       >
         <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text color="$color" fontSize="$3" fontWeight="700" numberOfLines={1} style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+          <Text
+            color="$color"
+            fontSize="$3"
+            fontWeight="700"
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              paddingRight: 8,
+              color: isHovered ? primaryColor : textColor,
+            }}
+          >
             {product.name}
           </Text>
-          <Text color="$stitchPrimary" fontSize="$3" fontWeight="700">
+          <Text color="$color" fontSize="$3" fontWeight="700" style={{ color: primaryColor }}>
             {formatPrice(product.price)}
           </Text>
         </XStack>
@@ -160,42 +229,111 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
           <Text color="$placeholderColor" fontSize="$1" fontWeight="600">
             {product.amount} szt.
           </Text>
-          <MaterialIcons name="open-in-new" size={13} color={placeholderColor} />
+          <MaterialIcons name="open-in-new" size={11} color={isHovered ? primaryColor : placeholderColor} />
         </XStack>
       </YStack>
     )
 
+    const copyControlStyle = {
+      position: 'absolute' as const,
+      right: 8,
+      bottom: 8,
+      width: 24,
+      height: 24,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: isCopied ? primaryColor : borderColor,
+      backgroundColor: isCopied ? 'rgba(34, 211, 238, 0.14)' : surfaceColor,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    }
+
     if (Platform.OS === 'web') {
       return (
-        <a
-          key={product.id}
-          href={product.productPath}
-          style={{
-            display: 'block',
-            textDecoration: 'none',
-            color: 'inherit',
-          }}
-          aria-label={product.name}
-        >
-          {card}
-        </a>
+        <YStack key={product.id} style={{ position: 'relative' }}>
+          <a
+            href={product.productPath}
+            style={{
+              display: 'block',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'transform 120ms ease, filter 120ms ease',
+              transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
+              filter: isHovered ? 'brightness(1.05)' : 'none',
+            }}
+            aria-label={product.name}
+            onMouseEnter={() => setHoveredRecommendationId(product.id)}
+            onMouseLeave={() => {
+              setHoveredRecommendationId((current) => (current === product.id ? null : current))
+            }}
+          >
+            {card}
+          </a>
+
+          <button
+            type="button"
+            aria-label={`Kopiuj link: ${product.name}`}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              void copyProductLink(product)
+            }}
+            style={{
+              ...copyControlStyle,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <MaterialIcons name={isCopied ? 'check' : 'content-copy'} size={12} color={isCopied ? primaryColor : placeholderColor} />
+          </button>
+        </YStack>
       )
     }
 
     return (
-      <Button
-        key={product.id}
-        unstyled
-        onPress={() => router.push(product.productPath)}
-      >
-        {card}
-      </Button>
+      <YStack key={product.id} style={{ position: 'relative' }}>
+        <Button
+          unstyled
+          onPress={() => router.push(product.productPath)}
+          onPressIn={() => setHoveredRecommendationId(product.id)}
+          onPressOut={() => {
+            setHoveredRecommendationId((current) => (current === product.id ? null : current))
+          }}
+        >
+          {card}
+        </Button>
+
+        <Button
+          unstyled
+          onPress={() => {
+            void copyProductLink(product)
+          }}
+          style={copyControlStyle}
+        >
+          <MaterialIcons name={isCopied ? 'check' : 'content-copy'} size={12} color={isCopied ? primaryColor : placeholderColor} />
+        </Button>
+      </YStack>
     )
   }
 
   const renderRecommendationsSection = () => {
-    if (!recommendedProducts.length) {
+    if (!isRecommendationsEnabled || !recommendedProducts.length) {
       return null
+    }
+
+    if (isPhoneFullscreen) {
+      return (
+        <YStack px="$1" style={{ minHeight: 0 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingRight: 6 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {recommendedProducts.map(renderRecommendationCard)}
+          </ScrollView>
+        </YStack>
+      )
     }
 
     return (
@@ -310,16 +448,16 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
     return (
       <YStack
         flex={1}
-        borderWidth={1}
+        borderWidth={isPhoneFullscreen ? 0 : 1}
         borderColor="$borderColor"
         bg="$background"
-        p="$2.5"
-        gap="$2"
+        p={isPhoneFullscreen ? '$1' : '$2.5'}
+        gap={isPhoneFullscreen ? '$1.5' : '$2'}
         style={{
-          minHeight: isModal ? 340 : isCompactPhone ? 210 : 300,
-          borderRadius: 16,
+          minHeight: isModal ? 340 : isPhoneFullscreen ? 0 : isCompactPhone ? 210 : 300,
+          borderRadius: isPhoneFullscreen ? 0 : 16,
           overflow: 'hidden',
-          ...shadowStyle,
+          ...(!isPhoneFullscreen ? shadowStyle : {}),
         }}
       >
         <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
@@ -332,7 +470,7 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
                 backgroundColor: statusDotColor,
               }}
             />
-            {statusLabel ? (
+            {statusLabel && !isPhoneFullscreen ? (
               <Text color="$placeholderColor" fontSize="$1" fontWeight="700" textTransform="uppercase" letterSpacing={0.6}>
                 {statusLabel}
               </Text>
@@ -348,8 +486,8 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
             }}
             pressStyle={{ opacity: 0.8 }}
             style={{
-              width: 28,
-              height: 28,
+              width: isPhoneFullscreen ? 24 : 28,
+              height: isPhoneFullscreen ? 24 : 28,
               borderRadius: 999,
               borderWidth: 1,
               borderColor,
@@ -359,7 +497,7 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
               opacity: controller.isInitializing ? 0.5 : 1,
             }}
           >
-            <MaterialIcons name="restart-alt" size={14} color={placeholderColor} />
+            <MaterialIcons name="restart-alt" size={isPhoneFullscreen ? 12 : 14} color={placeholderColor} />
           </Button>
         </XStack>
 
@@ -381,97 +519,190 @@ export function AskAiChatPanel({ controller, variant = 'page', expanded = false 
 
   const renderComposer = (minHeight: number) => (
     <YStack
-      borderWidth={1}
+      borderWidth={isPhoneFullscreen ? 0 : 1}
       borderColor="$borderColor"
-      bg="$backgroundHover"
-      p="$2"
-      gap="$1.5"
+      bg={isPhoneFullscreen ? '$background' : '$backgroundHover'}
+      p={isPhoneFullscreen ? '$1' : '$2'}
+      gap={isPhoneFullscreen ? '$0' : '$1.5'}
       style={{
-        borderRadius: 16,
-        ...shadowStyle,
+        borderRadius: isPhoneFullscreen ? 0 : 16,
+        opacity: isInputLocked ? 0.82 : 1,
+        ...(!isPhoneFullscreen ? shadowStyle : {}),
       }}
     >
-      <TextArea
-        {...messageInputAccessibilityProps}
-        value={controller.draft}
-        onChangeText={controller.setDraft}
-        onKeyDown={(event: any) => {
-          if (Platform.OS !== 'web') {
-            return
-          }
+      <YStack style={{ position: 'relative' }}>
+        <TextArea
+          {...messageInputAccessibilityProps}
+          value={controller.draft}
+          onChangeText={(value) => {
+            if (isInputLocked) {
+              return
+            }
 
-          if (event?.key !== 'Enter' || event?.isComposing) {
-            return
-          }
-
-          if (event?.ctrlKey) {
-            event?.preventDefault?.()
-            controller.setDraft(`${controller.draft}\n`)
-            return
-          }
-
-          event?.preventDefault?.()
-          if (controller.canSubmit) {
-            void controller.submitMessage()
-          }
-        }}
-        placeholder="Napisz wiadomość..."
-        placeholderTextColor={placeholderColor}
-        maxLength={controller.maxMessageLength}
-        autoCorrect={false}
-        autoCapitalize="sentences"
-        multiline
-        borderWidth={1}
-        borderColor="$borderColor"
-        bg="$background"
-        p="$2.5"
-        focusStyle={{ borderColor: '$blue10' }}
-        style={{
-          minHeight,
-          maxHeight: 148,
-          borderRadius: 12,
-          color: textColor,
-          fontSize: 13,
-          lineHeight: 18,
-        }}
-      />
-
-      <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text color={counterColor} fontSize="$1" fontWeight="700">
-          {draftCounter}
-        </Text>
-
-        <Button
-          unstyled
-          {...sendButtonAccessibilityProps}
-          disabled={!controller.canSubmit}
-          onPress={() => {
-            void controller.submitMessage()
+            controller.setDraft(value)
           }}
-          pressStyle={{ opacity: 0.8 }}
+          onKeyDown={(event: any) => {
+            if (Platform.OS !== 'web') {
+              return
+            }
+
+            if (isInputLocked) {
+              event?.preventDefault?.()
+              return
+            }
+
+            if (event?.key !== 'Enter' || event?.isComposing) {
+              return
+            }
+
+            if (event?.ctrlKey) {
+              event?.preventDefault?.()
+              controller.setDraft(`${controller.draft}\n`)
+              return
+            }
+
+            event?.preventDefault?.()
+            if (controller.canSubmit) {
+              void controller.submitMessage()
+            }
+          }}
+          placeholder={inputPlaceholder}
+          placeholderTextColor={placeholderColor}
+          maxLength={controller.maxMessageLength}
+          autoCorrect={false}
+          autoCapitalize="sentences"
+          disabled={isInputLocked}
+          multiline
+          borderWidth={1}
+          borderColor="$borderColor"
+          bg="$background"
+          p={isPhoneFullscreen ? '$2' : '$2.5'}
+          focusStyle={{ borderColor: '$blue10' }}
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor,
-            backgroundColor: controller.canSubmit ? surfaceColor : hoverColor,
+            minHeight,
+            maxHeight: isPhoneFullscreen ? 112 : 148,
+            borderRadius: 12,
+            color: textColor,
+            fontSize: 13,
+            lineHeight: 18,
+            backgroundColor: isInputLocked ? hoverColor : surfaceColor,
+            paddingBottom: isPhoneFullscreen ? 34 : undefined,
+            paddingRight: isPhoneFullscreen ? 42 : undefined,
+          }}
+        />
+
+        {isPhoneFullscreen ? (
+          <XStack
+            style={{
+              position: 'absolute',
+              left: 10,
+              right: 8,
+              bottom: 6,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text color={counterColor} fontSize="$1" fontWeight="700">
+              {draftCounter}
+            </Text>
+
+            <Button
+              unstyled
+              {...sendButtonAccessibilityProps}
+              disabled={sendDisabled}
+              onPress={() => {
+                void controller.submitMessage()
+              }}
+              pressStyle={{ opacity: 0.8 }}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor,
+                backgroundColor: !sendDisabled ? surfaceColor : hoverColor,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: !sendDisabled ? 1 : 0.55,
+              }}
+            >
+              <MaterialIcons
+                name={isThinking ? 'hourglass-top' : 'send'}
+                size={13}
+                color={!sendDisabled ? primaryColor : placeholderColor}
+              />
+            </Button>
+          </XStack>
+        ) : null}
+      </YStack>
+
+      {!isPhoneFullscreen ? (
+        <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text color={counterColor} fontSize="$1" fontWeight="700">
+            {draftCounter}
+          </Text>
+
+          <Button
+            unstyled
+            {...sendButtonAccessibilityProps}
+            disabled={sendDisabled}
+            onPress={() => {
+              void controller.submitMessage()
+            }}
+            pressStyle={{ opacity: 0.8 }}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor,
+              backgroundColor: !sendDisabled ? surfaceColor : hoverColor,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: !sendDisabled ? 1 : 0.55,
+            }}
+          >
+            <MaterialIcons
+              name={isThinking ? 'hourglass-top' : 'send'}
+              size={15}
+              color={!sendDisabled ? primaryColor : placeholderColor}
+            />
+          </Button>
+        </XStack>
+      ) : null}
+
+      {controller.error ? (
+        <XStack
+          borderWidth={1}
+          borderColor="$red8"
+          bg="$red2"
+          p="$1.5"
+          gap="$1"
+          style={{
             alignItems: 'center',
-            justifyContent: 'center',
-            opacity: controller.canSubmit ? 1 : 0.55,
+            borderRadius: 10,
           }}
         >
-          <MaterialIcons
-            name={isThinking ? 'hourglass-top' : 'send'}
-            size={15}
-            color={controller.canSubmit ? primaryColor : placeholderColor}
-          />
-        </Button>
-      </XStack>
+          <MaterialIcons name="info-outline" size={13} color="#ef4444" />
+          <Text color="$red10" fontSize="$1" fontWeight="600" style={{ flex: 1 }}>
+            {controller.error}
+          </Text>
+        </XStack>
+      ) : null}
     </YStack>
   )
 
   const recommendationsSection = renderRecommendationsSection()
+
+  if (isPhoneFullscreen) {
+    return (
+      <YStack gap="$1" style={{ flex: 1, minHeight: 0 }}>
+        {renderTranscript()}
+        {recommendationsSection}
+        {renderComposer(58)}
+      </YStack>
+    )
+  }
 
   if (showRecommendationColumn && recommendationsSection) {
     return (

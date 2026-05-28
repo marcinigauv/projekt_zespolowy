@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router'
 import React, { useEffect } from 'react'
-import { ScrollView } from 'react-native'
 import { useWindowDimensions } from 'react-native'
 import { YStack } from 'tamagui'
 import { AskAiChatPanel } from '../src/ask_ai/components/AskAiChatPanel'
@@ -16,7 +15,7 @@ export default function AskAiScreen() {
   const router = useRouter()
   const { width } = useWindowDimensions()
   const isPhone = width <= PHONE_BREAKPOINT
-  const contentPaddingBottom = isPhone ? 188 : 132
+  const contentPaddingBottom = isPhone ? 64 : 132
   const controller = useAskAiChat({
     enabled: canRender && isPhone,
     autoInitialize: canRender && isPhone,
@@ -35,13 +34,11 @@ export default function AskAiScreen() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <PageContent style={{ maxWidth: 920, paddingTop: 14, paddingBottom: contentPaddingBottom }}>
-          <YStack gap="$4" pb="$2">
-            <AskAiChatPanel controller={controller} variant="page" />
-          </YStack>
-        </PageContent>
-      </ScrollView>
+      <PageContent style={{ flex: 1, minHeight: 0, maxWidth: 920, paddingTop: 8, paddingBottom: contentPaddingBottom }}>
+        <YStack style={{ flex: 1, minHeight: 0 }}>
+          <AskAiChatPanel controller={controller} variant="page" />
+        </YStack>
+      </PageContent>
     </PageWrapper>
   )
 }

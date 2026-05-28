@@ -10,12 +10,28 @@ import {
 
 export const MAX_MESSAGE_LENGTH = 4000
 
+export class AskAiSessionConflictError extends Error {
+  status: number
+
+  constructor(message = 'Sesja AskAI jest nieaktualna') {
+    super(message)
+    this.name = 'AskAiSessionConflictError'
+    this.status = 409
+  }
+}
+
 function mapAskAiError(error: unknown): Error {
   if (error instanceof NetworkError) {
     return new Error('Brak połączenia z serwerem AskAI')
   }
 
   if (error instanceof ApiError) {
+    if (error.status === 409) {
+      return new AskAiSessionConflictError(
+        error.message || 'Sesja AskAI jest nieaktualna. Zresetuj sesję i spróbuj ponownie.',
+      )
+    }
+
     if (error.status === 400 || error.status === 422) {
       return new Error('Nieprawidłowe dane zapytania do AskAI')
     }

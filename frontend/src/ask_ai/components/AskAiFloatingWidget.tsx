@@ -16,14 +16,14 @@ export function AskAiFloatingWidget() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const [isOpen, setIsOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(resolvedViewportWidth > 1440)
+  const [isExpanded, setIsExpanded] = useState(true)
   const didAttemptAutoInitializeRef = useRef(false)
   const overlayOpacity = useRef(new Animated.Value(0)).current
   const panelTranslateX = useRef(new Animated.Value(36)).current
   const panelScale = useRef(new Animated.Value(0.98)).current
   const shouldUseNativeDriver = Platform.OS !== 'web'
   const launcherLabel = isOpen ? 'Zamknij AskAI' : 'Otwórz AskAI'
-  const expandLabel = isExpanded ? 'Zmniejsz panel AskAI' : 'Rozszerz panel AskAI'
+  const expandLabel = isExpanded ? 'Ukryj rekomendowane produkty' : 'Pokaż rekomendowane produkty'
   const closeLabel = 'Zamknij AskAI'
   const overlayCloseLabel = 'Zamknij panel AskAI'
   const launcherAccessibilityProps = Platform.OS === 'web'
@@ -48,12 +48,6 @@ export function AskAiFloatingWidget() {
       setIsOpen(false)
     }
   }, [isAuthenticated])
-
-  useEffect(() => {
-    if (resolvedViewportWidth <= 1320 && isExpanded) {
-      setIsExpanded(false)
-    }
-  }, [isExpanded, resolvedViewportWidth])
 
   useEffect(() => {
     if (!isOpen || !isAuthenticated) {
@@ -180,11 +174,11 @@ export function AskAiFloatingWidget() {
   const panelRightOffset = resolvedViewportWidth > 1280 ? 14 : 10
   const panelTopOffset = resolvedViewportWidth > 1024 ? 110 : 102
   const panelBottomOffset = 10
-  const collapsedPanelWidth = resolvedViewportWidth > 1500 ? 420 : resolvedViewportWidth > 1200 ? 400 : 368
-  const expandedPanelWidth = resolvedViewportWidth > 1600 ? 620 : resolvedViewportWidth > 1320 ? 560 : 520
+  const collapsedPanelWidth = resolvedViewportWidth > 1600 ? 640 : resolvedViewportWidth > 1380 ? 600 : 560
+  const expandedPanelWidth = resolvedViewportWidth > 1780 ? 940 : resolvedViewportWidth > 1560 ? 860 : resolvedViewportWidth > 1320 ? 780 : 700
   const panelWidth = Math.min(
     isExpanded ? expandedPanelWidth : collapsedPanelWidth,
-    Math.max(resolvedViewportWidth - 20, 340),
+    Math.max(resolvedViewportWidth - 22, 520),
   )
   const fixedPosition = 'fixed' as const
   const shadowStyle = {
@@ -280,7 +274,7 @@ export function AskAiFloatingWidget() {
               }}
             >
               <MaterialIcons
-                name={isExpanded ? 'close-fullscreen' : 'open-in-full'}
+                name={isExpanded ? 'view-day' : 'view-sidebar'}
                 size={14}
                 color={placeholderColor}
               />
@@ -308,7 +302,7 @@ export function AskAiFloatingWidget() {
         </XStack>
 
         <YStack flex={1} style={{ minHeight: 0 }}>
-          <AskAiChatPanel controller={controller} variant="modal" expanded={isExpanded} />
+          <AskAiChatPanel controller={controller} variant="modal" expanded={isExpanded} showRecommendations={isExpanded} />
         </YStack>
       </YStack>
     </YStack>
