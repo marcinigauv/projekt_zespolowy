@@ -39,8 +39,8 @@ import {
 import { SimilarProductsCarousel } from './SimilarProductsCarousel'
 
 const PRODUCT_RATING_VALUES = [1, 2, 3, 4, 5] as const
-const RATING_FILLED_STAR_COLOR = '#F5B301'
-const RATING_EMPTY_STAR_COLOR = '#8A8F99'
+const RATING_FILLED_STAR_COLOR = '$color'
+const RATING_EMPTY_STAR_COLOR = '$placeholderColor'
 
 function formatRatingOpinionsCount(count: number): string {
   if (count === 1) {
@@ -140,9 +140,10 @@ export function ProductDetailsScreen() {
     ratingAverage.ratingsCount > 0,
   )
   const averageRatingValue = hasAnyRatings ? ratingAverage!.averageRating! : 0
-  const averageRatingFilledStars = hasAnyRatings
-    ? Math.max(1, Math.min(5, Math.round(averageRatingValue)))
-    : 0
+  const ratingSummaryText = hasAnyRatings
+    ? `${averageRatingValue.toFixed(1)} / 5 • ${formatRatingOpinionsCount(ratingAverage?.ratingsCount ?? 0)}`
+    : 'Brak opinii'
+  const ratingSummaryColor = hasAnyRatings ? '$color' : '$placeholderColor'
   const hasUserRated = userRating !== null && userRating >= 1 && userRating <= 5
 
   const handleTagPress = (tag: string) => {
@@ -490,101 +491,70 @@ export function ProductDetailsScreen() {
                     </SurfaceCard>
 
                     <SurfaceCard
-                      bg="$backgroundHover"
-                      borderColor="$stitchBorder"
+                      bg="$background"
+                      borderColor="$borderColor"
                       style={{
-                        padding: isNarrowPhone ? 12 : isPhone ? 14 : 18,
+                        padding: isNarrowPhone ? 10 : isPhone ? 12 : 14,
                       }}
                     >
-                      <YStack gap="$2.5">
-                        <Text fontSize="$5" fontWeight="800" color="$color">Ocena produktu</Text>
-
-                        {isRatingAverageLoading ? (
-                          <ProductMetaText>Ładowanie średniej oceny...</ProductMetaText>
-                        ) : ratingAverageError ? (
-                          <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingAverageError}</Text>
-                        ) : !hasAnyRatings ? (
-                          <YStack
-                            borderWidth={1}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            bg="$background"
-                            style={{ paddingHorizontal: isNarrowPhone ? 10 : 14, paddingVertical: isNarrowPhone ? 8 : 12 }}
-                          >
-                            <Text color="$placeholderColor" fontFamily="$heading" fontSize="$6" fontWeight="700">
-                              Brak opinii
+                      <YStack gap="$2">
+                        <XStack alignItems="center" justifyContent="space-between" gap="$2" flexWrap="wrap">
+                          <Text fontSize={isNarrowPhone ? '$3' : '$4'} fontWeight="700" color="$color">
+                            Ocena produktu
+                          </Text>
+                          {!isRatingAverageLoading && !ratingAverageError && (
+                            <Text
+                              color={ratingSummaryColor}
+                              fontFamily="$mono"
+                              fontSize="$2"
+                              lineHeight="$3"
+                              fontWeight="600"
+                            >
+                              {ratingSummaryText}
                             </Text>
-                          </YStack>
-                        ) : (
-                          <YStack
+                          )}
+                        </XStack>
+
+                        {isRatingAverageLoading && (
+                          <ProductMetaText>Ładowanie średniej oceny...</ProductMetaText>
+                        )}
+
+                        {!isRatingAverageLoading && ratingAverageError.length > 0 && (
+                          <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingAverageError}</Text>
+                        )}
+
+                        {isAuthenticated && isUserRatingLoading && (
+                          <ProductMetaText>Ładowanie Twojej oceny...</ProductMetaText>
+                        )}
+
+                        {isAuthenticated && hasUserRated && (
+                          <XStack
+                            alignItems="center"
                             gap="$1.5"
                             borderWidth={1}
                             borderColor="$borderColor"
-                            borderRadius="$6"
-                            bg="$background"
-                            style={{ paddingHorizontal: isNarrowPhone ? 10 : 14, paddingVertical: isNarrowPhone ? 8 : 12 }}
-                          >
-                            <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
-                              {PRODUCT_RATING_VALUES.map((ratingValue) => (
-                                <Text
-                                  key={`average-${ratingValue}`}
-                                  style={{
-                                    color: ratingValue <= averageRatingFilledStars ? RATING_FILLED_STAR_COLOR : RATING_EMPTY_STAR_COLOR,
-                                    fontSize: isNarrowPhone ? 20 : 24,
-                                    lineHeight: isNarrowPhone ? 24 : 28,
-                                  }}
-                                >
-                                  ★
-                                </Text>
-                              ))}
-                            </XStack>
-                            <Text color="$color" fontFamily="$heading" fontSize={isNarrowPhone ? '$6' : '$7'} fontWeight="800">
-                              {averageRatingValue.toFixed(1)} / 5
-                            </Text>
-                            <ProductMetaText>
-                              {formatRatingOpinionsCount(ratingAverage?.ratingsCount ?? 0)}
-                            </ProductMetaText>
-                          </YStack>
-                        )}
-
-                        {isAuthenticated && isUserRatingLoading ? (
-                          <ProductMetaText>Ładowanie Twojej oceny...</ProductMetaText>
-                        ) : null}
-
-                        {isAuthenticated && hasUserRated ? (
-                          <YStack
-                            gap="$1"
-                            borderWidth={1}
-                            borderColor="#D79A00"
-                            borderRadius="$6"
+                            borderRadius="$5"
+                            bg="$backgroundHover"
                             style={{
-                              paddingHorizontal: isNarrowPhone ? 10 : 14,
-                              paddingVertical: isNarrowPhone ? 8 : 10,
-                              backgroundColor: '#FFF6DB',
+                              paddingHorizontal: isNarrowPhone ? 8 : 10,
+                              paddingVertical: isNarrowPhone ? 6 : 8,
                             }}
                           >
-                            <Text color="#8A5A00" fontFamily="$heading" fontSize="$5" fontWeight="800">
-                              Twoja ocena: {userRating}
+                            <Text color="$color" fontFamily="$heading" fontSize={isNarrowPhone ? '$2' : '$3'} fontWeight="700">
+                              Twoja ocena: {userRating} ★
                             </Text>
-                            <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
-                              {PRODUCT_RATING_VALUES.map((ratingValue) => (
-                                <Text
-                                  key={`user-rating-${ratingValue}`}
-                                  style={{
-                                    color: ratingValue <= (userRating ?? 0) ? '#E39A00' : '#B7BCC7',
-                                    fontSize: isNarrowPhone ? 18 : 20,
-                                    lineHeight: isNarrowPhone ? 22 : 24,
-                                  }}
-                                >
-                                  ★
-                                </Text>
-                              ))}
-                            </XStack>
-                          </YStack>
-                        ) : null}
+                          </XStack>
+                        )}
 
-                        <YStack gap="$1">
-                          <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="700">
+                        <YStack gap="$0.5">
+                          <Text
+                            color="$placeholderColor"
+                            fontFamily="$mono"
+                            fontSize="$2"
+                            lineHeight="$3"
+                            fontWeight="600"
+                            letterSpacing={0.4}
+                          >
                             Wystaw ocenę
                           </Text>
 
@@ -608,10 +578,10 @@ export function ProductDetailsScreen() {
                                   })}
                                 >
                                   <Text
+                                    color={isHighlighted ? RATING_FILLED_STAR_COLOR : RATING_EMPTY_STAR_COLOR}
                                     style={{
-                                      color: isHighlighted ? RATING_FILLED_STAR_COLOR : RATING_EMPTY_STAR_COLOR,
-                                      fontSize: isNarrowPhone ? 24 : 28,
-                                      lineHeight: isNarrowPhone ? 28 : 32,
+                                      fontSize: isNarrowPhone ? 20 : 22,
+                                      lineHeight: isNarrowPhone ? 22 : 24,
                                     }}
                                   >
                                     ★
@@ -626,17 +596,17 @@ export function ProductDetailsScreen() {
                           Ocenę możesz dodać po opłaconym zakupie produktu.
                         </ProductMetaText>
 
-                        {isRatingSubmitting ? (
+                        {isRatingSubmitting && (
                           <ProductMetaText>Zapisywanie oceny...</ProductMetaText>
-                        ) : null}
+                        )}
 
-                        {ratingSubmitError ? (
+                        {ratingSubmitError.length > 0 && (
                           <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingSubmitError}</Text>
-                        ) : null}
+                        )}
 
-                        {ratingSubmitSuccess ? (
+                        {ratingSubmitSuccess.length > 0 && (
                           <Text fontSize="$2" style={{ color: '#1B7A37' }}>{ratingSubmitSuccess}</Text>
-                        ) : null}
+                        )}
                       </YStack>
                     </SurfaceCard>
 

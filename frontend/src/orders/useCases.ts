@@ -98,6 +98,21 @@ function mapOrder(order: OrderDto): Order {
   }
 }
 
+function parseOrderTimestamp(orderDate: string): number {
+  const parsedTimestamp = Date.parse(orderDate)
+  return Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0
+}
+
+function compareOrdersByNewestFirst(left: Order, right: Order): number {
+  const timestampDiff = parseOrderTimestamp(right.orderDate) - parseOrderTimestamp(left.orderDate)
+
+  if (timestampDiff !== 0) {
+    return timestampDiff
+  }
+
+  return right.id - left.id
+}
+
 function validateOrderId(orderId: number): void {
   if (!Number.isInteger(orderId) || orderId <= 0) {
     throw new InvalidOrderIdError()
@@ -160,7 +175,9 @@ export async function listOrdersUseCase(command: ListOrdersCommand = {}): Promis
 
   try {
     const result = await fetchOrdersApi(normalizedCommand)
-    const orders = result.map(mapOrder)
+    const orders = result
+      .map(mapOrder)
+      .sort(compareOrdersByNewestFirst)
     useOrdersStore.getState().setOrders(orders)
     return orders
   } catch (error) {

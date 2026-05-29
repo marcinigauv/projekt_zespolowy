@@ -39,7 +39,11 @@ export default function OrdersScreen() {
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
   const isPhone = viewportWidth <= 520
+  const isStacked = viewportWidth <= 1100
   const mobileBottomRailInset = isPhone ? 88 : 0
+  const floatingOverlayInset = isPhone ? 0 : 24
+  const scrollBottomInset = mobileBottomRailInset + floatingOverlayInset
+  const webOverlayToastInset = Platform.OS === 'web' && !isPhone && viewportWidth <= 1200 ? 44 : 0
 
   useEffect(() => {
     if (!canRender) {
@@ -85,8 +89,8 @@ export default function OrdersScreen() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView style={{ flex: 1, marginBottom: mobileBottomRailInset }}>
-        <PageContent style={{ maxWidth: 1120 }}>
+      <ScrollView style={{ flex: 1, marginBottom: scrollBottomInset }}>
+        <PageContent style={{ maxWidth: 1120, paddingTop: webOverlayToastInset }}>
           <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Zamówienia</Eyebrow>
             <SectionTitle>Historia zamówień</SectionTitle>
@@ -109,18 +113,27 @@ export default function OrdersScreen() {
                     <CardHeaderStrip>
                       <XStack
                         gap="$3"
-                        justifyContent="space-between"
-                        alignItems={isPhone ? 'flex-start' : 'center'}
-                        flexDirection={isPhone ? 'column' : 'row'}
+                        flexDirection={isStacked ? 'column' : 'row'}
+                        style={{
+                          justifyContent: 'space-between',
+                          alignItems: isStacked ? 'stretch' : 'center',
+                        }}
                       >
-                        <YStack gap="$1.5" style={{ minWidth: 0, flex: isPhone ? undefined : 1, width: isPhone ? '100%' : undefined }}>
+                        <YStack
+                          gap="$1.5"
+                          style={{
+                            minWidth: 0,
+                            flex: isStacked ? undefined : 1,
+                            width: isStacked ? '100%' : undefined,
+                          }}
+                        >
                           <InfoTileLabel>
                           Zamówienie
                           </InfoTileLabel>
                           <Text color="$color" fontFamily="$heading" fontSize={isPhone ? '$6' : '$7'} fontWeight="700">
                           #{order.id}
                           </Text>
-                          {!isPhone ? (
+                          {!isStacked ? (
                             <InfoTileMeta>
                             {formatDateTime(order.orderDate)}
                             </InfoTileMeta>
@@ -128,10 +141,11 @@ export default function OrdersScreen() {
                         </YStack>
 
                         <MetricTile
-                          alignItems={isPhone ? 'flex-start' : 'flex-end'}
                           style={{
-                            minWidth: isPhone ? 0 : 180,
-                            width: isPhone ? '100%' : undefined,
+                            alignItems: isStacked ? 'flex-start' : 'flex-end',
+                            minWidth: isStacked ? 0 : 180,
+                            width: isStacked ? '100%' : undefined,
+                            flexGrow: 0,
                             paddingVertical: 12,
                           }}
                         >
@@ -148,11 +162,11 @@ export default function OrdersScreen() {
                     <YStack p="$3.5" gap="$3.5">
                       <XStack
                         gap="$3"
-                        flexWrap={isPhone ? 'nowrap' : 'wrap'}
-                        flexDirection={isPhone ? 'column' : 'row'}
-                        alignItems="stretch"
+                        flexWrap={isStacked ? 'nowrap' : 'wrap'}
+                        flexDirection={isStacked ? 'column' : 'row'}
+                        style={{ alignItems: 'stretch' }}
                       >
-                        <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 220 }}>
+                        <InfoTile style={{ width: isStacked ? '100%' : undefined, flexBasis: isStacked ? 'auto' : 220 }}>
                           <InfoTileLabel>
                             Data
                           </InfoTileLabel>
@@ -161,7 +175,7 @@ export default function OrdersScreen() {
                           </InfoTileValue>
                         </InfoTile>
 
-                        <InfoTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 180 }}>
+                        <InfoTile style={{ width: isStacked ? '100%' : undefined, flexBasis: isStacked ? 'auto' : 180 }}>
                           <InfoTileLabel>
                             Liczba pozycji
                           </InfoTileLabel>
@@ -170,7 +184,7 @@ export default function OrdersScreen() {
                           </InfoTileValue>
                         </InfoTile>
 
-                        <MetricTile style={{ width: isPhone ? '100%' : undefined, flexBasis: isPhone ? 'auto' : 220 }} gap="$2.5">
+                        <MetricTile style={{ width: isStacked ? '100%' : undefined, flexBasis: isStacked ? 'auto' : 220 }} gap="$2.5">
                           <InfoTileLabel>
                             Płatność
                           </InfoTileLabel>
@@ -183,11 +197,11 @@ export default function OrdersScreen() {
                       </XStack>
 
                       <YStack
-                        alignItems={isPhone ? 'stretch' : 'center'}
                         width="100%"
                         borderTopWidth={1}
                         borderTopColor="$borderColor"
                         style={{
+                          alignItems: isStacked ? 'stretch' : 'center',
                           paddingTop: 14,
                         }}
                       >
@@ -196,8 +210,8 @@ export default function OrdersScreen() {
                           onPress={() => router.push(`/orders/${order.id}`)}
                           style={{
                             minHeight: 56,
-                            minWidth: isPhone ? undefined : 240,
-                            width: isPhone ? '100%' : undefined,
+                            minWidth: isStacked ? undefined : 240,
+                            width: isStacked ? '100%' : undefined,
                           }}
                         >
                           Zobacz szczegóły
@@ -210,13 +224,13 @@ export default function OrdersScreen() {
             </YStack>
           )}
 
-          <YStack alignItems={isPhone ? 'stretch' : 'center'} style={{ width: '100%' }}>
+          <YStack style={{ width: '100%', alignItems: isStacked ? 'stretch' : 'center' }}>
             <SecondaryButton
               onPress={() => router.push('/profile')}
               style={{
                 minHeight: 56,
-                minWidth: isPhone ? undefined : 240,
-                width: isPhone ? '100%' : undefined,
+                minWidth: isStacked ? undefined : 240,
+                width: isStacked ? '100%' : undefined,
               }}
             >
               Wróć do profilu

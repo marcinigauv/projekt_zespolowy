@@ -41,6 +41,16 @@ export type ProductRating = ProductRatingDto
 export type ProductRatingAverage = ProductRatingAverageDto
 export type ProductCurrentUserRating = ProductCurrentUserRatingDto
 
+const PRODUCT_RATING_AVERAGE_CACHE_TTL_MS = 1000 * 60 * 2
+
+interface ProductRatingAverageCacheEntry {
+  value: ProductRatingAverage
+  expiresAt: number
+}
+
+const productRatingAverageCache = new Map<number, ProductRatingAverageCacheEntry>()
+const productRatingAverageRequests = new Map<number, Promise<ProductRatingAverage>>()
+
 export interface GetProductsCommand {
   limit?: number
   offset?: number
@@ -185,6 +195,33 @@ function mapProductRatingError(error: unknown, productId: number): Error {
   return error instanceof Error ? error : new ProductServiceUnavailableError()
 }
 
+function getCachedProductRatingAverage(productId: number): ProductRatingAverage | null {
+  const cachedEntry = productRatingAverageCache.get(productId)
+
+  if (!cachedEntry) {
+    return null
+  }
+
+  if (cachedEntry.expiresAt <= Date.now()) {
+    productRatingAverageCache.delete(productId)
+    return null
+  }
+
+  return cachedEntry.value
+}
+
+function setCachedProductRatingAverage(productId: number, ratingAverage: ProductRatingAverage): void {
+  productRatingAverageCache.set(productId, {
+    value: ratingAverage,
+    expiresAt: Date.now() + PRODUCT_RATING_AVERAGE_CACHE_TTL_MS,
+  })
+}
+
+function clearCachedProductRatingAverage(productId: number): void {
+  productRatingAverageCache.delete(productId)
+  productRatingAverageRequests.delete(productId)
+}
+
 export async function getProductsUseCase(command: GetProductsCommand = {}): Promise<Product[]> {
   try {
     return await fetchProductListApi(normalizeListCommand(command))
@@ -232,7 +269,9 @@ export async function rateProductUseCase(command: RateProductCommand): Promise<P
   validateProductRating(command.rating)
 
   try {
-    return await createOrUpdateProductRatingApi(command.id, { rating: command.rating })
+    const rating = await createOrUpdateProductRatingApi(command.id, { rating: command.rating })
+    clearCachedProductRatingAverage(command.id)
+    return rating
   } catch (error) {
     throw mapProductRatingError(error, command.id)
   }
@@ -243,11 +282,33 @@ export async function getProductRatingAverageUseCase(
 ): Promise<ProductRatingAverage> {
   validateProductId(command.id)
 
-  try {
-    return await fetchProductRatingAverageApi(command.id)
-  } catch (error) {
-    throw mapProductError(error, command.id)
+  const cachedRatingAverage = getCachedProductRatingAverage(command.id)
+
+  if (cachedRatingAverage) {
+    return cachedRatingAverage
   }
+
+  const pendingRequest = productRatingAverageRequests.get(command.id)
+
+  if (pendingRequest) {
+    return pendingRequest
+  }
+
+  const requestPromise = (async () => {
+    try {
+      const ratingAverage = await fetchProductRatingAverageApi(command.id)
+      setCachedProductRatingAverage(command.id, ratingAverage)
+      return ratingAverage
+    } catch (error) {
+      throw mapProductError(error, command.id)
+    } finally {
+      productRatingAverageRequests.delete(command.id)
+    }
+  })()
+
+  productRatingAverageRequests.set(command.id, requestPromise)
+
+  return requestPromise
 }
 
 export async function getCurrentUserProductRatingUseCase(
