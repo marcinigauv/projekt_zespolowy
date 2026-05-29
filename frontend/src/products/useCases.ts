@@ -1,5 +1,6 @@
 import { ApiError, NetworkError } from '../lib/api'
 import {
+  fetchCurrentUserProductRatingApi,
   createOrUpdateProductRatingApi,
   createProductApi,
   deleteProductApi,
@@ -10,6 +11,7 @@ import {
   fetchProductSimilarApi,
   updateProductApi,
   type ProductDetailsRequestDto,
+  type ProductCurrentUserRatingDto,
   type ProductDto,
   type ProductListRequestDto,
   type ProductRatingAverageDto,
@@ -37,6 +39,7 @@ const DEFAULT_PRODUCT_LIST_OFFSET = 0
 export type Product = ProductDto
 export type ProductRating = ProductRatingDto
 export type ProductRatingAverage = ProductRatingAverageDto
+export type ProductCurrentUserRating = ProductCurrentUserRatingDto
 
 export interface GetProductsCommand {
   limit?: number
@@ -59,6 +62,7 @@ export interface RateProductCommand {
 }
 
 export interface GetProductRatingAverageCommand extends ProductDetailsRequestDto {}
+export interface GetCurrentUserProductRatingCommand extends ProductDetailsRequestDto {}
 
 export interface UpsertProductCommand {
   name: string
@@ -243,6 +247,18 @@ export async function getProductRatingAverageUseCase(
     return await fetchProductRatingAverageApi(command.id)
   } catch (error) {
     throw mapProductError(error, command.id)
+  }
+}
+
+export async function getCurrentUserProductRatingUseCase(
+  command: GetCurrentUserProductRatingCommand,
+): Promise<ProductCurrentUserRating> {
+  validateProductId(command.id)
+
+  try {
+    return await fetchCurrentUserProductRatingApi(command.id)
+  } catch (error) {
+    throw mapProductRatingError(error, command.id)
   }
 }
 

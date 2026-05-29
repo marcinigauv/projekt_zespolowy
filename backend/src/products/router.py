@@ -6,6 +6,7 @@ from src.products.use_cases import (
     edit_product,
     get_product_by_id,
     get_product_rating_average_by_product_id,
+    get_product_rating_for_user_by_product_id,
     get_products,
     get_recommended_products_for_user_by_product_id,
     get_similar_products_by_product_id,
@@ -16,6 +17,7 @@ from src.products.models import (
     ProductRatingAverageResponse,
     ProductRatingCreateRequest,
     ProductRatingResponse,
+    ProductUserRatingResponse,
     ProductResponse,
     ProductSearchRequest,
     ProductUpdateRequest,
@@ -73,6 +75,16 @@ async def rate_product_post(
 ) -> ProductRatingResponse:
     """Endpoint to add or update a product rating for an authenticated user after a paid purchase."""
     return await rate_product_for_user(session, product_id, user.get_user_id(), rating_request)
+
+
+@products_router.get("/{product_id}/rating/me", response_model=ProductUserRatingResponse)
+async def get_product_user_rating_get(
+    product_id: int,
+    session: DBSession,
+    user: User = Depends(require_authentication),
+) -> ProductUserRatingResponse:
+    """Endpoint to get current authenticated user rating for a product."""
+    return await get_product_rating_for_user_by_product_id(session, product_id, user.get_user_id())
 
 
 @products_router.get("/{product_id}/rating/average", response_model=ProductRatingAverageResponse)

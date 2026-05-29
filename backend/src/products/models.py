@@ -104,6 +104,17 @@ class ProductRatingResponse(BaseResponseModel):
         return cls.model_validate(product_rating)
 
 
+class ProductUserRatingResponse(BaseResponseModel):
+    product_id: int = Field(description="The product identifier")
+    user_id: int = Field(description="The user identifier")
+    rating: Optional[int] = Field(
+        default=None,
+        description="The current authenticated user rating for this product",
+        ge=1,
+        le=5,
+    )
+
+
 class ProductRatingAverageResponse(BaseResponseModel):
     product_id: int = Field(description="The product identifier")
     average_rating: Optional[float] = Field(

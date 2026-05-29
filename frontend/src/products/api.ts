@@ -47,6 +47,12 @@ export interface ProductRatingAverageDto {
     ratingsCount: number
 }
 
+export interface ProductCurrentUserRatingDto {
+    productId: number
+    userId: number
+    rating: number | null
+}
+
 export type ProductSortingField = 'name' | 'price' | 'amount'
 export type ProductSortingOrder = 'asc' | 'desc'
 
@@ -93,6 +99,12 @@ export async function createOrUpdateProductRatingApi(productId: number, payload:
 
 export async function fetchProductRatingAverageApi(productId: number): Promise<ProductRatingAverageDto> {
     return apiRequest<ProductRatingAverageDto>(`/products/${productId}/rating/average`, {
+        method: 'GET',
+    })
+}
+
+export async function fetchCurrentUserProductRatingApi(productId: number): Promise<ProductCurrentUserRatingDto> {
+    return apiRequest<ProductCurrentUserRatingDto>(`/products/${productId}/rating/me`, {
         method: 'GET',
     })
 }

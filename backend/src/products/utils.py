@@ -254,6 +254,20 @@ async def upsert_product_rating_in_db(
     return stored_rating
 
 
+async def get_product_rating_for_user_from_db(
+    session: DBSession,
+    user_id: int,
+    product_id: int,
+) -> Optional[ProductRating]:
+    stmt = select(ProductRating).where(
+        ProductRating.user_id == user_id,
+        ProductRating.product_id == product_id,
+    )
+
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
 async def get_product_rating_average_from_db(
     session: DBSession,
     product_id: int,

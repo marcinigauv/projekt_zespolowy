@@ -3,6 +3,7 @@ from src.products.models import (
     ProductRatingAverageResponse,
     ProductRatingCreateRequest,
     ProductRatingResponse,
+    ProductUserRatingResponse,
     ProductResponse,
     ProductSearchRequest,
     ProductUpdateRequest,
@@ -15,6 +16,7 @@ from src.products.utils import (
     edit_product_in_db,
     get_product_by_id_from_db,
     get_product_rating_average_from_db,
+    get_product_rating_for_user_from_db,
     get_products_from_db,
     has_user_purchased_and_paid_product_in_db,
     upsert_product_rating_in_db,
@@ -101,6 +103,28 @@ async def rate_product_for_user(
         rating_request.rating,
     )
     return ProductRatingResponse.from_product_rating(stored_rating)
+
+
+async def get_product_rating_for_user_by_product_id(
+    session: DBSession,
+    product_id: int,
+    user_id: int,
+) -> ProductUserRatingResponse:
+    result = await get_product_by_id_from_db(session, product_id)
+    if not result:
+        raise ProductNotFoundException(product_id)
+
+    user_rating = await get_product_rating_for_user_from_db(
+        session,
+        user_id,
+        product_id,
+    )
+
+    return ProductUserRatingResponse(
+        product_id=product_id,
+        user_id=user_id,
+        rating=user_rating.rating if user_rating else None,
+    )
 
 
 async def get_product_rating_average_by_product_id(

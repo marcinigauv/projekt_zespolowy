@@ -8,6 +8,7 @@ import { formatCurrency } from '../../lib/formatters'
 import { parsePositiveIntParam } from '../../lib/routeParams'
 import { useScreenNotificationsPolling } from '../../notifications/useHomeScreenNotificationsPolling'
 import {
+  getCurrentUserProductRatingUseCase,
   getProductRatingAverageUseCase,
   getProductUseCase,
   getRecommendedProductsForYouUseCase,
@@ -38,6 +39,20 @@ import {
 import { SimilarProductsCarousel } from './SimilarProductsCarousel'
 
 const PRODUCT_RATING_VALUES = [1, 2, 3, 4, 5] as const
+const RATING_FILLED_STAR_COLOR = '#F5B301'
+const RATING_EMPTY_STAR_COLOR = '#8A8F99'
+
+function formatRatingOpinionsCount(count: number): string {
+  if (count === 1) {
+    return '1 opinia'
+  }
+
+  const modulo10 = count % 10
+  const modulo100 = count % 100
+  const isFew = modulo10 >= 2 && modulo10 <= 4 && (modulo100 < 12 || modulo100 > 14)
+
+  return isFew ? `${count} opinie` : `${count} opinii`
+}
 
 function ProductHeroImage({ product }: { product: Product }) {
   if (product.imageUrl) {
@@ -105,6 +120,7 @@ export function ProductDetailsScreen() {
   const [ratingAverageError, setRatingAverageError] = useState('')
   const [isRatingAverageLoading, setIsRatingAverageLoading] = useState(true)
   const [userRating, setUserRating] = useState<number | null>(null)
+  const [isUserRatingLoading, setIsUserRatingLoading] = useState(false)
   const [ratingSubmitError, setRatingSubmitError] = useState('')
   const [ratingSubmitSuccess, setRatingSubmitSuccess] = useState('')
   const [isRatingSubmitting, setIsRatingSubmitting] = useState(false)
@@ -117,12 +133,17 @@ export function ProductDetailsScreen() {
     .map((category) => category.trim())
     .filter((category) => category.length > 0) ?? []
 
-  const averageRatingLabel =
-    ratingAverage?.averageRating === null || ratingAverage === null
-      ? 'Brak ocen'
-      : `${ratingAverage.averageRating.toFixed(1)} / 5`
-
-  const ratingsCountLabel = ratingAverage ? `${ratingAverage.ratingsCount}` : '0'
+  const hasAnyRatings = Boolean(
+    ratingAverage &&
+    ratingAverage.averageRating !== null &&
+    ratingAverage.averageRating > 0 &&
+    ratingAverage.ratingsCount > 0,
+  )
+  const averageRatingValue = hasAnyRatings ? ratingAverage!.averageRating! : 0
+  const averageRatingFilledStars = hasAnyRatings
+    ? Math.max(1, Math.min(5, Math.round(averageRatingValue)))
+    : 0
+  const hasUserRated = userRating !== null && userRating >= 1 && userRating <= 5
 
   const handleTagPress = (tag: string) => {
     const normalizedTag = tag.trim()
@@ -264,7 +285,45 @@ export function ProductDetailsScreen() {
   }, [productId])
 
   useEffect(() => {
+    let isMounted = true
+
+    if (!isAuthResolved) {
+      setIsUserRatingLoading(true)
+      return () => { isMounted = false }
+    }
+
+    if (!isAuthenticated || productId === null) {
+      setUserRating(null)
+      setIsUserRatingLoading(false)
+      return () => { isMounted = false }
+    }
+
+    const loadUserRating = async () => {
+      try {
+        setIsUserRatingLoading(true)
+        const result = await getCurrentUserProductRatingUseCase({ id: productId })
+        if (!isMounted) return
+        setUserRating(result.rating)
+      } catch {
+        if (!isMounted) return
+        setUserRating(null)
+      } finally {
+        if (isMounted) {
+          setIsUserRatingLoading(false)
+        }
+      }
+    }
+
+    void loadUserRating()
+
+    return () => {
+      isMounted = false
+    }
+  }, [productId, isAuthenticated, isAuthResolved])
+
+  useEffect(() => {
     setUserRating(null)
+    setIsUserRatingLoading(false)
     setRatingSubmitError('')
     setRatingSubmitSuccess('')
   }, [productId])
@@ -437,54 +496,131 @@ export function ProductDetailsScreen() {
                         padding: isNarrowPhone ? 12 : isPhone ? 14 : 18,
                       }}
                     >
-                      <YStack gap="$2">
+                      <YStack gap="$2.5">
                         <Text fontSize="$5" fontWeight="800" color="$color">Ocena produktu</Text>
 
                         {isRatingAverageLoading ? (
                           <ProductMetaText>Ładowanie średniej oceny...</ProductMetaText>
                         ) : ratingAverageError ? (
                           <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingAverageError}</Text>
-                        ) : (
-                          <YStack gap="$1">
-                            <Text color="$color" fontFamily="$heading" fontSize="$6" fontWeight="700">
-                              {averageRatingLabel}
+                        ) : !hasAnyRatings ? (
+                          <YStack
+                            borderWidth={1}
+                            borderColor="$borderColor"
+                            borderRadius="$6"
+                            bg="$background"
+                            style={{ paddingHorizontal: isNarrowPhone ? 10 : 14, paddingVertical: isNarrowPhone ? 8 : 12 }}
+                          >
+                            <Text color="$placeholderColor" fontFamily="$heading" fontSize="$6" fontWeight="700">
+                              Brak opinii
                             </Text>
-                            <ProductMetaText>Liczba ocen: {ratingsCountLabel}</ProductMetaText>
                           </YStack>
-                        )}
-
-                        <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
-                          {PRODUCT_RATING_VALUES.map((ratingValue) => {
-                            const isHighlighted = (userRating ?? 0) >= ratingValue
-
-                            return (
-                              <Pressable
-                                key={ratingValue}
-                                onPress={() => { void handleRateProduct(ratingValue) }}
-                                disabled={!isAuthenticated || isRatingSubmitting}
-                                style={({ pressed }) => ({
-                                  opacity: (!isAuthenticated || isRatingSubmitting)
-                                    ? 0.5
-                                    : pressed
-                                      ? 0.7
-                                      : 1,
-                                  paddingVertical: 2,
-                                  paddingHorizontal: 1,
-                                })}
-                              >
+                        ) : (
+                          <YStack
+                            gap="$1.5"
+                            borderWidth={1}
+                            borderColor="$borderColor"
+                            borderRadius="$6"
+                            bg="$background"
+                            style={{ paddingHorizontal: isNarrowPhone ? 10 : 14, paddingVertical: isNarrowPhone ? 8 : 12 }}
+                          >
+                            <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
+                              {PRODUCT_RATING_VALUES.map((ratingValue) => (
                                 <Text
+                                  key={`average-${ratingValue}`}
                                   style={{
-                                    color: isHighlighted ? '#F5B301' : '#8A8F99',
-                                    fontSize: isNarrowPhone ? 24 : 28,
-                                    lineHeight: isNarrowPhone ? 28 : 32,
+                                    color: ratingValue <= averageRatingFilledStars ? RATING_FILLED_STAR_COLOR : RATING_EMPTY_STAR_COLOR,
+                                    fontSize: isNarrowPhone ? 20 : 24,
+                                    lineHeight: isNarrowPhone ? 24 : 28,
                                   }}
                                 >
                                   ★
                                 </Text>
-                              </Pressable>
-                            )
-                          })}
-                        </XStack>
+                              ))}
+                            </XStack>
+                            <Text color="$color" fontFamily="$heading" fontSize={isNarrowPhone ? '$6' : '$7'} fontWeight="800">
+                              {averageRatingValue.toFixed(1)} / 5
+                            </Text>
+                            <ProductMetaText>
+                              {formatRatingOpinionsCount(ratingAverage?.ratingsCount ?? 0)}
+                            </ProductMetaText>
+                          </YStack>
+                        )}
+
+                        {isAuthenticated && isUserRatingLoading ? (
+                          <ProductMetaText>Ładowanie Twojej oceny...</ProductMetaText>
+                        ) : null}
+
+                        {isAuthenticated && hasUserRated ? (
+                          <YStack
+                            gap="$1"
+                            borderWidth={1}
+                            borderColor="#D79A00"
+                            borderRadius="$6"
+                            style={{
+                              paddingHorizontal: isNarrowPhone ? 10 : 14,
+                              paddingVertical: isNarrowPhone ? 8 : 10,
+                              backgroundColor: '#FFF6DB',
+                            }}
+                          >
+                            <Text color="#8A5A00" fontFamily="$heading" fontSize="$5" fontWeight="800">
+                              Twoja ocena: {userRating}
+                            </Text>
+                            <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
+                              {PRODUCT_RATING_VALUES.map((ratingValue) => (
+                                <Text
+                                  key={`user-rating-${ratingValue}`}
+                                  style={{
+                                    color: ratingValue <= (userRating ?? 0) ? '#E39A00' : '#B7BCC7',
+                                    fontSize: isNarrowPhone ? 18 : 20,
+                                    lineHeight: isNarrowPhone ? 22 : 24,
+                                  }}
+                                >
+                                  ★
+                                </Text>
+                              ))}
+                            </XStack>
+                          </YStack>
+                        ) : null}
+
+                        <YStack gap="$1">
+                          <Text color="$color" fontFamily="$heading" fontSize="$4" fontWeight="700">
+                            Wystaw ocenę
+                          </Text>
+
+                          <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
+                            {PRODUCT_RATING_VALUES.map((ratingValue) => {
+                              const isHighlighted = (userRating ?? 0) >= ratingValue
+
+                              return (
+                                <Pressable
+                                  key={ratingValue}
+                                  onPress={() => { void handleRateProduct(ratingValue) }}
+                                  disabled={!isAuthenticated || isRatingSubmitting}
+                                  style={({ pressed }) => ({
+                                    opacity: (!isAuthenticated || isRatingSubmitting)
+                                      ? 0.5
+                                      : pressed
+                                        ? 0.7
+                                        : 1,
+                                    paddingVertical: 2,
+                                    paddingHorizontal: 1,
+                                  })}
+                                >
+                                  <Text
+                                    style={{
+                                      color: isHighlighted ? RATING_FILLED_STAR_COLOR : RATING_EMPTY_STAR_COLOR,
+                                      fontSize: isNarrowPhone ? 24 : 28,
+                                      lineHeight: isNarrowPhone ? 28 : 32,
+                                    }}
+                                  >
+                                    ★
+                                  </Text>
+                                </Pressable>
+                              )
+                            })}
+                          </XStack>
+                        </YStack>
 
                         <ProductMetaText>
                           Ocenę możesz dodać po opłaconym zakupie produktu.
