@@ -5,6 +5,8 @@ import { Text, XStack, YStack } from 'tamagui'
 import { StateMessageCard } from '../../components/StateMessageCard'
 import { formatCurrency } from '../../lib/formatters'
 import type { Product } from '../useCases'
+import { ProductRatingSummary } from './ProductRatingSummary'
+import { useProductRatingAverages } from './useProductRatingAverages'
 import {
   BadgeRow,
   CarouselControls,
@@ -71,6 +73,7 @@ export function SimilarProductsCarousel({
   const isPhone = viewportWidth <= 520
   const isNarrowPhone = viewportWidth <= 390
   const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
+  const productRatingAverages = useProductRatingAverages(products)
 
   const total = products.length
   const pageSize = isPhone ? 1 : 2
@@ -238,6 +241,11 @@ export function SimilarProductsCarousel({
                   >
                     {item.description}
                   </ProductMetaText>
+
+                  <ProductRatingSummary
+                    ratingAverage={productRatingAverages[item.id]}
+                    isLoading={productRatingAverages[item.id] === undefined}
+                  />
                 </ProductCardSection>
               </YStack>
 

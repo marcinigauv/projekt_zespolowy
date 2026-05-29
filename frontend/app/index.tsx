@@ -6,6 +6,8 @@ import { Header } from '../src/components/Header'
 import { StateMessageCard } from '../src/components/StateMessageCard'
 import { useHomeScreenNotificationsPolling } from '../src/notifications/useHomeScreenNotificationsPolling'
 import { getProductsUseCase, type Product } from '../src/products/useCases'
+import { ProductRatingSummary } from '../src/products/components/ProductRatingSummary'
+import { useProductRatingAverages } from '../src/products/components/useProductRatingAverages'
 import {
   PageWrapper,
   ProductGrid,
@@ -58,6 +60,7 @@ export default function Index() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const productRatingAverages = useProductRatingAverages(products)
   const isPhone = viewportWidth <= 520
   const isNarrowPhone = viewportWidth <= 390
   const isTablet = viewportWidth > 520 && viewportWidth <= 1024
@@ -207,6 +210,11 @@ export default function Index() {
                         <CatalogProductTitle numberOfLines={2}>
                           {product.name}
                         </CatalogProductTitle>
+
+                        <ProductRatingSummary
+                          ratingAverage={productRatingAverages[product.id]}
+                          isLoading={productRatingAverages[product.id] === undefined}
+                        />
 
                         <CatalogProductPriceRow>
                           <CatalogProductPrice>{formatPrice(product.price)}</CatalogProductPrice>
