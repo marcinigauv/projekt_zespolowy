@@ -23,6 +23,10 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker-entrypoint-resolver.sh /docker-entrypoint.d/99-resolver.sh
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+
+RUN sed -i 's/\r$//' /docker-entrypoint.d/99-resolver.sh \
+	&& chmod +x /docker-entrypoint.d/99-resolver.sh
+
 RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /etc/nginx /var/log/nginx /run
 
 USER nginx
