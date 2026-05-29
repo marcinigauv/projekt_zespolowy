@@ -1,9 +1,17 @@
 from fastapi import APIRouter, Depends, Query
 from src.sql.db import DBSession
-from src.products.use_cases import add_product, delete_product, edit_product, get_products, get_product_by_id, get_similar_products_by_product_id
+from src.products.use_cases import (
+    add_product,
+    delete_product,
+    edit_product,
+    get_product_by_id,
+    get_products,
+    get_recommended_products_for_user_by_product_id,
+    get_similar_products_by_product_id,
+)
 from src.products.models import ProductCreateRequest, ProductResponse, ProductSearchRequest, ProductUpdateRequest
 from src.sql.models import User
-from src.users.dependecies import require_admin
+from src.users.dependecies import require_admin, require_authentication
 
 
 products_router = APIRouter(prefix="/products", tags=["products"])
@@ -33,6 +41,17 @@ async def get_similar_products_get(
 ) -> list[ProductResponse]:
     """Endpoint to get similar products to a given product ID."""
     return await get_similar_products_by_product_id(session, product_id)
+
+
+@products_router.get("/recommended-for-you", response_model=list[ProductResponse])
+async def get_recommended_products_for_you_get(
+    session: DBSession,
+    product_id: int = Query(
+        description="The unique identifier of the product to find personalized recommendations for", default=1),
+    user: User = Depends(require_authentication),
+) -> list[ProductResponse]:
+    """Endpoint to get personalized product recommendations for an authenticated user."""
+    return await get_recommended_products_for_user_by_product_id(session, product_id, user.get_user_id())
 
 
 @products_router.post("/add", response_model=ProductResponse)

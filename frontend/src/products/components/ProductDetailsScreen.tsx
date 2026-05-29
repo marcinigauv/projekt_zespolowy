@@ -9,9 +9,11 @@ import { parsePositiveIntParam } from '../../lib/routeParams'
 import { useScreenNotificationsPolling } from '../../notifications/useHomeScreenNotificationsPolling'
 import {
   getProductUseCase,
+  getRecommendedProductsForYouUseCase,
   getSimilarProductsUseCase,
   type Product,
 } from '../useCases'
+import { useAuthStore } from '../../store/authStore'
 import { useCartStore } from '../../store/cartStore'
 import {
   AddToCartButton,
@@ -77,6 +79,9 @@ export function ProductDetailsScreen() {
   const detailsPriceFontSize = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
   const detailsPriceLineHeight = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
   const params = useLocalSearchParams<{ id?: string | string[] }>()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isAuthResolved = useAuthStore((state) => state.isAuthResolved)
+  const shouldShowRecommended = isAuthResolved && isAuthenticated
   const addItem = useCartStore((state) => state.addItem)
   const cartItems = useCartStore((state) => state.items)
   useScreenNotificationsPolling()
@@ -88,6 +93,9 @@ export function ProductDetailsScreen() {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([])
   const [similarError, setSimilarError] = useState('')
   const [isSimilarLoading, setIsSimilarLoading] = useState(true)
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([])
+  const [recommendedError, setRecommendedError] = useState('')
+  const [isRecommendedLoading, setIsRecommendedLoading] = useState(false)
 
   const quantityInCart = product ? cartItems.find((item) => item.id === product.id)?.quantity ?? 0 : 0
   const addToCartLabel = quantityInCart > 0 ? `Dodaj do koszyka (masz już ${quantityInCart})` : 'Dodaj do koszyka'
@@ -168,6 +176,43 @@ export function ProductDetailsScreen() {
     void loadSimilarProducts()
     return () => { isMounted = false }
   }, [productId])
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (!shouldShowRecommended) {
+      setRecommendedProducts([])
+      setRecommendedError('')
+      setIsRecommendedLoading(false)
+      return () => { isMounted = false }
+    }
+
+    if (productId === null) {
+      setRecommendedProducts([])
+      setRecommendedError('Nie można pobrać rekomendacji dla nieprawidłowego identyfikatora')
+      setIsRecommendedLoading(false)
+      return () => { isMounted = false }
+    }
+
+    const loadRecommendedProducts = async () => {
+      try {
+        setRecommendedError('')
+        setIsRecommendedLoading(true)
+        const result = await getRecommendedProductsForYouUseCase({ id: productId })
+        if (!isMounted) return
+        setRecommendedProducts(result)
+      } catch (error) {
+        if (!isMounted) return
+        setRecommendedProducts([])
+        setRecommendedError(error instanceof Error ? error.message : 'Nie udało się pobrać rekomendacji')
+      } finally {
+        if (isMounted) setIsRecommendedLoading(false)
+      }
+    }
+
+    void loadRecommendedProducts()
+    return () => { isMounted = false }
+  }, [productId, shouldShowRecommended])
 
   return (
     <PageWrapper>
@@ -371,6 +416,23 @@ export function ProductDetailsScreen() {
                 error={similarError}
               />
             </Section>
+
+            {shouldShowRecommended ? (
+              <Section>
+                <SectionHeading>
+                  <Eyebrow>Dla Ciebie</Eyebrow>
+                </SectionHeading>
+                <SimilarProductsCarousel
+                  products={recommendedProducts}
+                  isLoading={isRecommendedLoading}
+                  error={recommendedError}
+                  title="Wybrane dla Ciebie"
+                  description="Spersonalizowane propozycje, wyłącznie dla Ciebie."
+                  loadingMessage="Ładowanie rekomendacji dla Ciebie"
+                  emptyMessage="Brak rekomendacji na ten moment"
+                />
+              </Section>
+            ) : null}
           </Section>
         </ProductGrid>
       </ScrollView>

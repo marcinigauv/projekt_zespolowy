@@ -27,6 +27,10 @@ export interface ProductSimilarRequestDto {
     id: number
 }
 
+export interface ProductRecommendedForYouRequestDto {
+    id: number
+}
+
 export type ProductSortingField = 'name' | 'price' | 'amount'
 export type ProductSortingOrder = 'asc' | 'desc'
 
@@ -54,6 +58,12 @@ export async function fetchProductDetailsApi(payload: ProductDetailsRequestDto):
 
 export async function fetchProductSimilarApi(payload: ProductSimilarRequestDto): Promise<ProductDto[]> {
     return apiRequest<ProductDto[]>(`/products/similar?product_id=${payload.id}`, {
+        method: 'GET',
+    })
+}
+
+export async function fetchProductRecommendedForYouApi(payload: ProductRecommendedForYouRequestDto): Promise<ProductDto[]> {
+    return apiRequest<ProductDto[]>(`/products/recommended-for-you?product_id=${payload.id}`, {
         method: 'GET',
     })
 }

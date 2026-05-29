@@ -2,7 +2,10 @@ from src.products.models import ProductCreateRequest, ProductSearchRequest, Prod
 from src.products.exceptions import ProductNotFoundException
 from src.sql.db import DBSession
 from src.products.utils import add_product_to_db, delete_product_from_db, edit_product_in_db, get_products_from_db, get_product_by_id_from_db
-from src.products.dependencies import fetch_similar_products_in_vector_store
+from src.products.dependencies import (
+    fetch_recommended_products_for_user_by_product_id as fetch_personalized_products_for_user_by_product_id,
+    fetch_similar_products_in_vector_store,
+)
 
 
 async def get_products(
@@ -36,6 +39,24 @@ async def get_similar_products_by_product_id(
         raise ProductNotFoundException(product_id)
     similar_products = await fetch_similar_products_in_vector_store(product_id, session)
     return similar_products
+
+
+async def get_recommended_products_for_user_by_product_id(
+    session: DBSession,
+    product_id: int,
+    user_id: int,
+) -> list[ProductResponse]:
+    """Use case to get personalized recommendations for an authenticated user on a given product page."""
+    result = await get_product_by_id_from_db(session, product_id)
+    if not result:
+        raise ProductNotFoundException(product_id)
+
+    recommended_products = await fetch_personalized_products_for_user_by_product_id(
+        product_id,
+        user_id,
+        session,
+    )
+    return recommended_products
 
 
 async def add_product(

@@ -3,12 +3,14 @@ import {
   createProductApi,
   deleteProductApi,
   fetchProductDetailsApi,
+  fetchProductRecommendedForYouApi,
   fetchProductListApi,
   fetchProductSimilarApi,
   updateProductApi,
   type ProductDetailsRequestDto,
   type ProductDto,
   type ProductListRequestDto,
+  type ProductRecommendedForYouRequestDto,
   type ProductSimilarRequestDto,
   type ProductUpsertDto,
 } from './api'
@@ -39,6 +41,8 @@ export interface GetProductsCommand {
 export interface GetProductCommand extends ProductDetailsRequestDto {}
 
 export interface GetSimilarProductsCommand extends ProductSimilarRequestDto {}
+
+export interface GetRecommendedProductsForYouCommand extends ProductRecommendedForYouRequestDto {}
 
 export interface UpsertProductCommand {
   name: string
@@ -152,6 +156,18 @@ export async function getSimilarProductsUseCase(
 
   try {
     return await fetchProductSimilarApi(command)
+  } catch (error) {
+    throw mapProductError(error, command.id)
+  }
+}
+
+export async function getRecommendedProductsForYouUseCase(
+  command: GetRecommendedProductsForYouCommand,
+): Promise<Product[]> {
+  validateProductId(command.id)
+
+  try {
+    return await fetchProductRecommendedForYouApi(command)
   } catch (error) {
     throw mapProductError(error, command.id)
   }

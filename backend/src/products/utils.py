@@ -1,9 +1,16 @@
+from collections import defaultdict
 from sqlalchemy import select, or_, update, func
 from src.products.enums import ProductSortingDirection
 from src.products.models import ProductCreateRequest, ProductUpdateRequest, Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
 from src.sql.db import DBSession
+from src.sql.models import Order, OrderDetail, Payment
+from src.payments.enums import PaymentStatus
 from typing import Optional
 from decimal import Decimal
+
+
+RECOMMENDATION_CANDIDATE_LIMIT = 200
+RECOMMENDATION_RESULT_LIMIT = 10
 
 
 async def get_products_from_db(
@@ -207,3 +214,152 @@ async def decrease_product_stock_in_db(product_id: int, quantity: int, session: 
         raise RuntimeError(
             f"Failed to decrease stock for product_id={product_id}."
         )
+
+
+def _normalize_categories(categories: list[str]) -> set[str]:
+    return {
+        category.strip().lower()
+        for category in categories
+        if isinstance(category, str) and category.strip()
+    }
+
+
+async def _get_user_purchase_profile(
+    session: DBSession,
+    user_id: int,
+) -> tuple[dict[str, int], Optional[Decimal]]:
+    stmt = (
+        select(OrderDetail.product_id,
+               OrderDetail.quantity, OrderDetail.unit_price)
+        .join(Order, Order.id == OrderDetail.order_id)
+        .join(Payment, Payment.order_id == Order.id)
+        .where(
+            Order.customer_id == user_id,
+            Payment.status == PaymentStatus.CONFIRMED.value,
+        )
+    )
+
+    result = await session.execute(stmt)
+    purchased_rows = result.all()
+
+    if not purchased_rows:
+        return {}, None
+
+    purchased_product_ids = list({int(product_id)
+                                 for product_id, _, _ in purchased_rows})
+    purchased_products = await get_products_by_ids_from_db(session, purchased_product_ids)
+
+    categories_by_product_id: dict[int, set[str]] = {}
+    for product in purchased_products:
+        if product.id is None:
+            continue
+        categories_by_product_id[product.id] = _normalize_categories(
+            product.categories)
+
+    category_weights: defaultdict[str, int] = defaultdict(int)
+    weighted_total_price = Decimal("0")
+    weighted_quantity = 0
+
+    for product_id, quantity, unit_price in purchased_rows:
+        normalized_quantity = max(1, int(quantity))
+        weighted_total_price += Decimal(unit_price) * normalized_quantity
+        weighted_quantity += normalized_quantity
+
+        product_categories = categories_by_product_id.get(
+            int(product_id), set())
+        for category in product_categories:
+            category_weights[category] += normalized_quantity
+
+    average_price = weighted_total_price / \
+        weighted_quantity if weighted_quantity > 0 else None
+    return dict(category_weights), average_price
+
+
+def _score_recommendation_candidate(
+    candidate: Product,
+    current_product_categories: set[str],
+    purchase_category_weights: dict[str, int],
+    purchase_average_price: Optional[Decimal],
+) -> int:
+    score = 0
+    candidate_categories = _normalize_categories(candidate.categories)
+
+    if current_product_categories and candidate_categories:
+        shared_with_current = current_product_categories.intersection(
+            candidate_categories)
+        score += len(shared_with_current) * 6
+
+    if purchase_category_weights and candidate_categories:
+        score += sum(purchase_category_weights.get(category, 0)
+                     for category in candidate_categories) * 2
+
+    if purchase_average_price is not None:
+        price_diff = abs(Decimal(candidate.price) - purchase_average_price)
+        primary_threshold = max(
+            purchase_average_price * Decimal("0.25"), Decimal("25"))
+
+        if price_diff <= primary_threshold:
+            score += 4
+        elif price_diff <= primary_threshold * 2:
+            score += 2
+
+    if candidate.amount >= 10:
+        score += 2
+    elif candidate.amount > 0:
+        score += 1
+
+    return score
+
+
+async def get_recommended_products_for_user_by_product_id_from_db(
+    session: DBSession,
+    user_id: int,
+    product_id: int,
+    limit: int = RECOMMENDATION_RESULT_LIMIT,
+) -> list[Product]:
+    current_product = await get_product_by_id_from_db(session, product_id)
+    if not current_product:
+        return []
+
+    current_product_categories = _normalize_categories(
+        current_product.categories)
+    purchase_category_weights, purchase_average_price = await _get_user_purchase_profile(session, user_id)
+
+    stmt = (
+        select(Product)
+        .where(Product.id != product_id, Product.amount > 0)
+        .order_by(Product.id.desc())
+        .limit(RECOMMENDATION_CANDIDATE_LIMIT)
+    )
+
+    result = await session.execute(stmt)
+    candidates = list(result.scalars().all())
+
+    if not candidates:
+        return []
+
+    scored_candidates = [
+        (
+            candidate,
+            _score_recommendation_candidate(
+                candidate,
+                current_product_categories,
+                purchase_category_weights,
+                purchase_average_price,
+            ),
+        )
+        for candidate in candidates
+    ]
+
+    scored_candidates.sort(
+        key=lambda item: (
+            item[1],
+            item[0].amount,
+            item[0].id or 0,
+        ),
+        reverse=True,
+    )
+
+    limited_results = [candidate for candidate,
+                       _ in scored_candidates[:max(1, limit)]]
+    return limited_results

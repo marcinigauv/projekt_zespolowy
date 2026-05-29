@@ -29,6 +29,10 @@ interface SimilarProductsCarouselProps {
   products: Product[]
   isLoading: boolean
   error: string
+  title?: string
+  description?: string
+  loadingMessage?: string
+  emptyMessage?: string
 }
 
 function ProductImage({ product }: { product: Product }) {
@@ -51,7 +55,15 @@ function ProductImage({ product }: { product: Product }) {
   )
 }
 
-export function SimilarProductsCarousel({ products, isLoading, error }: SimilarProductsCarouselProps) {
+export function SimilarProductsCarousel({
+  products,
+  isLoading,
+  error,
+  title = 'Podobne produkty',
+  description = 'Propozycje dopasowane do oglądanego produktu.',
+  loadingMessage = 'Ładowanie podobnych produktów',
+  emptyMessage = 'Brak podobnych produktów',
+}: SimilarProductsCarouselProps) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   const [pageIndex, setPageIndex] = useState(0)
@@ -73,7 +85,7 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
   }, [pageCount])
 
   if (isLoading) {
-    return <StateMessageCard icon="…" message="Ładowanie podobnych produktów" />
+    return <StateMessageCard icon="…" message={loadingMessage} />
   }
 
   if (error) {
@@ -81,7 +93,7 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
   }
 
   if (products.length === 0) {
-    return <StateMessageCard icon="∅" message="Brak podobnych produktów" />
+    return <StateMessageCard icon="∅" message={emptyMessage} />
   }
 
   const startIndex = pageIndex * pageSize
@@ -140,14 +152,14 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
               fontFamily="$heading"
               style={{ lineHeight: isNarrowPhone ? 22 : 24 }}
             >
-              Podobne produkty
+              {title}
             </Text>
             <Text
               color="$placeholderColor"
               fontSize={isNarrowPhone ? '$2' : '$3'}
               style={{ lineHeight: isNarrowPhone ? 18 : 20 }}
             >
-              Propozycje dopasowane do oglądanego produktu.
+              {description}
             </Text>
           </YStack>
           {headerControls}
@@ -167,10 +179,10 @@ export function SimilarProductsCarousel({ products, isLoading, error }: SimilarP
               fontFamily="$heading"
               numberOfLines={1}
             >
-              Podobne produkty
+              {title}
             </Text>
             <Text color="$placeholderColor" fontSize="$3" numberOfLines={2}>
-              Propozycje dopasowane do oglądanego produktu.
+              {description}
             </Text>
           </YStack>
           {headerControls}
