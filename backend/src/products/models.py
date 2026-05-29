@@ -1,4 +1,4 @@
-from src.sql.models import Product
+from src.sql.models import Product, ProductRating
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
 from src.products.enums import ProductCategory, ProductSortingDirection, ProductSortingKey
@@ -87,3 +87,28 @@ class ProductUpdateRequest(BaseRequestModel):
         description="The categories of the product", min_length=1)
     image_url: Optional[str] = Field(
         description="The URL of the product image")
+
+
+class ProductRatingCreateRequest(BaseRequestModel):
+    rating: int = Field(
+        description="The product rating value from 1 to 5", ge=1, le=5)
+
+
+class ProductRatingResponse(BaseResponseModel):
+    product_id: int = Field(description="The product identifier")
+    user_id: int = Field(description="The user identifier")
+    rating: int = Field(description="The stored product rating", ge=1, le=5)
+
+    @classmethod
+    def from_product_rating(cls, product_rating: ProductRating) -> "ProductRatingResponse":
+        return cls.model_validate(product_rating)
+
+
+class ProductRatingAverageResponse(BaseResponseModel):
+    product_id: int = Field(description="The product identifier")
+    average_rating: Optional[float] = Field(
+        default=None,
+        description="The average product rating in range from 1 to 5",
+    )
+    ratings_count: int = Field(
+        description="The number of ratings included in the average", ge=0)

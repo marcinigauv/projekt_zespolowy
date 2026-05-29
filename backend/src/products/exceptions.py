@@ -28,3 +28,12 @@ class ProductNotFoundException(CustomProductException):
         self.message = f"Product with id '{product_id}' not found."
         self.status_code = 404
         super().__init__(self.message, self.status_code)
+
+
+class ProductRatingPurchaseRequiredException(CustomProductException):
+    """Exception raised when a user tries to rate a product without a paid purchase."""
+
+    def __init__(self, product_id: int):
+        self.message = f"You can rate product '{product_id}' only after a paid purchase."
+        self.status_code = 403
+        super().__init__(self.message, self.status_code)

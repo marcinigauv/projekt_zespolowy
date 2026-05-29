@@ -1,7 +1,9 @@
 import { ApiError, NetworkError } from '../lib/api'
 import {
+  createOrUpdateProductRatingApi,
   createProductApi,
   deleteProductApi,
+  fetchProductRatingAverageApi,
   fetchProductDetailsApi,
   fetchProductRecommendedForYouApi,
   fetchProductListApi,
@@ -10,6 +12,9 @@ import {
   type ProductDetailsRequestDto,
   type ProductDto,
   type ProductListRequestDto,
+  type ProductRatingAverageDto,
+  type ProductRatingCreateDto,
+  type ProductRatingDto,
   type ProductRecommendedForYouRequestDto,
   type ProductSimilarRequestDto,
   type ProductUpsertDto,
@@ -18,6 +23,8 @@ import {
   InvalidProductInputError,
   InvalidProductIdError,
   InvalidProductListInputError,
+  ProductRatingAuthRequiredError,
+  ProductRatingPurchaseRequiredError,
   ProductForbiddenError,
   ProductOfflineError,
   ProductNotFoundError,
@@ -28,6 +35,8 @@ const DEFAULT_PRODUCT_LIST_LIMIT = 50
 const DEFAULT_PRODUCT_LIST_OFFSET = 0
 
 export type Product = ProductDto
+export type ProductRating = ProductRatingDto
+export type ProductRatingAverage = ProductRatingAverageDto
 
 export interface GetProductsCommand {
   limit?: number
@@ -43,6 +52,13 @@ export interface GetProductCommand extends ProductDetailsRequestDto {}
 export interface GetSimilarProductsCommand extends ProductSimilarRequestDto {}
 
 export interface GetRecommendedProductsForYouCommand extends ProductRecommendedForYouRequestDto {}
+
+export interface RateProductCommand {
+  id: number
+  rating: ProductRatingCreateDto['rating']
+}
+
+export interface GetProductRatingAverageCommand extends ProductDetailsRequestDto {}
 
 export interface UpsertProductCommand {
   name: string
@@ -68,6 +84,12 @@ export interface SearchAdminProductsCommand {
 function validateProductId(id: number): void {
   if (!Number.isInteger(id) || id <= 0) {
     throw new InvalidProductIdError()
+  }
+}
+
+function validateProductRating(rating: number): void {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new InvalidProductInputError('Ocena produktu musi być liczbą całkowitą od 1 do 5')
   }
 }
 
@@ -131,6 +153,34 @@ function mapProductError(error: unknown, productId: number): Error {
   return error instanceof Error ? error : new ProductServiceUnavailableError()
 }
 
+function mapProductRatingError(error: unknown, productId: number): Error {
+  if (error instanceof NetworkError) {
+    return new ProductOfflineError()
+  }
+
+  if (error instanceof ApiError) {
+    if (error.status === 401) {
+      return new ProductRatingAuthRequiredError()
+    }
+
+    if (error.status === 403) {
+      return new ProductRatingPurchaseRequiredError()
+    }
+
+    if (error.status === 404) {
+      return new ProductNotFoundError(productId)
+    }
+
+    if (error.status === 400 || error.status === 422) {
+      return new InvalidProductInputError('Nieprawidłowa ocena produktu')
+    }
+
+    return new ProductServiceUnavailableError()
+  }
+
+  return error instanceof Error ? error : new ProductServiceUnavailableError()
+}
+
 export async function getProductsUseCase(command: GetProductsCommand = {}): Promise<Product[]> {
   try {
     return await fetchProductListApi(normalizeListCommand(command))
@@ -168,6 +218,29 @@ export async function getRecommendedProductsForYouUseCase(
 
   try {
     return await fetchProductRecommendedForYouApi(command)
+  } catch (error) {
+    throw mapProductError(error, command.id)
+  }
+}
+
+export async function rateProductUseCase(command: RateProductCommand): Promise<ProductRating> {
+  validateProductId(command.id)
+  validateProductRating(command.rating)
+
+  try {
+    return await createOrUpdateProductRatingApi(command.id, { rating: command.rating })
+  } catch (error) {
+    throw mapProductRatingError(error, command.id)
+  }
+}
+
+export async function getProductRatingAverageUseCase(
+  command: GetProductRatingAverageCommand,
+): Promise<ProductRatingAverage> {
+  validateProductId(command.id)
+
+  try {
+    return await fetchProductRatingAverageApi(command.id)
   } catch (error) {
     throw mapProductError(error, command.id)
   }

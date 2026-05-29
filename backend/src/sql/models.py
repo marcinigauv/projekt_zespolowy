@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy import String, Column, JSON, text
+from sqlalchemy import String, Column, JSON, UniqueConstraint, text
 from typing import List, Optional
 from datetime import datetime
 from decimal import Decimal
@@ -54,6 +54,21 @@ class Product(BaseTableModel, table=True):
     amount: int = Field(description="The amount of the product in stock", ge=0)
     image_url: Optional[str] = Field(
         description="The URL of the product image")
+
+
+class ProductRating(BaseTableModel, table=True):
+    __table_args__ = (
+        UniqueConstraint("product_id", "user_id",
+                         name="uq_product_rating_product_user"),
+    )
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: int = Field(foreign_key="product.id", index=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    rating: int = Field(
+        description="The product rating value from 1 to 5", ge=1, le=5)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
 
 class Order(BaseTableModel, table=True):

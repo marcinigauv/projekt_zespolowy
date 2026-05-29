@@ -1,7 +1,24 @@
-from src.products.models import ProductCreateRequest, ProductSearchRequest, ProductResponse, ProductUpdateRequest
-from src.products.exceptions import ProductNotFoundException
+from src.products.models import (
+    ProductCreateRequest,
+    ProductRatingAverageResponse,
+    ProductRatingCreateRequest,
+    ProductRatingResponse,
+    ProductResponse,
+    ProductSearchRequest,
+    ProductUpdateRequest,
+)
+from src.products.exceptions import ProductNotFoundException, ProductRatingPurchaseRequiredException
 from src.sql.db import DBSession
-from src.products.utils import add_product_to_db, delete_product_from_db, edit_product_in_db, get_products_from_db, get_product_by_id_from_db
+from src.products.utils import (
+    add_product_to_db,
+    delete_product_from_db,
+    edit_product_in_db,
+    get_product_by_id_from_db,
+    get_product_rating_average_from_db,
+    get_products_from_db,
+    has_user_purchased_and_paid_product_in_db,
+    upsert_product_rating_in_db,
+)
 from src.products.dependencies import (
     fetch_recommended_products_for_user_by_product_id as fetch_personalized_products_for_user_by_product_id,
     fetch_similar_products_in_vector_store,
@@ -57,6 +74,52 @@ async def get_recommended_products_for_user_by_product_id(
         session,
     )
     return recommended_products
+
+
+async def rate_product_for_user(
+    session: DBSession,
+    product_id: int,
+    user_id: int,
+    rating_request: ProductRatingCreateRequest,
+) -> ProductRatingResponse:
+    result = await get_product_by_id_from_db(session, product_id)
+    if not result:
+        raise ProductNotFoundException(product_id)
+
+    is_purchase_confirmed = await has_user_purchased_and_paid_product_in_db(
+        session,
+        user_id,
+        product_id,
+    )
+    if not is_purchase_confirmed:
+        raise ProductRatingPurchaseRequiredException(product_id)
+
+    stored_rating = await upsert_product_rating_in_db(
+        session,
+        user_id,
+        product_id,
+        rating_request.rating,
+    )
+    return ProductRatingResponse.from_product_rating(stored_rating)
+
+
+async def get_product_rating_average_by_product_id(
+    session: DBSession,
+    product_id: int,
+) -> ProductRatingAverageResponse:
+    result = await get_product_by_id_from_db(session, product_id)
+    if not result:
+        raise ProductNotFoundException(product_id)
+
+    average_rating, ratings_count = await get_product_rating_average_from_db(
+        session,
+        product_id,
+    )
+    return ProductRatingAverageResponse(
+        product_id=product_id,
+        average_rating=average_rating,
+        ratings_count=ratings_count,
+    )
 
 
 async def add_product(

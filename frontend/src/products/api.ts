@@ -31,6 +31,22 @@ export interface ProductRecommendedForYouRequestDto {
     id: number
 }
 
+export interface ProductRatingCreateDto {
+    rating: number
+}
+
+export interface ProductRatingDto {
+    productId: number
+    userId: number
+    rating: number
+}
+
+export interface ProductRatingAverageDto {
+    productId: number
+    averageRating: number | null
+    ratingsCount: number
+}
+
 export type ProductSortingField = 'name' | 'price' | 'amount'
 export type ProductSortingOrder = 'asc' | 'desc'
 
@@ -64,6 +80,19 @@ export async function fetchProductSimilarApi(payload: ProductSimilarRequestDto):
 
 export async function fetchProductRecommendedForYouApi(payload: ProductRecommendedForYouRequestDto): Promise<ProductDto[]> {
     return apiRequest<ProductDto[]>(`/products/recommended-for-you?product_id=${payload.id}`, {
+        method: 'GET',
+    })
+}
+
+export async function createOrUpdateProductRatingApi(productId: number, payload: ProductRatingCreateDto): Promise<ProductRatingDto> {
+    return apiRequest<ProductRatingDto>(`/products/${productId}/rating`, {
+        method: 'POST',
+        body: payload,
+    })
+}
+
+export async function fetchProductRatingAverageApi(productId: number): Promise<ProductRatingAverageDto> {
+    return apiRequest<ProductRatingAverageDto>(`/products/${productId}/rating/average`, {
         method: 'GET',
     })
 }

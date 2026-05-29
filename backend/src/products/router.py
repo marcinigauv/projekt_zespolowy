@@ -5,11 +5,21 @@ from src.products.use_cases import (
     delete_product,
     edit_product,
     get_product_by_id,
+    get_product_rating_average_by_product_id,
     get_products,
     get_recommended_products_for_user_by_product_id,
     get_similar_products_by_product_id,
+    rate_product_for_user,
 )
-from src.products.models import ProductCreateRequest, ProductResponse, ProductSearchRequest, ProductUpdateRequest
+from src.products.models import (
+    ProductCreateRequest,
+    ProductRatingAverageResponse,
+    ProductRatingCreateRequest,
+    ProductRatingResponse,
+    ProductResponse,
+    ProductSearchRequest,
+    ProductUpdateRequest,
+)
 from src.sql.models import User
 from src.users.dependecies import require_admin, require_authentication
 
@@ -52,6 +62,26 @@ async def get_recommended_products_for_you_get(
 ) -> list[ProductResponse]:
     """Endpoint to get personalized product recommendations for an authenticated user."""
     return await get_recommended_products_for_user_by_product_id(session, product_id, user.get_user_id())
+
+
+@products_router.post("/{product_id}/rating", response_model=ProductRatingResponse)
+async def rate_product_post(
+    product_id: int,
+    rating_request: ProductRatingCreateRequest,
+    session: DBSession,
+    user: User = Depends(require_authentication),
+) -> ProductRatingResponse:
+    """Endpoint to add or update a product rating for an authenticated user after a paid purchase."""
+    return await rate_product_for_user(session, product_id, user.get_user_id(), rating_request)
+
+
+@products_router.get("/{product_id}/rating/average", response_model=ProductRatingAverageResponse)
+async def get_product_rating_average_get(
+    product_id: int,
+    session: DBSession,
+) -> ProductRatingAverageResponse:
+    """Endpoint to get current average rating and number of ratings for a product."""
+    return await get_product_rating_average_by_product_id(session, product_id)
 
 
 @products_router.post("/add", response_model=ProductResponse)

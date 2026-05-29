@@ -50,3 +50,17 @@ export class ProductForbiddenError extends Error {
     this.name = 'ProductForbiddenError'
   }
 }
+
+export class ProductRatingPurchaseRequiredError extends Error {
+  constructor() {
+    super('Ocenę możesz dodać dopiero po opłaconym zakupie produktu')
+    this.name = 'ProductRatingPurchaseRequiredError'
+  }
+}
+
+export class ProductRatingAuthRequiredError extends Error {
+  constructor() {
+    super('Zaloguj się, aby ocenić produkt')
+    this.name = 'ProductRatingAuthRequiredError'
+  }
+}

@@ -1,9 +1,10 @@
 from collections import defaultdict
+from datetime import datetime
 from sqlalchemy import select, or_, update, func
 from src.products.enums import ProductSortingDirection
 from src.products.models import ProductCreateRequest, ProductUpdateRequest, Product, ProductSearchRequest, PaginatedProductsResponse, ProductResponse
 from src.sql.db import DBSession
-from src.sql.models import Order, OrderDetail, Payment
+from src.sql.models import Order, OrderDetail, Payment, ProductRating
 from src.payments.enums import PaymentStatus
 from typing import Optional
 from decimal import Decimal
@@ -198,6 +199,78 @@ async def get_product_quantity_and_price_from_db(
     quantity_and_price = result.one_or_none()
 
     return quantity_and_price
+
+
+async def has_user_purchased_and_paid_product_in_db(
+    session: DBSession,
+    user_id: int,
+    product_id: int,
+) -> bool:
+    stmt = (
+        select(OrderDetail.id)
+        .join(Order, Order.id == OrderDetail.order_id)
+        .join(Payment, Payment.order_id == Order.id)
+        .where(
+            Order.customer_id == user_id,
+            OrderDetail.product_id == product_id,
+            Payment.status == PaymentStatus.CONFIRMED.value,
+        )
+        .limit(1)
+    )
+
+    result = await session.execute(stmt)
+    purchased_order_detail_id = result.scalar_one_or_none()
+    return purchased_order_detail_id is not None
+
+
+async def upsert_product_rating_in_db(
+    session: DBSession,
+    user_id: int,
+    product_id: int,
+    rating: int,
+) -> ProductRating:
+    stmt = select(ProductRating).where(
+        ProductRating.user_id == user_id,
+        ProductRating.product_id == product_id,
+    )
+    result = await session.execute(stmt)
+    existing_rating = result.scalar_one_or_none()
+
+    if existing_rating is None:
+        stored_rating = ProductRating(
+            user_id=user_id,
+            product_id=product_id,
+            rating=rating,
+        )
+        session.add(stored_rating)
+    else:
+        existing_rating.rating = rating
+        existing_rating.updated_at = datetime.now()
+        session.add(existing_rating)
+        stored_rating = existing_rating
+
+    await session.commit()
+    await session.refresh(stored_rating)
+    return stored_rating
+
+
+async def get_product_rating_average_from_db(
+    session: DBSession,
+    product_id: int,
+) -> tuple[Optional[float], int]:
+    stmt = select(
+        func.avg(ProductRating.rating),
+        func.count(ProductRating.id),
+    ).where(ProductRating.product_id == product_id)
+
+    result = await session.execute(stmt)
+    average_rating, ratings_count = result.one()
+
+    normalized_count = int(ratings_count)
+    if normalized_count == 0 or average_rating is None:
+        return None, 0
+
+    return float(average_rating), normalized_count
 
 
 async def decrease_product_stock_in_db(product_id: int, quantity: int, session: DBSession) -> None:

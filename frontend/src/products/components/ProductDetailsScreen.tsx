@@ -8,10 +8,13 @@ import { formatCurrency } from '../../lib/formatters'
 import { parsePositiveIntParam } from '../../lib/routeParams'
 import { useScreenNotificationsPolling } from '../../notifications/useHomeScreenNotificationsPolling'
 import {
+  getProductRatingAverageUseCase,
   getProductUseCase,
   getRecommendedProductsForYouUseCase,
   getSimilarProductsUseCase,
+  rateProductUseCase,
   type Product,
+  type ProductRatingAverage,
 } from '../useCases'
 import { useAuthStore } from '../../store/authStore'
 import { useCartStore } from '../../store/cartStore'
@@ -33,6 +36,8 @@ import {
   SurfaceCard,
 } from '../../components/styled'
 import { SimilarProductsCarousel } from './SimilarProductsCarousel'
+
+const PRODUCT_RATING_VALUES = [1, 2, 3, 4, 5] as const
 
 function ProductHeroImage({ product }: { product: Product }) {
   if (product.imageUrl) {
@@ -96,6 +101,13 @@ export function ProductDetailsScreen() {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([])
   const [recommendedError, setRecommendedError] = useState('')
   const [isRecommendedLoading, setIsRecommendedLoading] = useState(false)
+  const [ratingAverage, setRatingAverage] = useState<ProductRatingAverage | null>(null)
+  const [ratingAverageError, setRatingAverageError] = useState('')
+  const [isRatingAverageLoading, setIsRatingAverageLoading] = useState(true)
+  const [userRating, setUserRating] = useState<number | null>(null)
+  const [ratingSubmitError, setRatingSubmitError] = useState('')
+  const [ratingSubmitSuccess, setRatingSubmitSuccess] = useState('')
+  const [isRatingSubmitting, setIsRatingSubmitting] = useState(false)
 
   const quantityInCart = product ? cartItems.find((item) => item.id === product.id)?.quantity ?? 0 : 0
   const addToCartLabel = quantityInCart > 0 ? `Dodaj do koszyka (masz już ${quantityInCart})` : 'Dodaj do koszyka'
@@ -104,6 +116,13 @@ export function ProductDetailsScreen() {
   const normalizedCategories = product?.categories
     .map((category) => category.trim())
     .filter((category) => category.length > 0) ?? []
+
+  const averageRatingLabel =
+    ratingAverage?.averageRating === null || ratingAverage === null
+      ? 'Brak ocen'
+      : `${ratingAverage.averageRating.toFixed(1)} / 5`
+
+  const ratingsCountLabel = ratingAverage ? `${ratingAverage.ratingsCount}` : '0'
 
   const handleTagPress = (tag: string) => {
     const normalizedTag = tag.trim()
@@ -213,6 +232,74 @@ export function ProductDetailsScreen() {
     void loadRecommendedProducts()
     return () => { isMounted = false }
   }, [productId, shouldShowRecommended])
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (productId === null) {
+      setRatingAverage(null)
+      setRatingAverageError('Nie można pobrać średniej oceny dla nieprawidłowego identyfikatora')
+      setIsRatingAverageLoading(false)
+      return () => { isMounted = false }
+    }
+
+    const loadRatingAverage = async () => {
+      try {
+        setRatingAverageError('')
+        setIsRatingAverageLoading(true)
+        const result = await getProductRatingAverageUseCase({ id: productId })
+        if (!isMounted) return
+        setRatingAverage(result)
+      } catch (error) {
+        if (!isMounted) return
+        setRatingAverage(null)
+        setRatingAverageError(error instanceof Error ? error.message : 'Nie udało się pobrać średniej oceny')
+      } finally {
+        if (isMounted) setIsRatingAverageLoading(false)
+      }
+    }
+
+    void loadRatingAverage()
+    return () => { isMounted = false }
+  }, [productId])
+
+  useEffect(() => {
+    setUserRating(null)
+    setRatingSubmitError('')
+    setRatingSubmitSuccess('')
+  }, [productId])
+
+  const handleRateProduct = async (rating: number) => {
+    if (!isAuthenticated) {
+      setRatingSubmitSuccess('')
+      setRatingSubmitError('Zaloguj się, aby ocenić produkt')
+      return
+    }
+
+    if (productId === null) {
+      setRatingSubmitSuccess('')
+      setRatingSubmitError('Nieprawidłowy identyfikator produktu')
+      return
+    }
+
+    try {
+      setIsRatingSubmitting(true)
+      setRatingSubmitError('')
+      setRatingSubmitSuccess('')
+
+      const result = await rateProductUseCase({ id: productId, rating })
+      setUserRating(result.rating)
+      setRatingSubmitSuccess('Ocena została zapisana')
+
+      const averageResult = await getProductRatingAverageUseCase({ id: productId })
+      setRatingAverage(averageResult)
+    } catch (error) {
+      setRatingSubmitSuccess('')
+      setRatingSubmitError(error instanceof Error ? error.message : 'Nie udało się zapisać oceny')
+    } finally {
+      setIsRatingSubmitting(false)
+    }
+  }
 
   return (
     <PageWrapper>
@@ -340,6 +427,80 @@ export function ProductDetailsScreen() {
                             ? `Dostępnych sztuk: ${product.amount}`
                             : 'Produkt obecnie niedostępny'}
                         </ProductMetaText>
+                      </YStack>
+                    </SurfaceCard>
+
+                    <SurfaceCard
+                      bg="$backgroundHover"
+                      borderColor="$stitchBorder"
+                      style={{
+                        padding: isNarrowPhone ? 12 : isPhone ? 14 : 18,
+                      }}
+                    >
+                      <YStack gap="$2">
+                        <Text fontSize="$5" fontWeight="800" color="$color">Ocena produktu</Text>
+
+                        {isRatingAverageLoading ? (
+                          <ProductMetaText>Ładowanie średniej oceny...</ProductMetaText>
+                        ) : ratingAverageError ? (
+                          <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingAverageError}</Text>
+                        ) : (
+                          <YStack gap="$1">
+                            <Text color="$color" fontFamily="$heading" fontSize="$6" fontWeight="700">
+                              {averageRatingLabel}
+                            </Text>
+                            <ProductMetaText>Liczba ocen: {ratingsCountLabel}</ProductMetaText>
+                          </YStack>
+                        )}
+
+                        <XStack alignItems="center" gap={isNarrowPhone ? '$1' : '$1.5'}>
+                          {PRODUCT_RATING_VALUES.map((ratingValue) => {
+                            const isHighlighted = (userRating ?? 0) >= ratingValue
+
+                            return (
+                              <Pressable
+                                key={ratingValue}
+                                onPress={() => { void handleRateProduct(ratingValue) }}
+                                disabled={!isAuthenticated || isRatingSubmitting}
+                                style={({ pressed }) => ({
+                                  opacity: (!isAuthenticated || isRatingSubmitting)
+                                    ? 0.5
+                                    : pressed
+                                      ? 0.7
+                                      : 1,
+                                  paddingVertical: 2,
+                                  paddingHorizontal: 1,
+                                })}
+                              >
+                                <Text
+                                  style={{
+                                    color: isHighlighted ? '#F5B301' : '#8A8F99',
+                                    fontSize: isNarrowPhone ? 24 : 28,
+                                    lineHeight: isNarrowPhone ? 28 : 32,
+                                  }}
+                                >
+                                  ★
+                                </Text>
+                              </Pressable>
+                            )
+                          })}
+                        </XStack>
+
+                        <ProductMetaText>
+                          Ocenę możesz dodać po opłaconym zakupie produktu.
+                        </ProductMetaText>
+
+                        {isRatingSubmitting ? (
+                          <ProductMetaText>Zapisywanie oceny...</ProductMetaText>
+                        ) : null}
+
+                        {ratingSubmitError ? (
+                          <Text fontSize="$2" style={{ color: '#C62828' }}>{ratingSubmitError}</Text>
+                        ) : null}
+
+                        {ratingSubmitSuccess ? (
+                          <Text fontSize="$2" style={{ color: '#1B7A37' }}>{ratingSubmitSuccess}</Text>
+                        ) : null}
                       </YStack>
                     </SurfaceCard>
 
