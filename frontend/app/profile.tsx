@@ -1,10 +1,10 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
 import { useWindowDimensions } from 'react-native'
-import { YStack, XStack, Text, ScrollView } from 'tamagui'
+import { YStack, XStack, Text, ScrollView, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useRouteAccess } from '../src/auth/useRouteAccess'
-import { logoutUserUseCase, updateUserThemePreferenceUseCase } from '../src/auth/useCases'
+import { logoutUserUseCase, updateUserThemePreferenceUseCase, changePasswordUseCase } from '../src/auth/useCases'
 import {
   CardHeaderStrip,
   PageWrapper,
@@ -21,6 +21,8 @@ import {
   SectionHeading,
   SectionTitle,
   SurfaceCard,
+  FormField,
+  FormInput,
 } from '../src/components/styled'
 import { THEME_OPTIONS, resolveThemePreference } from '../src/theme/options'
 
@@ -32,7 +34,36 @@ export default function Profile() {
   const [themeError, setThemeError] = React.useState('')
   const [isSavingTheme, setIsSavingTheme] = React.useState(false)
 
+  const newPasswordRef = React.useRef<React.ElementRef<typeof FormInput>>(null)
+  const confirmPasswordRef = React.useRef<React.ElementRef<typeof FormInput>>(null)
+  const [currentPassword, setCurrentPassword] = React.useState('')
+  const [newPassword, setNewPassword] = React.useState('')
+  const [confirmPassword, setConfirmPassword] = React.useState('')
+  const [passwordError, setPasswordError] = React.useState('')
+  const [passwordSuccess, setPasswordSuccess] = React.useState('')
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false)
+
   const selectedTheme = resolveThemePreference(user?.userPreferences.theme)
+
+  const handleChangePassword = () => {
+    setPasswordError('')
+    setPasswordSuccess('')
+    setIsChangingPassword(true)
+    void (async () => {
+      try {
+        await changePasswordUseCase({ currentPassword, newPassword, confirmPassword })
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setPasswordSuccess('Hasło zostało zmienione')
+        setTimeout(() => setPasswordSuccess(''), 3000)
+      } catch (error) {
+        setPasswordError(error instanceof Error ? error.message : 'Nie udało się zmienić hasła')
+      } finally {
+        setIsChangingPassword(false)
+      }
+    })()
+  }
 
   const handleThemeChange = (theme: (typeof THEME_OPTIONS)[number]['value']) => {
     if (theme === selectedTheme || isSavingTheme) {
@@ -151,6 +182,91 @@ export default function Profile() {
 
 
                       {themeError ? <Text color="$red10">{themeError}</Text> : null}
+                    </YStack>
+                  </InfoTile>
+                </YStack>
+
+                <YStack
+                  gap="$2.5"
+                  pt="$3"
+                  borderTopWidth={1}
+                  borderColor="$borderColor"
+                >
+                  <Text color="$placeholderColor" fontSize="$2" fontWeight="700" letterSpacing={0.6} textTransform="uppercase">
+                    Bezpieczeństwo
+                  </Text>
+
+                  <InfoTile>
+                    <InfoTileLabel>
+                      Zmiana hasła
+                    </InfoTileLabel>
+                    <YStack gap="$3">
+                      <FormField>
+                        <Label htmlFor="current-password">Aktualne hasło</Label>
+                        <FormInput
+                          id="current-password"
+                          placeholder="••••••••"
+                          value={currentPassword}
+                          onChangeText={setCurrentPassword}
+                          secureTextEntry
+                          type="password"
+                          autoComplete="current-password"
+                          textContentType="password"
+                          returnKeyType="next"
+                          submitBehavior="submit"
+                          disabled={isChangingPassword}
+                          onSubmitEditing={() => newPasswordRef.current?.focus()}
+                        />
+                      </FormField>
+
+                      <FormField>
+                        <Label htmlFor="new-password">Nowe hasło</Label>
+                        <FormInput
+                          ref={newPasswordRef}
+                          id="new-password"
+                          placeholder="••••••••"
+                          value={newPassword}
+                          onChangeText={setNewPassword}
+                          secureTextEntry
+                          type="password"
+                          autoComplete="new-password"
+                          textContentType="newPassword"
+                          returnKeyType="next"
+                          submitBehavior="submit"
+                          disabled={isChangingPassword}
+                          onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                        />
+                      </FormField>
+
+                      <FormField>
+                        <Label htmlFor="confirm-password">Potwierdź nowe hasło</Label>
+                        <FormInput
+                          ref={confirmPasswordRef}
+                          id="confirm-password"
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChangeText={setConfirmPassword}
+                          secureTextEntry
+                          type="password"
+                          autoComplete="new-password"
+                          textContentType="newPassword"
+                          returnKeyType="done"
+                          submitBehavior="submit"
+                          disabled={isChangingPassword}
+                          onSubmitEditing={handleChangePassword}
+                        />
+                      </FormField>
+
+                      {passwordError ? <Text color="$red10">{passwordError}</Text> : null}
+                      {passwordSuccess ? <Text color="$green10">{passwordSuccess}</Text> : null}
+
+                      <PrimaryButton
+                        onPress={handleChangePassword}
+                        disabled={isChangingPassword}
+                        style={{ minHeight: 56 }}
+                      >
+                        Zmień hasło
+                      </PrimaryButton>
                     </YStack>
                   </InfoTile>
                 </YStack>

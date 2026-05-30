@@ -60,3 +60,16 @@ export async function updateUserPreferencesApi(payload: UpdateUserPreferencesPay
     body: payload,
   })
 }
+
+interface ChangePasswordPayload {
+  current_password: string
+  new_password: string
+  confirm_new_password: string
+}
+
+export async function changePasswordApi(payload: ChangePasswordPayload): Promise<void> {
+  await apiRequest<null>('/users/me/password', {
+    method: 'PATCH',
+    body: payload,
+  })
+}

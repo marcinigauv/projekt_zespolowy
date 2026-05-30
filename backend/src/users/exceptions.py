@@ -64,3 +64,21 @@ class NotAdminException(CustomUserException):
         self.message = "User does not have admin privileges."
         self.status_code = 403
         super().__init__(self.message, self.status_code)
+
+
+class InvalidCurrentPasswordException(CustomUserException):
+    """Exception raised when the provided current password is incorrect."""
+
+    def __init__(self):
+        self.message = "Aktualne has\u0142o jest nieprawi\u0142owe."
+        self.status_code = 400
+        super().__init__(self.message, self.status_code)
+
+
+class PasswordMismatchException(CustomUserException):
+    """Exception raised when new password and confirmation do not match."""
+
+    def __init__(self):
+        self.message = "Nowe has\u0142o i potwierdzenie nie s\u0105 zgodne."
+        self.status_code = 400
+        super().__init__(self.message, self.status_code)

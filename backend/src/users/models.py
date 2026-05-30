@@ -18,7 +18,7 @@ class UserCreate(BaseModel):
     surname: str = Field(description="The surname of the user", min_length=1)
     email: EmailStr = Field(description="The email of the user", min_length=1)
     password: SecretStr = Field(
-        description="The password of the user", min_length=1)
+        description="The password of the user", min_length=8)
 
 
 class UserPreferences(BaseModel):
@@ -27,6 +27,15 @@ class UserPreferences(BaseModel):
 
 class UpdateUserPreferencesRequest(BaseModel):
     theme: str = Field(description="The selected theme key", min_length=1)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(
+        description="The current password of the user", min_length=1)
+    new_password: str = Field(
+        description="The new password of the user", min_length=8)
+    confirm_new_password: str = Field(
+        description="The confirmation of the new password", min_length=1)
 
 
 class UserResponse(BaseResponseModel):

@@ -54,3 +54,10 @@ async def update_user_preferences_in_db(user_id: int, preferences: dict[str, str
     await db.flush()
     await db.refresh(user)
     return user
+
+
+async def update_user_password_in_db(user: User, hashed_password: str, db: DBSession) -> None:
+    """Persists a new hashed password for the given user."""
+    user.password = hashed_password
+    db.add(user)
+    await db.flush()

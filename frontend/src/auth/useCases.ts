@@ -7,6 +7,7 @@ import {
   logoutUserApi,
   registerUserApi,
   updateUserPreferencesApi,
+  changePasswordApi,
   type AuthUserDto,
 } from './api'
 
@@ -42,6 +43,13 @@ export class AuthOfflineError extends Error {
   constructor() {
     super('Brak połączenia z serwerem. Spróbuj ponownie później.')
     this.name = 'AuthOfflineError'
+  }
+}
+
+export class InvalidCurrentPasswordError extends Error {
+  constructor() {
+    super('Nieprawidłowe aktualne hasło')
+    this.name = 'InvalidCurrentPasswordError'
   }
 }
 
@@ -130,17 +138,22 @@ export async function registerUserUseCase(command: RegisterCommand): Promise<Use
     throw new InvalidAuthInputError('Wszystkie pola są wymagane')
   }
 
+  if (password.length < 8) {
+    throw new InvalidAuthInputError('Hasło musi mieć co najmniej 8 znaków')
+  }
+
   const { name, surname } = parseName(fullName)
 
   try {
-    const user = await registerUserApi({
+    await registerUserApi({
       name,
       surname,
       email,
       password,
     })
 
-    return setAuthenticatedUser(user)
+    const authenticatedUser = await loginUserApi({ email, password })
+    return setAuthenticatedUser(authenticatedUser)
   } catch (error) {
     throw mapAuthError(error, 'register')
   }
@@ -185,6 +198,51 @@ export async function updateUserThemePreferenceUseCase(theme: ThemePreference): 
     }
 
     if (error instanceof ApiError) {
+      throw new AuthServiceUnavailableError()
+    }
+
+    throw error instanceof Error ? error : new AuthServiceUnavailableError()
+  }
+}
+
+interface ChangePasswordCommand {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
+export async function changePasswordUseCase(command: ChangePasswordCommand): Promise<void> {
+  const currentPassword = command.currentPassword.trim()
+  const newPassword = command.newPassword.trim()
+  const confirmPassword = command.confirmPassword.trim()
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    throw new InvalidAuthInputError('Wszystkie pola są wymagane')
+  }
+
+  if (newPassword.length < 8) {
+    throw new InvalidAuthInputError('Nowe hasło musi mieć co najmniej 8 znaków')
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new InvalidAuthInputError('Nowe hasło i potwierdzenie nie są zgodne')
+  }
+
+  try {
+    await changePasswordApi({
+      current_password: currentPassword,
+      new_password: newPassword,
+      confirm_new_password: confirmPassword,
+    })
+  } catch (error) {
+    if (error instanceof NetworkError) {
+      throw new AuthOfflineError()
+    }
+
+    if (error instanceof ApiError) {
+      if (error.status === 400) {
+        throw new InvalidCurrentPasswordError()
+      }
       throw new AuthServiceUnavailableError()
     }
 

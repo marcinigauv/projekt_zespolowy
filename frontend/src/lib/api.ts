@@ -82,10 +82,16 @@ export async function apiRequest<Response>(
   const contentType = response.headers.get('content-type') ?? ''
   let data: unknown = null
 
-  if (contentType.includes('application/json')) {
-    data = await response.json()
-  } else if (response.status !== 204) {
-    data = await response.text()
+  if (response.status !== 204) {
+    if (contentType.includes('application/json')) {
+      try {
+        data = await response.json()
+      } catch {
+        data = null
+      }
+    } else {
+      data = await response.text()
+    }
   }
 
   if (!response.ok) {
