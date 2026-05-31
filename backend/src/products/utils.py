@@ -314,7 +314,7 @@ def _normalize_categories(categories: list[str]) -> set[str]:
 async def _get_user_purchase_profile(
     session: DBSession,
     user_id: int,
-) -> tuple[dict[str, int], Optional[Decimal]]:
+) -> tuple[set[int], dict[str, int], Optional[Decimal]]:
     stmt = (
         select(OrderDetail.product_id,
                OrderDetail.quantity, OrderDetail.unit_price)
@@ -330,11 +330,13 @@ async def _get_user_purchase_profile(
     purchased_rows = result.all()
 
     if not purchased_rows:
-        return {}, None
+        return set(), {}, None
 
-    purchased_product_ids = list({int(product_id)
-                                 for product_id, _, _ in purchased_rows})
-    purchased_products = await get_products_by_ids_from_db(session, purchased_product_ids)
+    purchased_product_ids = {
+        int(product_id)
+        for product_id, _, _ in purchased_rows
+    }
+    purchased_products = await get_products_by_ids_from_db(session, list(purchased_product_ids))
 
     categories_by_product_id: dict[int, set[str]] = {}
     for product in purchased_products:
@@ -359,7 +361,7 @@ async def _get_user_purchase_profile(
 
     average_price = weighted_total_price / \
         weighted_quantity if weighted_quantity > 0 else None
-    return dict(category_weights), average_price
+    return purchased_product_ids, dict(category_weights), average_price
 
 
 def _score_recommendation_candidate(
@@ -410,14 +412,15 @@ async def get_recommended_products_for_user_by_product_id_from_db(
 
     current_product_categories = _normalize_categories(
         current_product.categories)
-    purchase_category_weights, purchase_average_price = await _get_user_purchase_profile(session, user_id)
+    purchased_product_ids, purchase_category_weights, purchase_average_price = await _get_user_purchase_profile(session, user_id)
 
-    stmt = (
-        select(Product)
-        .where(Product.id != product_id, Product.amount > 0)
-        .order_by(Product.id.desc())
-        .limit(RECOMMENDATION_CANDIDATE_LIMIT)
-    )
+    stmt = select(Product).where(Product.id != product_id, Product.amount > 0)
+
+    if purchased_product_ids:
+        stmt = stmt.where(~Product.id.in_(purchased_product_ids))
+
+    stmt = stmt.order_by(Product.id.desc()).limit(
+        RECOMMENDATION_CANDIDATE_LIMIT)
 
     result = await session.execute(stmt)
     candidates = list(result.scalars().all())
