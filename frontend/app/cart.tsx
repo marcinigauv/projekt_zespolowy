@@ -469,7 +469,7 @@ export default function Cart() {
                     </YStack>
 
                     <PrimaryButton onPress={() => { void handleCheckout() }} width="100%" style={{ minHeight: 56 }}>
-                      Przejdź do dostawy
+                      Realizacja zamówienia
                     </PrimaryButton>
 
                     <ProductMetaText>
@@ -710,7 +710,7 @@ export default function Cart() {
                       </YStack>
 
                       <PrimaryButton onPress={() => { void handleCheckout() }} width="100%" style={{ minHeight: 56 }}>
-                        Przejdź do dostawy
+                        Realizacja zamówienia
                       </PrimaryButton>
 
                       <ProductMetaText>
