@@ -44,7 +44,9 @@ class EmbeddingWorkerVectorStore:
         )
 
     def upsert(self, product: ProductResponse) -> None:
-        content = f"{product.name} {product.description or ''}".strip()
+        categories_text = " ".join(
+            product.categories) if product.categories else ""
+        content = f"{product.name} {categories_text} {product.description or ''}".strip()
         embedding = get_embedding(content)
 
         metadata: dict[str, Any] = {

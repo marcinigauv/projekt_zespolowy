@@ -6,6 +6,7 @@ import re
 from src.config import config
 from src.products.models import ProductSearchRequest
 from src.products.utils import (
+    get_products_by_ids_from_db,
     get_products_from_db,
     get_top_10_new_products_from_db,
     get_top_10_products_with_highest_price_from_db,
@@ -14,6 +15,7 @@ from src.products.utils import (
 )
 from src.sql.db import DBSession
 from src.sql.models import Product
+from src.vector_store.db import get_chroma_client
 
 
 DOMAIN_KEYWORDS = {
@@ -133,6 +135,7 @@ STOPWORDS = {
 }
 
 TOKEN_PATTERN = re.compile(r"[0-9a-ząćęłńóśźż]+", re.IGNORECASE)
+VECTOR_COLLECTION_NAME = "products_collection"
 
 
 @dataclass(frozen=True)
@@ -201,6 +204,63 @@ async def _search_products_from_candidates(
                 return collected
 
     return collected
+
+
+async def _search_products_by_embedding(
+    session: DBSession,
+    query: str,
+    limit: int,
+) -> list[Product]:
+    normalized_query = query.strip()
+    if not normalized_query:
+        return []
+
+    try:
+        collection = get_chroma_client().get_or_create_collection(
+            name=VECTOR_COLLECTION_NAME,
+            metadata={"hnsw:space": "cosine"},
+        )
+        result = collection.query(
+            query_texts=[normalized_query],
+            n_results=max(limit * 4, limit),
+            include=["distances", "metadatas"],
+        )
+    except Exception:
+        return []
+
+    ids = result.get("ids")
+    if not ids or not ids[0]:
+        return []
+
+    ordered_product_ids: list[int] = []
+    seen_ids: set[int] = set()
+    for raw_id in ids[0]:
+        try:
+            product_id = int(raw_id)
+        except (TypeError, ValueError):
+            continue
+
+        if product_id in seen_ids:
+            continue
+
+        seen_ids.add(product_id)
+        ordered_product_ids.append(product_id)
+        if len(ordered_product_ids) >= limit:
+            break
+
+    if not ordered_product_ids:
+        return []
+
+    products = await get_products_by_ids_from_db(session, ordered_product_ids)
+    product_by_id = {product.get_id(): product for product in products}
+
+    ordered_products: list[Product] = []
+    for product_id in ordered_product_ids:
+        product = product_by_id.get(product_id)
+        if product is not None:
+            ordered_products.append(product)
+
+    return ordered_products
 
 
 def _looks_domain_related(message: str) -> bool:
@@ -289,6 +349,21 @@ async def build_catalog_context(
             deduplicated_candidates,
             limit,
         )
+
+        if not products:
+            use_case = "semantyczne wyszukiwanie produktów w katalogu"
+            products = await _search_products_by_embedding(
+                session,
+                user_message,
+                limit,
+            )
+
+            if not products and recent_user_messages:
+                products = await _search_products_by_embedding(
+                    session,
+                    combined_message,
+                    limit,
+                )
 
         if not products and is_recommendation_request and is_general_recommendation:
             use_case = "ogólne rekomendacje produktowe na podstawie aktywnej rozmowy i aktualnego katalogu"
