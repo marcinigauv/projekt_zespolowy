@@ -2,7 +2,34 @@ from src.sql.models import Product, ProductRating
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
 from src.products.enums import ProductCategory, ProductSortingDirection, ProductSortingKey
-from typing import Optional
+from typing import Any, Optional
+
+
+def normalize_product_categories(value: Any) -> list[str]:
+    def map_category(category: str) -> Optional[str]:
+        normalized_category = category.strip()
+        if not normalized_category:
+            return None
+
+        for category_enum in ProductCategory:
+            if category_enum.value.lower() == normalized_category.lower():
+                return category_enum.value
+
+        return normalized_category
+
+    raw_categories = value if isinstance(value, list) else [value]
+    results: list[str] = []
+
+    for raw_category in raw_categories:
+        if not isinstance(raw_category, str):
+            continue
+
+        for category_part in raw_category.split(','):
+            mapped_category = map_category(category_part)
+            if mapped_category is not None:
+                results.append(mapped_category)
+
+    return results
 
 
 class BaseRequestModel(BaseModel):
@@ -42,14 +69,8 @@ class ProductResponse(BaseResponseModel):
 
     @field_validator("categories", mode="before")
     @classmethod
-    def map_categories_from_db(cls, value: list[str]) -> list[str]:
-        def map_category_from_db(category: str) -> Optional[str]:
-            for category_enum in ProductCategory:
-                if not category_enum.lower() == category.lower():
-                    continue
-                return category_enum.value
-        results = [map_category_from_db(category) for category in value]
-        return [result for result in results if result is not None]
+    def map_categories_from_db(cls, value: Any) -> list[str]:
+        return normalize_product_categories(value)
 
     @classmethod
     def from_product(cls, product: Product) -> "ProductResponse":
@@ -76,6 +97,11 @@ class ProductCreateRequest(BaseRequestModel):
     image_url: Optional[str] = Field(
         description="The URL of the product image")
 
+    @field_validator("categories", mode="before")
+    @classmethod
+    def normalize_categories(cls, value: Any) -> list[str]:
+        return normalize_product_categories(value)
+
 
 class ProductUpdateRequest(BaseRequestModel):
     name: str = Field(description="The name of the product", min_length=1)
@@ -87,6 +113,11 @@ class ProductUpdateRequest(BaseRequestModel):
         description="The categories of the product", min_length=1)
     image_url: Optional[str] = Field(
         description="The URL of the product image")
+
+    @field_validator("categories", mode="before")
+    @classmethod
+    def normalize_categories(cls, value: Any) -> list[str]:
+        return normalize_product_categories(value)
 
 
 class ProductRatingCreateRequest(BaseRequestModel):
