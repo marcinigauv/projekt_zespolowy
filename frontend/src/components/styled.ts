@@ -62,7 +62,7 @@ export const SectionHeading = styled(YStack, styles({
   gap: 8,
   maxWidth: 760,
   $xs: {
-    gap: 6,
+    gap: 8,
   },
 }))
 
@@ -130,7 +130,7 @@ export const SurfaceCard = styled(YStack, styles({
     borderRadius: 18,
   },
   $xs: {
-    p: 14,
+    p: 16,
     borderRadius: 16,
   },
 }))
@@ -929,7 +929,7 @@ const productCardSectionStyles = styles({
     p: '$2',
   },
   $xs: {
-    p: '$1.5',
+    p: '$2',
   },
 } as const)
 
@@ -955,7 +955,7 @@ export const ProductCardFooter = styled(YStack, styles({
   borderTopWidth: 1,
   borderTopColor: '$borderColor',
   $xs: {
-    p: '$2',
+    p: '$2.5',
   },
 }))
 
@@ -1096,8 +1096,8 @@ export const CardHeaderStrip = styled(YStack, styles({
   borderBottomWidth: 1,
   borderBottomColor: '$borderColor',
   $xs: {
-    px: '$4',
-    py: '$3.5',
+    px: '$4.5',
+    py: '$4',
   },
 }))
 
@@ -1118,9 +1118,9 @@ export const InfoTile = styled(YStack, styles({
   elevation: 2,
   $xs: {
     borderRadius: 16,
-    px: 14,
-    py: 12,
-    gap: 4,
+    px: 16,
+    py: 14,
+    gap: 6,
   },
 }))
 

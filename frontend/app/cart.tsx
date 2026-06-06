@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { Image, Pressable, useWindowDimensions } from 'react-native'
+import { Image, Platform, Pressable, useWindowDimensions } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
 import { XStack, YStack, Text, ScrollView, getVariableValue, useTheme } from 'tamagui'
 import { Header } from '../src/components/Header'
@@ -46,13 +46,39 @@ function getProductNoun(value: number): string {
   return 'produktów'
 }
 
+function QuantityButton({ label, onPress, size }: { label: '-' | '+'; onPress: () => void; size: number }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: size,
+        height: size,
+        minWidth: size,
+        minHeight: size,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: 'rgba(118, 105, 146, 0.32)',
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: pressed ? 0.72 : 1,
+      })}
+    >
+      <Text style={{ color: '#2b2930', fontSize: 24, lineHeight: 26, fontWeight: '800', textAlign: 'center' }}>
+        {label}
+      </Text>
+    </Pressable>
+  )
+}
+
 export default function Cart() {
   const router = useRouter()
   const theme = useTheme()
   const { width: viewportWidth } = useWindowDimensions()
-  const isPhone = viewportWidth <= 520
-  const isTablet = viewportWidth > 520 && viewportWidth <= 900
-  const isCompact = viewportWidth <= 900
+  const isNative = Platform.OS !== 'web'
+  const isPhone = isNative || viewportWidth <= 520
+  const isTablet = !isNative && viewportWidth > 520 && viewportWidth <= 900
+  const isCompact = isNative || viewportWidth <= 900
   const isTiny = viewportWidth <= 390
   const controlSize = isTiny ? 36 : isPhone ? 40 : 40
   const cardRadius = isPhone ? 18 : 20
@@ -60,6 +86,7 @@ export default function Cart() {
   const summaryCardPadding = isPhone ? 16 : isCompact ? 18 : 22
   const mediaFrameSize = isPhone ? 68 : isCompact ? 80 : 92
   const itemValueCardMinWidth = isPhone ? 0 : isCompact ? 216 : 236
+  const nativeScrollBottomPadding = isNative ? 176 : 0
   const primaryColor = getVariableValue(theme.stitchPrimary)
   const surfaceColor = getVariableValue(theme.backgroundHover)
   const borderToneColor = getVariableValue(theme.stitchBorder)
@@ -141,7 +168,7 @@ export default function Cart() {
     <PageWrapper>
       <Header />
       <ScrollView>
-        <PageContent style={{ maxWidth: isCompact ? 980 : 1180 }}>
+        <PageContent style={{ maxWidth: isCompact ? 980 : 1180, paddingBottom: nativeScrollBottomPadding }}>
           <SectionHeading style={{ maxWidth: '100%' }}>
             <XStack
               width="100%"
@@ -163,12 +190,15 @@ export default function Cart() {
                   size="$3"
                   onPress={clearCart}
                   style={{
-                    alignSelf: isPhone ? 'flex-end' : 'center',
+                    alignSelf: isNative ? 'stretch' : isPhone ? 'flex-end' : 'center',
                     borderWidth: 1,
                     borderColor: '#f2b8b5',
                     backgroundColor: '#ffdad6',
                     paddingHorizontal: 16,
                     paddingVertical: 8,
+                    minHeight: isNative ? 44 : undefined,
+                    width: isNative ? '100%' : undefined,
+                    marginTop: isNative ? 8 : 0,
                   }}
                 >
                   Wyczyść koszyk
@@ -197,6 +227,7 @@ export default function Cart() {
                   borderWidth: 1,
                   borderColor: borderToneColor,
                   backgroundColor: primaryContainerColor,
+                  overflow: 'hidden',
                 }}
               >
                 <MaterialIcons name="shopping-cart" size={isPhone ? 30 : 34} color={primaryColor} />
@@ -217,8 +248,9 @@ export default function Cart() {
                 onPress={() => router.push('/')}
                 style={{
                   minHeight: 56,
-                  width: isPhone ? '100%' : undefined,
+                  width: isNative ? '94%' : isPhone ? '100%' : undefined,
                   minWidth: isPhone ? undefined : 220,
+                  alignSelf: isNative ? 'center' : undefined,
                 }}
               >
                 Przejdź do katalogu
@@ -308,7 +340,7 @@ export default function Cart() {
                           </XStack>
 
                           <GhostDangerButton
-                            size="$2"
+                            size={isNative ? '$3' : '$2'}
                             onPress={() => removeItem(item.id)}
                             style={{
                               flexShrink: 0,
@@ -316,8 +348,12 @@ export default function Cart() {
                               borderWidth: 1,
                               borderColor: '#f2b8b5',
                               backgroundColor: '#ffdad6',
-                              paddingHorizontal: 12,
+                              paddingHorizontal: 14,
                               paddingVertical: 8,
+                              minHeight: isNative ? 40 : undefined,
+                              minWidth: isNative ? 78 : undefined,
+                              alignItems: 'center',
+                              justifyContent: 'center',
                             }}
                           >
                             Usuń
@@ -339,29 +375,12 @@ export default function Cart() {
                             style={{
                               minWidth: isPhone ? 0 : 156,
                               width: isPhone ? '100%' : undefined,
-                              justifyContent: 'space-between',
+                              justifyContent: 'center',
+                              gap: isNative ? 16 : undefined,
                               borderRadius: 999,
                             }}
                           >
-                            <SecondaryButton
-                              size="$3"
-                              circular
-                              onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                              style={{
-                                width: controlSize,
-                                height: controlSize,
-                                minHeight: controlSize,
-                                minWidth: controlSize,
-                                paddingHorizontal: 0,
-                                paddingVertical: 0,
-                                backgroundColor: baseSurfaceColor,
-                                borderWidth: 1,
-                                borderColor: borderToneColor,
-                                borderRadius: 999,
-                              }}
-                            >
-                              <MaterialIcons name="remove" size={18} color={textColor} />
-                            </SecondaryButton>
+                            <QuantityButton label="-" size={controlSize} onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} />
 
                             <YStack
                               height={controlSize}
@@ -375,25 +394,7 @@ export default function Cart() {
                               </Text>
                             </YStack>
 
-                            <SecondaryButton
-                              size="$3"
-                              circular
-                              onPress={() => updateQuantity(item.id, item.quantity + 1)}
-                              style={{
-                                width: controlSize,
-                                height: controlSize,
-                                minHeight: controlSize,
-                                minWidth: controlSize,
-                                paddingHorizontal: 0,
-                                paddingVertical: 0,
-                                backgroundColor: baseSurfaceColor,
-                                borderWidth: 1,
-                                borderColor: borderToneColor,
-                                borderRadius: 999,
-                              }}
-                            >
-                              <MaterialIcons name="add" size={18} color={textColor} />
-                            </SecondaryButton>
+                            <QuantityButton label="+" size={controlSize} onPress={() => updateQuantity(item.id, item.quantity + 1)} />
                           </InlineControls>
 
                           <YStack
@@ -557,15 +558,19 @@ export default function Cart() {
                           </XStack>
 
                           <GhostDangerButton
-                            size="$2"
+                            size={isNative ? '$3' : '$2'}
                             onPress={() => removeItem(item.id)}
                             style={{
                               flexShrink: 0,
                               borderWidth: 1,
                               borderColor: '#f2b8b5',
                               backgroundColor: '#ffdad6',
-                              paddingHorizontal: 12,
+                              paddingHorizontal: 14,
                               paddingVertical: 8,
+                              minHeight: isNative ? 40 : undefined,
+                              minWidth: isNative ? 78 : undefined,
+                              alignItems: 'center',
+                              justifyContent: 'center',
                             }}
                           >
                             Usuń
@@ -579,29 +584,9 @@ export default function Cart() {
                             px="$2"
                             py="$1.5"
                             bg="$backgroundHover"
-                            style={{ minWidth: 172, justifyContent: 'space-between', borderRadius: 999 }}
+                            style={{ minWidth: 172, justifyContent: 'center', gap: 16, borderRadius: 999 }}
                           >
-                            <SecondaryButton
-                              size="$3"
-                              circular
-                              onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                              style={{
-                                width: controlSize,
-                                height: controlSize,
-                                minHeight: controlSize,
-                                minWidth: controlSize,
-                                paddingHorizontal: 0,
-                                paddingVertical: 0,
-                                backgroundColor: baseSurfaceColor,
-                                borderWidth: 1,
-                                borderColor: borderToneColor,
-                                borderRadius: 999,
-                              }}
-                            >
-                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
-                                -
-                              </Text>
-                            </SecondaryButton>
+                            <QuantityButton label="-" size={controlSize} onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} />
                             <YStack
                               height={controlSize}
                               borderWidth={1}
@@ -613,27 +598,7 @@ export default function Cart() {
                                 {item.quantity}
                               </Text>
                             </YStack>
-                            <SecondaryButton
-                              size="$3"
-                              circular
-                              onPress={() => updateQuantity(item.id, item.quantity + 1)}
-                              style={{
-                                width: controlSize,
-                                height: controlSize,
-                                minHeight: controlSize,
-                                minWidth: controlSize,
-                                paddingHorizontal: 0,
-                                paddingVertical: 0,
-                                backgroundColor: baseSurfaceColor,
-                                borderWidth: 1,
-                                borderColor: borderToneColor,
-                                borderRadius: 999,
-                              }}
-                            >
-                              <Text color="$color" fontFamily="$heading" fontSize="$5" lineHeight="$5" fontWeight="700">
-                                +
-                              </Text>
-                            </SecondaryButton>
+                            <QuantityButton label="+" size={controlSize} onPress={() => updateQuantity(item.id, item.quantity + 1)} />
                           </InlineControls>
 
                           <YStack

@@ -70,9 +70,11 @@ export function SimilarProductsCarousel({
   const addItem = useCartStore((state) => state.addItem)
   const [pageIndex, setPageIndex] = useState(0)
   const { width: viewportWidth } = useWindowDimensions()
-  const isPhone = viewportWidth <= 520
+  const isNative = Platform.OS !== 'web'
+  const isPhone = Platform.OS === 'web' ? viewportWidth <= 520 : viewportWidth <= 760
   const isNarrowPhone = viewportWidth <= 390
-  const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
+  const tabletStart = Platform.OS === 'web' ? 520 : 760
+  const isTabletRange = viewportWidth > tabletStart && viewportWidth <= 1024
   const productRatingAverages = useProductRatingAverages(products)
 
   const total = products.length
@@ -101,7 +103,7 @@ export function SimilarProductsCarousel({
 
   const startIndex = pageIndex * pageSize
   const displayedProducts = products.slice(startIndex, startIndex + pageSize)
-  const cardMinHeight = isNarrowPhone ? 430 : isPhone ? 456 : isTabletRange ? 536 : 484
+  const cardMinHeight = isNarrowPhone ? (isNative ? 446 : 430) : isPhone ? (isNative ? 476 : 456) : isTabletRange ? 536 : 484
   const cardMediaHeight = isNarrowPhone ? 190 : isPhone ? 208 : isTabletRange ? 244 : 226
   const descriptionLines = isPhone ? 2 : isTabletRange ? 3 : 2
   const controlsButtonMinWidth = isNarrowPhone ? 86 : isPhone ? 96 : 108
@@ -233,9 +235,9 @@ export function SimilarProductsCarousel({
                   <ProductTitle numberOfLines={2}>{item.name}</ProductTitle>
                   <ProductMetaText
                     numberOfLines={descriptionLines}
+                    color="$gray11"
+                    fontSize={isNarrowPhone ? '$2' : isTabletRange ? '$3' : '$2'}
                     style={{
-                      color: '$gray11',
-                      fontSize: isNarrowPhone ? '$2' : isTabletRange ? '$3' : '$2',
                       lineHeight: isNarrowPhone ? 18 : isTabletRange ? 22 : 20,
                     }}
                   >
@@ -305,10 +307,10 @@ export function SimilarProductsCarousel({
                     {cardBody}
                   </ProductCardLinkButton>
                 )}
-                <ProductCardFooter>
+                <ProductCardFooter style={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
                   <ProductCardAddButton
                     size="$3"
-                    style={{ minHeight: isPhone ? 46 : 48 }}
+                    style={{ minHeight: isPhone ? 46 : 48, width: '100%', maxWidth: '100%', alignSelf: 'stretch' }}
                     onPress={() =>
                       addItem({
                         id: item.id,

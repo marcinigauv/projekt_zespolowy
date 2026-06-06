@@ -76,6 +76,7 @@ export default function Index() {
     maxWidth: isPhone ? '100%' : isTablet ? 620 : 560,
   } as const
   const searchRowMaxWidth = isPhone ? '100%' : isTablet ? 680 : 620
+  const nativeScrollBottomPadding = Platform.OS === 'web' ? 0 : 176
 
   useEffect(() => {
     const normalizedRouteSearch = normalizeSearchParam(params.search)
@@ -138,7 +139,7 @@ export default function Index() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: nativeScrollBottomPadding }}>
         <ProductGrid style={{ maxWidth: 1360 }}>
           <Section>
             <SectionHeading style={{ maxWidth: headingMaxWidth, gap: headingGap }}>

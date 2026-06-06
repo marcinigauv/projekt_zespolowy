@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { Modal, useWindowDimensions } from 'react-native'
+import { Modal, Platform, useWindowDimensions } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
 import { Label, ScrollView, Text, XStack, YStack, H1, Paragraph, getVariableValue, useTheme } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
@@ -324,7 +324,8 @@ export default function AdminProductsScreen() {
 
     return `Wybrany produkt: #${selectedProduct.id} • ${selectedProduct.name}`
   }, [selectedProduct])
-  const isPhone = viewportWidth <= 520
+  const isPhone = Platform.OS === 'web' ? viewportWidth <= 520 : viewportWidth <= 760
+  const nativeScrollBottomPadding = Platform.OS === 'web' ? 0 : 176
 
   if (!canRender) {
     return null
@@ -334,7 +335,7 @@ export default function AdminProductsScreen() {
     <PageWrapper>
       <Header />
       <ScrollView>
-        <PageContent style={{ maxWidth: 1180 }}>
+        <PageContent style={{ maxWidth: 1180, paddingBottom: nativeScrollBottomPadding }}>
           <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Panel Admina</Eyebrow>
             <SectionTitle>Zarządzanie Przedmiotami</SectionTitle>
@@ -344,7 +345,7 @@ export default function AdminProductsScreen() {
             <ActionButtonRow>
               <PrimaryButton
                 onPress={openCreateModal}
-                style={{ minHeight: 56, minWidth: isPhone ? undefined : 240, width: isPhone ? '100%' : undefined }}
+                style={{ minHeight: 56, minWidth: isPhone ? undefined : 240, width: isPhone ? '96%' : undefined, alignSelf: isPhone ? 'center' : undefined }}
               >
                 Dodaj nowy produkt
               </PrimaryButton>
@@ -360,9 +361,17 @@ export default function AdminProductsScreen() {
             </CardHeaderStrip>
 
             <YStack p="$3.5" gap="$3.5">
-              <SearchRow style={{ flexDirection: isPhone ? 'column' : 'row', alignItems: 'stretch' }}>
+              <YStack
+                gap="$4"
+                style={{
+                  width: '100%',
+                  display: isPhone ? 'flex' : 'none',
+                  alignItems: 'center',
+                  minHeight: 248,
+                  paddingBottom: 24,
+                }}
+              >
                 <SearchInput
-                  flex={isPhone ? undefined : 1}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder="Np. 15 laptop promocja"
@@ -375,7 +384,7 @@ export default function AdminProductsScreen() {
                 <PrimaryButton
                   disabled={isSearching}
                   onPress={() => { void handleSearch() }}
-                  style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                  style={{ minHeight: 56, width: '92%', alignSelf: 'center', marginTop: 12 }}
                 >
                   Szukaj
                 </PrimaryButton>
@@ -388,10 +397,46 @@ export default function AdminProductsScreen() {
                     setSearchMessage(emptySearchMessage)
                     handleClearSelection()
                   }}
-                  style={{ minHeight: 56, width: isPhone ? '100%' : undefined }}
+                  style={{ minHeight: 56, width: '92%', alignSelf: 'center' }}
                 >
                   Wyczyść
                 </SecondaryButton>
+              </YStack>
+
+              <SearchRow style={{ display: isPhone ? 'none' : 'flex', alignItems: 'stretch' }}>
+                <SearchInput
+                  flex={1}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Np. 15 laptop promocja"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  style={{ minHeight: 56, width: '100%' }}
+                  onSubmitEditing={() => { void handleSearch() }}
+                />
+                <PrimaryButton
+                  disabled={isSearching}
+                  onPress={() => { void handleSearch() }}
+                  style={{ minHeight: 56 }}
+                >
+                  Szukaj
+                </PrimaryButton>
+                {searchQuery.length > 0 ? (
+                  <SecondaryButton
+                    disabled={isSearching}
+                    onPress={() => {
+                      setSearchQuery('')
+                      setSearchResults([])
+                      setSearchError('')
+                      setSearchMessage(emptySearchMessage)
+                      handleClearSelection()
+                    }}
+                    style={{ minHeight: 56 }}
+                  >
+                    Wyczyść
+                  </SecondaryButton>
+                ) : null}
               </SearchRow>
 
               <YStack
@@ -417,9 +462,11 @@ export default function AdminProductsScreen() {
                           gap="$3"
                           px="$4"
                           py="$4"
-                          justifyContent="space-between"
-                          alignItems={isPhone ? 'flex-start' : 'center'}
                           flexDirection={isPhone ? 'column' : 'row'}
+                          style={{
+                            justifyContent: 'space-between',
+                            alignItems: isPhone ? 'flex-start' : 'center',
+                          }}
                         >
                           <AdminResultSummary style={{ minWidth: 0, flex: 1 }}>
                             <AdminResultTitle>{product.name}</AdminResultTitle>
@@ -427,14 +474,14 @@ export default function AdminProductsScreen() {
                           </AdminResultSummary>
 
                           <MetricTile
-                            alignItems={isPhone ? 'flex-start' : 'flex-end'}
                             style={{
+                              alignItems: isPhone ? 'flex-start' : 'flex-end',
                               minWidth: isPhone ? 0 : 170,
                               width: isPhone ? '100%' : undefined,
                               paddingVertical: 12,
                             }}
                           >
-                            <ProductPrice color="$stitchPrimary">{product.price.toFixed(2)} zł</ProductPrice>
+                            <ProductPrice style={{ color: primaryColor }}>{product.price.toFixed(2)} zł</ProductPrice>
                           </MetricTile>
                         </XStack>
 
@@ -462,8 +509,8 @@ export default function AdminProductsScreen() {
                         </XStack>
 
                         <YStack
-                          alignItems={isPhone ? 'stretch' : 'center'}
                           style={{
+                            alignItems: isPhone ? 'stretch' : 'center',
                             borderTopWidth: 1,
                             borderTopColor: borderColor,
                             paddingHorizontal: 16,
@@ -526,8 +573,8 @@ export default function AdminProductsScreen() {
                   </XStack>
 
                   <YStack
-                    alignItems={isPhone ? 'stretch' : 'center'}
                     style={{
+                      alignItems: isPhone ? 'stretch' : 'center',
                       borderTopWidth: 1,
                       borderTopColor: borderColor,
                       paddingTop: 14,
@@ -564,12 +611,12 @@ export default function AdminProductsScreen() {
                 }}
               >
                 <YStack
-                  width={64}
-                  height={64}
-                  borderRadius={999}
-                  alignItems="center"
-                  justifyContent="center"
                   style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 999,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     borderWidth: 1,
                     borderColor,
                     backgroundColor: baseSurfaceColor,
@@ -760,12 +807,12 @@ export default function AdminProductsScreen() {
               ) : (
                 <EmptyStateCard gap="$3">
                   <YStack
-                    width={64}
-                    height={64}
-                    borderRadius={999}
-                    alignItems="center"
-                    justifyContent="center"
                     style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 999,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       borderWidth: 1,
                       borderColor,
                       backgroundColor: baseSurfaceColor,

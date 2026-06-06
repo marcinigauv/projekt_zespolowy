@@ -128,10 +128,13 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
   const activeNotification = useMemo(() => notifications[0] ?? null, [notifications])
   const shouldUseNativeDriver = Platform.OS !== 'web'
   const isWeb = Platform.OS === 'web'
+  const isNativeMobile = Platform.OS === 'android' || Platform.OS === 'ios'
+  const isNotificationsEnabledRoute = pathname === '/' || pathname.startsWith('/products/')
   const isWebPhone = isWeb && media.xs
   const isWebTablet = isWeb && !media.xs && media.md
   const isCartScreen = pathname === '/cart'
   const shouldHideToast = isWebPhone && isCartScreen
+  const shouldHideToastOnNativeRoute = isNativeMobile && !isNotificationsEnabledRoute
   const isInlinePhoneToast = isWeb && isWebPhone && placement === 'inline'
   const isWebOverlayToast = isWeb && !isWebPhone && placement === 'overlay'
   const webOverlayTopInset = isWebTablet ? 62 : 66
@@ -164,10 +167,10 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
       return
     }
 
-    if (!renderedNotification) {
+    if (!renderedNotification || shouldHideToastOnNativeRoute) {
       onMobileInsetChange?.(0)
     }
-  }, [onMobileInsetChange, renderedNotification])
+  }, [onMobileInsetChange, renderedNotification, shouldHideToastOnNativeRoute])
 
   useEffect(() => {
     if (!activeNotification) {
@@ -230,6 +233,10 @@ export function NotificationsToastHost({ onMobileInsetChange, placement = 'overl
   }
 
   if (shouldHideToast) {
+    return null
+  }
+
+  if (shouldHideToastOnNativeRoute) {
     return null
   }
 

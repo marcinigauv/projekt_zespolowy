@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { useWindowDimensions } from 'react-native'
+import { Platform, useWindowDimensions } from 'react-native'
 import { ScrollView, Text, XStack, YStack } from 'tamagui'
 import { useRouteAccess } from '../../src/auth/useRouteAccess'
 import { Header } from '../../src/components/Header'
@@ -38,9 +38,10 @@ export default function OrdersScreen() {
   const cachedOrders = useOrdersStore((state) => state.orders)
   const [isLoading, setIsLoading] = useState(cachedOrders.length === 0)
   const [error, setError] = useState('')
-  const isPhone = viewportWidth <= 520
-  const isStacked = viewportWidth <= 1100
-  const mobileBottomRailInset = isPhone ? 88 : 0
+  const isNative = Platform.OS !== 'web'
+  const isPhone = isNative || viewportWidth <= 520
+  const isStacked = isNative || viewportWidth <= 1100
+  const mobileBottomRailInset = isNative ? 112 : isPhone ? 88 : 0
   const floatingOverlayInset = isPhone ? 0 : 24
   const scrollBottomInset = mobileBottomRailInset + floatingOverlayInset
   const webOverlayToastInset = Platform.OS === 'web' && !isPhone && viewportWidth <= 1200 ? 44 : 0

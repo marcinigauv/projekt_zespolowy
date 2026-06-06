@@ -21,6 +21,10 @@ function resolveApiBaseUrl(): string {
     return `${window.location.protocol}//${window.location.hostname}:8000`
   }
 
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000'
+  }
+
   const expoConfig = Constants.expoConfig as { hostUri?: string } | null
   const hostUri = expoConfig?.hostUri
 

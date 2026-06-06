@@ -268,11 +268,12 @@ export default function OrderDetailsScreen() {
   const paymentActionLabel = getPaymentActionLabel(paymentStatus)
   const showPaymentRefresh = shouldShowPaymentRefresh(paymentStatus)
   const showPaymentSection = paymentActionLabel !== null || showPaymentRefresh
-  const isPhone = viewportWidth <= 520
-  const isStacked = viewportWidth <= 1100
+  const isNative = Platform.OS !== 'web'
+  const isPhone = isNative || viewportWidth <= 520
+  const isStacked = isNative || viewportWidth <= 1100
   const itemCardRadius = isPhone ? 16 : 18
   const itemThumbnailSize = isPhone ? 76 : isStacked ? 88 : 96
-  const mobileBottomRailInset = isPhone ? 88 : 0
+  const mobileBottomRailInset = isNative ? 112 : isPhone ? 88 : 0
   const floatingOverlayInset = isPhone ? 0 : 24
   const scrollBottomInset = mobileBottomRailInset + floatingOverlayInset
   const webOverlayToastInset = Platform.OS === 'web' && !isPhone && viewportWidth <= 1200 ? 44 : 0
@@ -396,33 +397,56 @@ export default function OrderDetailsScreen() {
                     </CardHeaderStrip>
 
                     <YStack p="$3.5">
-                      <ActionButtonRow
-                        style={{
-                          justifyContent: isStacked ? 'stretch' : 'center',
-                          alignItems: isStacked ? 'stretch' : 'center',
-                          flexDirection: isStacked ? 'column' : 'row',
-                          width: '100%',
-                        }}
-                      >
-                      {paymentActionLabel ? (
-                        <PrimaryButton
-                          disabled={isPaymentLoading}
-                          onPress={() => { void startPaymentRef.current() }}
-                          style={{ minHeight: 56, width: isStacked ? '100%' : undefined }}
+                      {isNative ? (
+                        <YStack gap="$2" style={{ alignItems: 'stretch', width: '100%' }}>
+                          {paymentActionLabel ? (
+                            <PrimaryButton
+                              disabled={isPaymentLoading}
+                              onPress={() => { void startPaymentRef.current() }}
+                              style={{ alignSelf: 'stretch', minHeight: 56, width: '100%', maxWidth: '100%' }}
+                            >
+                              {isPaymentLoading ? 'Przekierowanie...' : paymentActionLabel}
+                            </PrimaryButton>
+                          ) : null}
+                          {showPaymentRefresh ? (
+                            <SecondaryButton
+                              disabled={isLoading}
+                              onPress={() => { void refreshOrderRef.current(false) }}
+                              style={{ alignSelf: 'stretch', minHeight: 56, width: '100%', maxWidth: '100%' }}
+                            >
+                              Odśwież status
+                            </SecondaryButton>
+                          ) : null}
+                        </YStack>
+                      ) : (
+                        <ActionButtonRow
+                          style={{
+                            justifyContent: isStacked ? 'stretch' : 'center',
+                            alignItems: isStacked ? 'stretch' : 'center',
+                            flexDirection: isStacked ? 'column' : 'row',
+                            width: '100%',
+                          }}
                         >
-                          {isPaymentLoading ? 'Przekierowanie...' : paymentActionLabel}
-                        </PrimaryButton>
-                      ) : null}
-                      {showPaymentRefresh ? (
-                        <SecondaryButton
-                          disabled={isLoading}
-                          onPress={() => { void refreshOrderRef.current(false) }}
-                          style={{ minHeight: 56, width: isStacked ? '100%' : undefined }}
-                        >
-                          Odśwież status
-                        </SecondaryButton>
-                      ) : null}
-                      </ActionButtonRow>
+                          {paymentActionLabel ? (
+                            <PrimaryButton
+                              disabled={isPaymentLoading}
+                              onPress={() => { void startPaymentRef.current() }}
+                              style={{ minHeight: 56, width: isStacked ? '100%' : undefined }}
+                            >
+                              {isPaymentLoading ? 'Przekierowanie...' : paymentActionLabel}
+                            </PrimaryButton>
+                          ) : null}
+                          {showPaymentRefresh ? (
+                            <SecondaryButton
+                              disabled={isLoading}
+                              onPress={() => { void refreshOrderRef.current(false) }}
+                              style={{ minHeight: 56, width: isStacked ? '100%' : undefined }}
+                            >
+                              Odśwież status
+                            </SecondaryButton>
+                          ) : null}
+                        </ActionButtonRow>
+                      )}
                     </YStack>
                   </YStack>
                 </SurfaceCard>

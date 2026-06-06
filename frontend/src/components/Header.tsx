@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import { usePathname, useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { XStack, YStack, Text, Button, Popover, Separator, getVariableValue, useTheme } from 'tamagui'
 import { MaterialIcons } from '@expo/vector-icons'
 import { logoutUserUseCase } from '../auth/useCases'
@@ -113,6 +114,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
 export function Header() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const pathname = usePathname()
   const theme = useTheme()
   const { width: viewportWidth } = useWindowDimensions()
@@ -122,8 +124,10 @@ export function Header() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const isWeb = Platform.OS === 'web'
-  const isDesktop = viewportWidth > 768
-  const isPhone = viewportWidth <= 520
+  const mobileBreakpoint = isWeb ? 520 : 760
+  const desktopBreakpoint = isWeb ? 768 : 1024
+  const isDesktop = viewportWidth > desktopBreakpoint
+  const isPhone = viewportWidth <= mobileBreakpoint
   const isWideDesktop = viewportWidth > 1024
   const isCompactMobile = viewportWidth <= 390
   const primaryColor = getVariableValue(theme.stitchPrimary)
@@ -133,6 +137,7 @@ export function Header() {
   const backgroundColor = getVariableValue(theme.background)
   const backgroundPressColor = getVariableValue(theme.backgroundPress)
   const backgroundStrongColor = getVariableValue(theme.backgroundStrong)
+  const nativeTopInset = isWeb ? 0 : Math.max(insets.top, 0)
   const navBarStyle = isWeb && !isPhone
     ? { position: 'sticky' as const, top: 0, zIndex: 40, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : undefined
@@ -171,13 +176,6 @@ export function Header() {
       badge: cartItems > 0 ? cartItems : null,
     },
     {
-      key: 'ask-ai',
-      icon: 'auto-awesome',
-      ariaLabel: 'AskAI',
-      path: '/ask-ai',
-      active: pathname === '/ask-ai',
-    },
-    {
       key: 'account',
       icon: isAuthenticated ? 'person' : 'login',
       ariaLabel: isAuthenticated ? 'Konto' : 'Logowanie',
@@ -193,9 +191,28 @@ export function Header() {
         bottom: 0,
         zIndex: 45,
       }
-    : undefined
+    : {
+        position: 'absolute' as const,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 45,
+        paddingBottom: Math.max(insets.bottom, 8),
+      }
+  const phoneHeaderContainerStyle = {
+    ...(phoneHeaderStyle ?? {}),
+    paddingTop: nativeTopInset,
+  }
 
   if (isAuthenticated) {
+    phoneTabs.splice(2, 0, {
+      key: 'ask-ai',
+      icon: 'auto-awesome',
+      ariaLabel: 'AskAI',
+      path: '/ask-ai',
+      active: pathname === '/ask-ai',
+    })
+
     phoneTabs.splice(2, 0, {
       key: 'orders',
       icon: 'receipt-long',
@@ -298,7 +315,7 @@ export function Header() {
   if (isPhone) {
     return (
       <>
-        <YStack style={phoneHeaderStyle}>
+        <YStack style={phoneHeaderContainerStyle}>
           <NavBar>
             <HeaderBrand>
               <HeaderBrandMark>

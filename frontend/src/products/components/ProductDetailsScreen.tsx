@@ -90,14 +90,16 @@ function ProductHeroImage({ product }: { product: Product }) {
 export function ProductDetailsScreen() {
   const router = useRouter()
   const { width: viewportWidth } = useWindowDimensions()
-  const isPhone = viewportWidth <= 520
+  const isPhone = Platform.OS === 'web' ? viewportWidth <= 520 : viewportWidth <= 760
   const isNarrowPhone = viewportWidth <= 390
-  const isTabletRange = viewportWidth > 520 && viewportWidth <= 1024
+  const tabletStart = Platform.OS === 'web' ? 520 : 760
+  const isTabletRange = viewportWidth > tabletStart && viewportWidth <= 1024
   const ctaMinHeight = isPhone ? 56 : 48
   const detailsTitleFontSize = isNarrowPhone ? '$5' : isPhone ? '$6' : isTabletRange ? '$7' : '$8'
   const detailsTitleLineHeight = isNarrowPhone ? '$5' : isPhone ? '$6' : isTabletRange ? '$7' : '$8'
   const detailsPriceFontSize = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
   const detailsPriceLineHeight = isNarrowPhone ? '$6' : isPhone ? '$7' : isTabletRange ? '$7' : '$8'
+  const nativeScrollBottomPadding = Platform.OS === 'web' ? 0 : 176
   const params = useLocalSearchParams<{ id?: string | string[] }>()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const isAuthResolved = useAuthStore((state) => state.isAuthResolved)
@@ -364,7 +366,7 @@ export function ProductDetailsScreen() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: nativeScrollBottomPadding }}>
         <ProductGrid style={{ maxWidth: 1280 }}>
           <Section>
             <BackLinkButton onPress={() => router.push('/')}>
@@ -637,7 +639,7 @@ export function ProductDetailsScreen() {
                       </YStack>
                     </SurfaceCard>
 
-                    <YStack gap={isNarrowPhone ? '$2' : '$2.5'} style={{ width: '100%' }}>
+                    <YStack gap={isNarrowPhone ? '$2.5' : '$3'} style={{ width: '100%', maxWidth: '100%', paddingHorizontal: Platform.OS === 'web' ? 0 : 2, paddingBottom: Platform.OS === 'web' ? 0 : 22 }}>
                       <AddToCartButton
                         size="$4"
                         width="100%"
@@ -646,6 +648,9 @@ export function ProductDetailsScreen() {
                           minHeight: ctaMinHeight,
                           justifyContent: 'center',
                           opacity: product.amount <= 0 ? 0.62 : 1,
+                          width: Platform.OS === 'web' ? '100%' : '98%',
+                          maxWidth: '98%',
+                          alignSelf: 'center',
                         }}
                         onPress={() =>
                           addItem({
@@ -662,7 +667,7 @@ export function ProductDetailsScreen() {
                       <SecondaryButton
                         size="$4"
                         width="100%"
-                        style={{ minHeight: ctaMinHeight, justifyContent: 'center' }}
+                        style={{ minHeight: ctaMinHeight, justifyContent: 'center', width: Platform.OS === 'web' ? '100%' : '98%', maxWidth: '98%', alignSelf: 'center' }}
                         onPress={() => router.push('/cart')}
                       >
                         Przejdź do koszyka

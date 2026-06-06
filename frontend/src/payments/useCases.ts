@@ -1,4 +1,6 @@
 import { Linking, Platform } from 'react-native'
+import Constants from 'expo-constants'
+import * as ExpoLinking from 'expo-linking'
 import { ApiError, NetworkError } from '../lib/api'
 import { createPaymentApi, fetchPaymentStatusApi, type PaymentDto } from './api'
 
@@ -12,6 +14,8 @@ export interface Payment {
 
 const RETRYABLE_PAYMENT_STATUSES = new Set(['ABANDONED', 'ERROR', 'EXPIRED', 'REJECTED'])
 const IN_PROGRESS_PAYMENT_STATUSES = new Set(['NEW', 'PENDING'])
+const PAYMENT_RETURN_SCHEME = 'myapp'
+const EXPO_GO_APP_OWNERSHIP = 'expo'
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
   NEW: 'Nowa',
@@ -21,6 +25,19 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
   REJECTED: 'Odrzucona',
   ERROR: 'Błąd',
   ABANDONED: 'Przerwana',
+}
+
+function createNativePaymentReturnUrl(orderId: number): string {
+  const queryParams = {
+    paymentReturn: '1',
+    orderId: String(orderId),
+  }
+
+  if (Constants.appOwnership === EXPO_GO_APP_OWNERSHIP) {
+    return ExpoLinking.createURL(`/orders/${orderId}`, { queryParams })
+  }
+
+  return `${PAYMENT_RETURN_SCHEME}:///orders/${orderId}?paymentReturn=1&orderId=${orderId}`
 }
 
 function mapPayment(payment: PaymentDto): Payment {
@@ -111,7 +128,10 @@ export function getPaymentActionLabel(status: string | null | undefined): string
 
 export async function createPaymentUseCase(orderId: number): Promise<Payment> {
   try {
-    const payment = await createPaymentApi(orderId)
+    const returnUrl = Platform.OS === 'web'
+      ? undefined
+      : createNativePaymentReturnUrl(orderId)
+    const payment = await createPaymentApi(orderId, returnUrl)
     return mapPayment(payment)
   } catch (error) {
     throw mapPaymentsError(error)

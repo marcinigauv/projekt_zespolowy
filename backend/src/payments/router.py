@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Query, Depends, Request
+from fastapi import APIRouter, Query, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse
+from html import escape
 from urllib.parse import urlsplit
 from src.sql.db import DBSession
 from src.sql.models import Payment, User
@@ -25,6 +26,33 @@ def get_request_origin(request: Request) -> str | None:
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
+def get_native_payment_return_url(return_url: str | None) -> str | None:
+    if not return_url:
+        return None
+
+    normalized_return_url = return_url.strip()
+    parsed = urlsplit(normalized_return_url)
+    normalized_path = parsed.path.removeprefix("/--")
+
+    is_orders_return_url = normalized_path.startswith(
+        "/orders") or parsed.netloc == "orders"
+
+    if parsed.scheme in {"myapp", "exp", "exps"} and is_orders_return_url:
+        return normalized_return_url
+
+    raise HTTPException(
+        status_code=400, detail="Unsupported payment return URL")
+
+
+def get_android_intent_url(app_url: str) -> str:
+    parsed = urlsplit(app_url)
+    intent_path = f"{parsed.netloc}{parsed.path}" if parsed.netloc else parsed.path.lstrip(
+        "/")
+    query = f"?{parsed.query}" if parsed.query else ""
+
+    return f"intent://{intent_path}{query}#Intent;scheme={parsed.scheme};end"
+
+
 @payments_router.get("/status", response_model=Payment)
 async def check_payment_get(
     session: DBSession,
@@ -43,25 +71,77 @@ async def create_payment_post(
     request: Request,
     order_id: int = Query(
         description="The unique identifier of the order to create a payment for", default=1),
+    return_url: str | None = Query(
+        description="Native deep link used by mobile apps after the payment is finished", default=None),
     user: User = Depends(require_authentication)
 ) -> Payment:
     """Endpoint to create a payment for an order."""
+    native_return_url = get_native_payment_return_url(return_url)
     public_origin = get_request_origin(request)
 
-    if public_origin:
+    print(f"[payments.create] request_url={request.url}", flush=True)
+    print(f"[payments.create] order_id={order_id}", flush=True)
+    print(f"[payments.create] received_return_url={return_url}", flush=True)
+    print(
+        f"[payments.create] native_return_url={native_return_url}", flush=True)
+
+    if native_return_url:
+        continue_url = str(request.url_for(
+            "payment_return_page").include_query_params(order_id=order_id, return_url=native_return_url))
+    elif public_origin:
         continue_url = f"{public_origin}/api/payments/return?order_id={order_id}"
     else:
         continue_url = str(request.url_for(
             "payment_return_page").include_query_params(order_id=order_id))
 
+    print(
+        f"[payments.create] provider_continue_url={continue_url}", flush=True)
+
     payment = await create_payment_for_order(session, order_id, user, continue_url)
     return payment
 
 
-@payments_router.get("/return", include_in_schema=False, response_class=HTMLResponse)
-async def payment_return_page(request: Request, order_id: int = Query(default=0)) -> HTMLResponse:
-    app_url = f"myapp://orders/{order_id}?paymentReturn=1" if order_id > 0 else "myapp://orders?paymentReturn=1"
+@payments_router.get("/return", include_in_schema=False, response_class=HTMLResponse, response_model=None)
+async def payment_return_page(request: Request, order_id: int = Query(default=0), return_url: str | None = Query(default=None)) -> HTMLResponse:
+    native_return_url = get_native_payment_return_url(return_url)
+    app_url = native_return_url or (
+        f"myapp:///orders/{order_id}?paymentReturn=1&orderId={order_id}" if order_id > 0 else "myapp:///orders?paymentReturn=1")
+    android_intent_url = get_android_intent_url(app_url)
+
+    print(f"[payments.return] request_url={request.url}", flush=True)
+    print(f"[payments.return] order_id={order_id}", flush=True)
+    print(f"[payments.return] received_return_url={return_url}", flush=True)
+    print(f"[payments.return] app_url={app_url}", flush=True)
+    print(
+        f"[payments.return] android_intent_url={android_intent_url}", flush=True)
+
+    if native_return_url:
+        html = f"""
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Powrót do aplikacji</title>
+    </head>
+    <body>
+        <a id="open-app" href="{escape(android_intent_url, quote=True)}">Wróć do aplikacji</a>
+        <script>
+            const intentUrl = {android_intent_url!r};
+            const appUrl = {app_url!r};
+
+            window.location.replace(intentUrl);
+            window.setTimeout(() => {{
+                window.location.replace(appUrl);
+            }}, 800);
+        </script>
+    </body>
+</html>
+"""
+        return HTMLResponse(content=html)
+
     web_url = f"{str(request.base_url).rstrip('/')}/orders/{order_id}?paymentReturn=1" if order_id > 0 else f"{str(request.base_url).rstrip('/')}/orders?paymentReturn=1"
+    print(f"[payments.return] web_url={web_url}", flush=True)
     html = f"""
 <!doctype html>
 <html lang="pl">

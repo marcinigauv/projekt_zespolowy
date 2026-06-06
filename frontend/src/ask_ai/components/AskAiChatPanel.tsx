@@ -699,7 +699,7 @@ export function AskAiChatPanel({
           : 'Nowa rozmowa'
 
     return (
-      <YStack flex={1} style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <YStack flex={1} style={{ alignItems: 'center', justifyContent: isPhoneFullscreen ? 'flex-start' : 'center', paddingTop: isPhoneFullscreen ? 40 : 0 }}>
         <XStack gap="$2" style={{ alignItems: 'center' }}>
           <MaterialIcons name="auto-awesome" size={14} color={toneColor} />
           <Text color="$placeholderColor" fontSize="$2" fontWeight="600">
@@ -798,6 +798,7 @@ export function AskAiChatPanel({
       style={{
         borderRadius: isPhoneFullscreen ? 0 : 16,
         opacity: isAiBusy ? 0.82 : 1,
+        marginBottom: isPhoneFullscreen ? 14 : 0,
         ...(!isPhoneFullscreen ? shadowStyle : {}),
       }}
     >
@@ -862,7 +863,7 @@ export function AskAiChatPanel({
             borderColor: speechFieldBorderColor,
             paddingTop: speechActive ? 34 : basePaddingY,
             paddingBottom: speechActive ? activeBottomPadding : inactiveBottomPadding,
-            paddingRight: isPhoneFullscreen ? 74 : undefined,
+            paddingRight: isPhoneFullscreen ? 42 : undefined,
           }}
         />
 
@@ -882,32 +883,6 @@ export function AskAiChatPanel({
             </Text>
 
             <XStack gap="$1.5" style={{ alignItems: 'center' }}>
-              <Button
-                unstyled
-                {...speechButtonAccessibilityProps}
-                disabled={speechButtonDisabled}
-                onPress={speechToText.toggleListening}
-                pressStyle={{ opacity: 0.82 }}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: speechActive ? micActiveColor : '#334155',
-                  backgroundColor: speechActive ? 'rgba(239, 68, 68, 0.16)' : '#111827',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: speechButtonDisabled ? 0.46 : 1,
-                  transform: [{ scale: micPulseScale }],
-                }}
-              >
-                <MaterialIcons
-                  name={speechActive ? 'graphic-eq' : 'keyboard-voice'}
-                  size={13}
-                  color={speechActive ? micActiveColor : micNeutralColor}
-                />
-              </Button>
-
               <Button
                 unstyled
                 {...sendButtonAccessibilityProps}

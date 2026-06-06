@@ -1,6 +1,6 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
-import { useWindowDimensions } from 'react-native'
+import { Platform, useWindowDimensions } from 'react-native'
 import { YStack, XStack, Text, ScrollView, Label } from 'tamagui'
 import { Header } from '../src/components/Header'
 import { useRouteAccess } from '../src/auth/useRouteAccess'
@@ -30,7 +30,8 @@ export default function Profile() {
   const router = useRouter()
   const { canRender, user } = useRouteAccess()
   const { width: viewportWidth } = useWindowDimensions()
-  const isPhone = viewportWidth <= 520
+  const isPhone = Platform.OS === 'web' ? viewportWidth <= 520 : viewportWidth <= 760
+  const nativeScrollBottomPadding = Platform.OS === 'web' ? 0 : 176
   const [themeError, setThemeError] = React.useState('')
   const [isSavingTheme, setIsSavingTheme] = React.useState(false)
 
@@ -91,7 +92,7 @@ export default function Profile() {
   return (
     <PageWrapper>
       <Header />
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: nativeScrollBottomPadding }}>
         <PageContent style={{ maxWidth: 1120 }}>
           <SectionHeading style={{ maxWidth: 760 }}>
             <Eyebrow>Profil</Eyebrow>
@@ -285,7 +286,9 @@ export default function Profile() {
                     alignItems={isPhone ? 'stretch' : 'center'}
                     style={{
                       width: '100%',
+                      maxWidth: '100%',
                       padding: isPhone ? 12 : 14,
+                      overflow: 'hidden',
                     }}
                   >
                     <XStack
@@ -293,14 +296,16 @@ export default function Profile() {
                       flexDirection={isPhone ? 'column' : 'row'}
                       alignItems="stretch"
                       justifyContent="center"
-                      style={{ width: isPhone ? '100%' : 'auto' }}
+                      style={{ width: isPhone ? '100%' : 'auto', maxWidth: '100%', minWidth: 0, alignItems: 'center' }}
                     >
                       <SecondaryButton
                         onPress={() => router.push('/orders')}
                         style={{
                           minHeight: 56,
                           minWidth: isPhone ? undefined : 210,
-                          width: isPhone ? '100%' : undefined,
+                          width: isPhone ? '94%' : undefined,
+                          maxWidth: '94%',
+                          alignSelf: 'center',
                         }}
                       >
                         Historia zamówień
@@ -311,7 +316,9 @@ export default function Profile() {
                         style={{
                           minHeight: 56,
                           minWidth: isPhone ? undefined : 190,
-                          width: isPhone ? '100%' : undefined,
+                          width: isPhone ? '94%' : undefined,
+                          maxWidth: '94%',
+                          alignSelf: 'center',
                         }}
                       >
                         Wyloguj się

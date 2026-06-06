@@ -97,10 +97,21 @@ async def create_payment_at_provider(order: Order, email: str, continue_url: str
     headers['Idempotency-Key'] = generate_random_string(length=45)
     headers['Host'] = 'api.sandbox.paynow.pl'
     headers["Content-Type"] = "application/json"
+    print(
+        f"[payments.provider.create] provider_url={config.payments_settings.provider_url}", flush=True)
+    print(f"[payments.provider.create] continueUrl={continue_url}", flush=True)
     async with httpx.AsyncClient() as client:
         response = await client.post(url=config.payments_settings.provider_url, headers=headers, data=payment_object)
+    print(
+        f"[payments.provider.create] response_status={response.status_code}", flush=True)
+    print(
+        f"[payments.provider.create] response_body={response.text}", flush=True)
     if response.status_code == 201:
         response_dict = loads(response.text)
+        print(
+            f"[payments.provider.create] redirectUrl={response_dict.get('redirectUrl')}", flush=True)
+        print(
+            f"[payments.provider.create] paymentId={response_dict.get('paymentId')}", flush=True)
         return response_dict
     raise PaymentNotAvailableException()
 
