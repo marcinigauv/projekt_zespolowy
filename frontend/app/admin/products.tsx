@@ -74,6 +74,8 @@ const emptyFormState: ProductFormState = {
 }
 
 const emptySearchMessage = 'Wpisz ID produktu lub kilka fraz, aby rozpocząć wyszukiwanie.'
+const priceRequiredMessage = 'Podaj cenę produktu.'
+const priceFormatMessage = 'Cena musi być liczbą, np. 12 albo 12.34 / 12,34. Część groszowa ma dokładnie 2 cyfry.'
 
 type ProductModalMode = 'create' | 'edit'
 
@@ -81,11 +83,46 @@ function toFormState(product: Product): ProductFormState {
   return {
     name: product.name,
     description: product.description,
-    price: String(product.price),
+    price: product.price.toFixed(2),
     amount: String(product.amount),
     categories: product.categories.join(', '),
     imageUrl: product.imageUrl ?? '',
   }
+}
+
+function sanitizePriceInput(value: string): string {
+  const sanitizedValue = value.replace(/\s/gu, '').replace(/[^\d.,]/gu, '')
+  const separatorMatch = sanitizedValue.match(/[.,]/u)
+
+  if (!separatorMatch || separatorMatch.index === undefined) {
+    return sanitizedValue.replace(/[^\d]/gu, '')
+  }
+
+  const separatorIndex = separatorMatch.index
+  const wholePart = sanitizedValue.slice(0, separatorIndex).replace(/[^\d]/gu, '')
+  const decimalPart = sanitizedValue.slice(separatorIndex + 1).replace(/[^\d]/gu, '').slice(0, 2)
+
+  if (!wholePart) {
+    return ''
+  }
+
+  return `${wholePart}${separatorMatch[0]}${decimalPart}`
+}
+
+function getPriceValidationError(value: string): string {
+  if (!value.trim()) {
+    return priceRequiredMessage
+  }
+
+  if (!/^(\d+|\d+[.,]\d{2})$/u.test(value)) {
+    return priceFormatMessage
+  }
+
+  return ''
+}
+
+function parsePrice(value: string): number {
+  return Number(value.replace(',', '.'))
 }
 
 function parseCategories(value: string): string[] {
@@ -131,17 +168,24 @@ export default function AdminProductsScreen() {
     field: keyof ProductFormState,
     value: string,
   ) => {
+    const nextValue = field === 'price' ? sanitizePriceInput(value) : value
     const update = (current: ProductFormState) => ({
       ...current,
-      [field]: value,
+      [field]: nextValue,
     })
 
     if (mode === 'create') {
       setCreateForm(update)
+      if (field === 'price' && (createError === priceFormatMessage || createError === priceRequiredMessage)) {
+        setCreateError('')
+      }
       return
     }
 
     setEditForm(update)
+    if (field === 'price' && (editError === priceFormatMessage || editError === priceRequiredMessage)) {
+      setEditError('')
+    }
   }
 
   const handleCreateReset = () => {
@@ -229,10 +273,17 @@ export default function AdminProductsScreen() {
       setCreateSuccessMessage('')
       setIsSubmitting(true)
 
+      const priceValidationError = getPriceValidationError(createForm.price)
+      if (priceValidationError) {
+        setCreateError(priceValidationError)
+        priceInputRef.current?.focus()
+        return
+      }
+
       const createdProduct = await createProductUseCase({
         name: createForm.name,
         description: createForm.description,
-        price: Number(createForm.price),
+        price: parsePrice(createForm.price),
         amount: Number(createForm.amount),
         categories: parseCategories(createForm.categories),
         imageUrl: createForm.imageUrl,
@@ -257,11 +308,18 @@ export default function AdminProductsScreen() {
       setEditSuccessMessage('')
       setIsSubmitting(true)
 
+      const priceValidationError = getPriceValidationError(editForm.price)
+      if (priceValidationError) {
+        setEditError(priceValidationError)
+        priceInputRef.current?.focus()
+        return
+      }
+
       const updatedProduct = await updateProductUseCase({
         id: selectedProduct.id,
         name: editForm.name,
         description: editForm.description,
-        price: Number(editForm.price),
+        price: parsePrice(editForm.price),
         amount: Number(editForm.amount),
         categories: parseCategories(editForm.categories),
         imageUrl: editForm.imageUrl,

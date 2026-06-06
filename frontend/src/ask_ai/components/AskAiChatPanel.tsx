@@ -514,7 +514,9 @@ export function AskAiChatPanel({
       return (
         <YStack key={product.id} style={{ position: 'relative' }}>
           <a
-            href={product.productPath}
+            href={resolveProductUrl(product.productPath)}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: 'block',
               textDecoration: 'none',
